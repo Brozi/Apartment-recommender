@@ -1,0 +1,140 @@
+@import "./variables.css";
+@import "@fontsource/inter";
+@import "@fontsource/plus-jakarta-sans";
+@import "@fontsource/plus-jakarta-sans/600.css";
+@import "@fontsource/plus-jakarta-sans/800.css";
+
+:root {
+  --font-primary: "Inter", sans-serif;
+  --font-heading: "Plus Jakarta Sans", sans-serif;
+}
+
+.font-logo {
+  color: var(--clr-light-100);
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: 0.01125rem;
+}
+
+.font-nav-button {
+  color: var(--clr-light-100);
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.0225rem;
+}
+
+.font-nav-button::hover {
+  color: var(--clr-light-90);
+}
+
+.font-nav-button::active {
+  color: var(--clr-primary-100);
+}
+
+.font-secondary-button {
+  color: var(--clr-primary-90);
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.font-secondary-button::hover {
+  color: var(--clr-primary-100);
+}
+
+.font-secondary-button::active {
+  color: var(--clr-primary-100);
+}
+
+.font-paragraph {
+  color: var(--clr-text);
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.font-paragraph-dark {
+  color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.font-chart-heading {
+  color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.05rem;
+}
+
+.font-chart-heading-info {
+  color: var(--clr-text);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.font-chart-highlight {
+  color: var(--clr-acc-orange);
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+
+.font-chart-info {
+  color: var(--clr-text);
+  font-family: var(--font-primary);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+@media (min-width: 37.5rem) {
+  .font-logo {
+    font-size: 1.25em;
+    letter-spacing: 0.0125em;
+  }
+
+  .font-nav-button {
+    font-size: 1.25em;
+    letter-spacing: 0.025em;
+  }
+
+  .font-secondary-button {
+    font-size: 1em;
+  }
+
+  .font-paragraph {
+    font-size: 1em;
+  }
+
+  .font-paragraph-dark {
+    font-size: 1.125em;
+    letter-spacing: 0.01125em;
+  }
+
+  .font-chart-heading {
+    font-size: 1.25em;
+    letter-spacing: 0.0625em;
+  }
+
+  .font-chart-heading-info {
+    font-size: 1.25em;
+  }
+
+  .font-chart-info {
+    font-size: 0.8125em;
+  }
+}
+
+@media (min-width: 64rem) {
+  .font-chart-highlight {
+    font-size: 1.625rem;
+  }
+}
