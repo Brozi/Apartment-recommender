@@ -1,10 +1,10 @@
 import { Outlet } from "react-router";
-import styles from "./root-layout.module.css";
+import Navbar from "../components/nav/navbar";
 
 export default function RootLayout() {
   return (
     <>
-      <nav className={styles.nav}>Nav</nav>
+      <Navbar />
 
       <main>
         <Outlet />

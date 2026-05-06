@@ -1,0 +1,98 @@
+.header {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.navbar {
+  height: 5rem;
+  background-color: var(--clr-primary-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: relative;
+}
+
+.divider {
+  height: 0.25rem;
+  background-color: var(--clr-secondary-100);
+  width: 100%;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.iconContainer {
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--clr-secondary-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 0.0625rem var(--clr-light-15);
+}
+
+.navItems {
+  position: fixed;
+  top: 5.25rem;
+  right: -100%;
+  width: 100%;
+  height: calc(100vh - 5.25rem);
+  background-color: var(--clr-secondary-100);
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem 1.5rem 1.5rem;
+  gap: var(--spacing-24);
+  transition: right 0.3s ease-in-out;
+}
+
+.navItems.open {
+  right: 0;
+}
+
+.navItem {
+  height: 3rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: inset 0 0 0 0.125rem var(--clr-acc-green-50);
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.navItem.active {
+  background-color: var(--clr-acc-green-100);
+}
+
+.navToggle {
+  cursor: pointer;
+  padding: 0;
+  z-index: 100;
+}
+
+@media (min-width: 64rem) {
+  .navItems {
+    position: static;
+    height: auto;
+    width: auto;
+    background: none;
+    flex-direction: row;
+    padding: 0;
+    gap: var(--spacing-24);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .navItem {
+    width: 12rem;
+  }
+}
