@@ -1,24 +1,27 @@
-import { cn } from "../../utils/utils";
-
+import { NavLink } from "react-router";
 import styles from "./nav.module.css";
 
 type NavItemProps = {
   className?: string;
-  isActive: boolean;
   style?: React.CSSProperties;
   label: string;
+  onClick: () => void;
   path: string;
 };
 
-export default function NavItem({ isActive, label, path }: NavItemProps) {
+export default function NavItem({ label, path, onClick }: NavItemProps) {
   return (
     <li>
-      <a
-        className={`${cn(styles.navItem, ".font-nav-button")} ${isActive ? styles.active : ""}`}
-        href={path}
+      <NavLink
+        className={({ isActive }) =>
+          `${styles.navItem} font-nav-button ${isActive ? styles.active : ""}`
+        }
+        to={path}
+        end={path === "/"}
+        onClick={onClick}
       >
-        {label}
-      </a>
+        <span className={styles.navItemText}>{label}</span>
+      </NavLink>
     </li>
   );
 }

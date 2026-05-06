@@ -10,11 +10,12 @@
 }
 
 .font-logo {
-  color: var(--clr-light-100);
+  color: var(--clr-light-90);
   font-family: var(--font-heading);
   font-size: 1.125rem;
   font-weight: 800;
   letter-spacing: 0.01125rem;
+  transition: color 0.2s ease;
 }
 
 .font-nav-button {

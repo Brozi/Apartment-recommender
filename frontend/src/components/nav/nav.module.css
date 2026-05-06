@@ -15,6 +15,11 @@
   position: relative;
 }
 
+.navSide {
+  display: flex;
+  align-items: center;
+}
+
 .divider {
   height: 0.25rem;
   background-color: var(--clr-secondary-100);
@@ -25,6 +30,9 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-12);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .iconContainer {
@@ -35,6 +43,15 @@
   align-items: center;
   justify-content: center;
   box-shadow: inset 0 0 0 0.0625rem var(--clr-light-15);
+  transition: box-shadow 0.2s ease;
+}
+
+.logoContainer:hover .iconContainer {
+  box-shadow: inset 0 0 0 0.125rem var(--clr-light-35);
+}
+
+.logoContainer:hover :global(.font-logo) {
+  color: var(--clr-light-100);
 }
 
 .navItems {
@@ -62,14 +79,29 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: inherit;
   box-shadow: inset 0 0 0 0.125rem var(--clr-acc-green-50);
   background-color: transparent;
   transition: background-color 0.2s;
+  color: var(--clr-light-80);
+  transition: all 0.1s ease;
+  cursor: pointer;
+}
+
+.navItem:hover {
+  box-shadow: inset 0 0 0 0.125rem var(--clr-acc-green-75);
+  color: var(--clr-light-100);
+}
+
+.navItemText {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  line-height: 1.5625rem;
+  letter-spacing: 0.0225rem;
 }
 
 .navItem.active {
   background-color: var(--clr-acc-green-100);
+  color: var(--clr-primary-100);
 }
 
 .navToggle {
@@ -79,6 +111,18 @@
 }
 
 @media (min-width: 64rem) {
+  .navSide {
+    flex: 1;
+  }
+
+  .navSideEnd {
+    justify-content: flex-end;
+  }
+
+  .navToggle {
+    display: none;
+  }
+
   .navItems {
     position: static;
     height: auto;
@@ -87,9 +131,6 @@
     flex-direction: row;
     padding: 0;
     gap: var(--spacing-24);
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .navItem {

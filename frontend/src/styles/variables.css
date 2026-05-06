@@ -9,9 +9,12 @@
   --clr-text: #6c6063;
   --clr-light-100: #f7f5f2;
   --clr-light-90: hsla(36, 24%, 96%, 0.9);
+  --clr-light-80: hsla(36, 24%, 96%, 0.8);
+  --clr-light-35: hsla(36, 24%, 96%, 0.35);
   --clr-light-15: hsla(36, 24%, 96%, 0.15);
   --clr-light-0: hsla(36, 24%, 96%, 0);
   --clr-acc-green-100: #c4f3c4;
+  --clr-acc-green-75: hsla(120, 66%, 86%, 0.75);
   --clr-acc-green-50: hsla(120, 66%, 86%, 0.5);
   --clr-acc-green-10: hsla(120, 66%, 86%, 0.1);
   --clr-acc-green-0: hsla(120, 66%, 86%, 0);

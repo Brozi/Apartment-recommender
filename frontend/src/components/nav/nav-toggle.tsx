@@ -1,6 +1,8 @@
 import { cn } from "../../utils/utils";
 
 import styles from "./nav.module.css";
+import navCloseIcon from "../../assets/nav-close.svg";
+import navMenuIcon from "../../assets/nav-menu.svg";
 
 type NavToggleProps = {
   isOpen: boolean;
@@ -14,10 +16,7 @@ export default function NavToggle({ isOpen, onClick }: NavToggleProps) {
       onClick={onClick}
       aria-label="Toggle menu"
     >
-      <img
-        src={isOpen ? "./assets/nav-close.svg" : "./assets/nav-menu.svg"}
-        alt="Menu icon"
-      />
+      <img src={isOpen ? navCloseIcon : navMenuIcon} alt="Menu icon" />
     </button>
   );
 }

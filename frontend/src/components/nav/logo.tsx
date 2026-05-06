@@ -1,12 +1,15 @@
+import { NavLink } from "react-router";
+
 import styles from "./nav.module.css";
+import logoIcon from "../../assets/logo.svg";
 
 export default function Logo() {
   return (
-    <div className={styles.logoContainer}>
+    <NavLink className={styles.logoContainer} to="/">
       <div className={styles.iconContainer}>
-        <img src="../../assets/logo.svg" alt="logo icon" />
+        <img src={logoIcon} alt="logo icon" />
       </div>
       <span className="font-logo">APRTS</span>
-    </div>
+    </NavLink>
   );
 }
