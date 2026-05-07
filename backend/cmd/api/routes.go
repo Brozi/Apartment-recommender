@@ -12,6 +12,7 @@ func (app *application) routes() *httprouter.Router {
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/test", app.testHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/offer/:id", app.getOfferByIDHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/dashboard/kpis", app.getDashboardKpisHandler)
 
 	return router
 }
