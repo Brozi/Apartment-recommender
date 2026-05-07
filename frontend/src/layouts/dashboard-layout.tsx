@@ -1,13 +1,17 @@
-import { Outlet } from "react-router";
+import { Outlet, useNavigation } from "react-router";
 import Pagination from "../components/dashboard-pagination/pagination";
+import LoadingSpinner from "../components/ui/loading-spinner";
 
 export default function DashboardLayout() {
+  const navigation = useNavigation();
+  const isLoading = navigation.state !== "idle";
+
   return (
     <>
       <Pagination />
 
       <main>
-        <Outlet />
+        {isLoading ? <LoadingSpinner label="Loading data" /> : <Outlet />}
       </main>
     </>
   );

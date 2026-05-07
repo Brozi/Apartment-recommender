@@ -10,11 +10,13 @@ import { kpisLoader } from "./services/kpis-loader";
 import GeoPage from "./pages/geo-page";
 import SmartBuyerPage from "./pages/smart-buyer-page";
 import ValuationPage from "./pages/valuation-page";
+import ErrorPage from "./pages/error-page";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
