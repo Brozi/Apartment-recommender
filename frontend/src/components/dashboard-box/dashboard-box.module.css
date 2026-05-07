@@ -1,0 +1,59 @@
+.dashboardBoxContainer {
+  background-color: var(--clr-bg-component);
+  position: relative;
+  width: 100%;
+  box-shadow: var(--shadow-chart);
+}
+
+.dashboardBoxContainer :global(.font-chart-heading) {
+  padding: var(--spacing-16) var(--spacing-16) 0.875rem var(--spacing-16);
+  text-transform: uppercase;
+}
+
+.divider {
+  width: 75%;
+  height: 0.0625rem;
+  background-color: var(--clr-divider);
+}
+
+.chartCorner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.chartExpand {
+  position: absolute;
+  top: var(--spacing-8);
+  right: var(--spacing-8);
+}
+
+.topBgAddon {
+  width: 9rem;
+  height: 4rem;
+  background-color: var(--clr-bg-addon-yellow);
+  position: absolute;
+  z-index: -1;
+  top: -0.25rem;
+  left: -0.25rem;
+}
+
+.bottomBgAddon {
+  width: 4rem;
+  height: 4rem;
+  background-color: var(--clr-bg-addon-beige);
+  position: absolute;
+  z-index: -1;
+  bottom: -0.25rem;
+  right: -0.25rem;
+}
+
+@media (min-width: 39.75rem) {
+  .dashboardBoxContainer :global(.font-info-box-heading) {
+    padding: var(--spacing-24) var(--spacing-24) 1.375em var(--spacing-24);
+  }
+
+  .topBgAddon {
+    width: 12em;
+  }
+}

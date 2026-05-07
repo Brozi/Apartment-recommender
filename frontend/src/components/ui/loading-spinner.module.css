@@ -1,0 +1,47 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-12);
+  padding: var(--spacing-48) 0;
+  color: var(--clr-secondary-100);
+}
+
+.spinner {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 3px solid var(--clr-divider);
+  border-top-color: var(--clr-acc-orange);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: spinner-rotate 0.9s linear infinite;
+}
+
+.spinnerInner {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  border: 2px solid var(--clr-acc-beige-dark);
+  border-bottom-color: transparent;
+  animation: spinner-rotate-reverse 0.7s linear infinite;
+}
+
+.label {
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinner-rotate-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
