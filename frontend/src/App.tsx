@@ -6,6 +6,7 @@ import Home from "./pages/home";
 import MapPage from "./pages/map-page";
 import DashboardLayout from "./layouts/dashboard-layout";
 import KpisPage from "./pages/kpis-page";
+import { kpisLoader } from "./services/kpis-loader";
 import GeoPage from "./pages/geo-page";
 import SmartBuyerPage from "./pages/smart-buyer-page";
 import ValuationPage from "./pages/valuation-page";
@@ -31,6 +32,7 @@ const router = createBrowserRouter([
           {
             path: "kpis",
             element: <KpisPage />,
+            loader: kpisLoader,
           },
           {
             path: "geography-and-distribution",

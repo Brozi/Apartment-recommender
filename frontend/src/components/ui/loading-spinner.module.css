@@ -1,0 +1,28 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-12);
+  padding: var(--spacing-48) 0;
+  color: var(--clr-secondary-100);
+}
+
+.spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 3px solid var(--clr-divider);
+  border-top-color: var(--clr-acc-orange);
+  animation: spinner-rotate 0.9s linear infinite;
+}
+
+.label {
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

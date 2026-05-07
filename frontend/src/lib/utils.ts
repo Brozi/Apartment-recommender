@@ -13,3 +13,11 @@ export const formatNumber = (number: number): string => {
     .format(number)
     .replace(/\u00a0/g, " ");
 };
+
+export const replaceUnderscores = (value: string): string => {
+  return value.replace(/_/g, " ");
+};
+
+export const roundToTwo = (value: number): number => {
+  return Math.round(value * 100) / 100;
+};
