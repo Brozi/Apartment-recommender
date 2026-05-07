@@ -1,7 +1,7 @@
 :root {
   /* Base colors: */
   --clr-bg-main: #ece7df;
-  --clr-bg-components: #f6f3ef;
+  --clr-bg-component: #f6f3ef;
   --clr-primary-100: #231f20;
   --clr-primary-90: hsla(345, 6%, 13%, 0.9);
   --clr-secondary-100: #41393b;
@@ -29,7 +29,10 @@
   --clr-chart-indicator: #e2dfe0;
 
   --clr-chart-red: #eca68d;
-  --clr-char-green: #8dec8d;
+  --clr-chart-green: #8dec8d;
+
+  --clr-bg-addon-yellow: #e7e092;
+  --clr-bg-addon-beige: #dfd7cb;
 
   /* Gradients: */
   --clr-logo-gradient:
@@ -57,4 +60,10 @@
   --spacing-128: 8rem;
   --spacing-144: 9rem;
   --spacing-192: 12rem;
+
+  /* Shadows: */
+  --shadow-chart:
+    0 12px 3px 0 rgba(187, 169, 140, 0), 0 7px 3px 0 rgba(187, 169, 140, 0.01),
+    0 4px 3px 0 rgba(187, 169, 140, 0.03),
+    0 2px 2px 0 rgba(187, 169, 140, 0.04), 0 0 1px 0 rgba(187, 169, 140, 0.05);
 }

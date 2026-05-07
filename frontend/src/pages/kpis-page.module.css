@@ -1,0 +1,37 @@
+.boxInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-16);
+  margin-bottom: var(--spacing-16);
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-16);
+  margin-bottom: var(--spacing-192);
+}
+
+@media (min-width: 39.75rem) {
+  .boxInfoGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 60rem) {
+  .chartGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 78.5rem) {
+  .boxInfoGrid {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+}
+
+@media (min-width: 90rem) {
+  .chartGrid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
