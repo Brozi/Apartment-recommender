@@ -1,4 +1,6 @@
 import { Outlet } from "react-router";
+
+import styles from "./root-layout.module.css";
 import Navbar from "../components/nav/navbar";
 
 export default function RootLayout() {
@@ -6,7 +8,7 @@ export default function RootLayout() {
     <>
       <Navbar />
 
-      <main>
+      <main className={styles.main}>
         <Outlet />
       </main>
     </>

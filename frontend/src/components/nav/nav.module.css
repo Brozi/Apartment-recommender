@@ -10,9 +10,16 @@
   background-color: var(--clr-primary-100);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
   position: relative;
+}
+
+.navContent {
+  max-width: 108rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 1rem;
 }
 
 .navSide {
@@ -65,7 +72,7 @@
   flex-direction: column;
   padding: 1.25rem 1.5rem 1.5rem 1.5rem;
   gap: var(--spacing-24);
-  transition: right 0.3s ease-in-out;
+  transition: right 0.3s ease-out;
 }
 
 .navItems.open {
@@ -135,5 +142,11 @@
 
   .navItem {
     width: 12rem;
+  }
+}
+
+@media (min-width: 112.8rem) {
+  .navContent {
+    margin: 0 auto;
   }
 }

@@ -1,9 +1,10 @@
 import { Outlet } from "react-router";
+import Pagination from "../components/dashboard-pagination/pagination";
 
 export default function DashboardLayout() {
   return (
     <>
-      <p className="text-paragraph">pagination</p>
+      <Pagination />
 
       <main>
         <Outlet />

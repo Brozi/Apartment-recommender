@@ -1,4 +1,4 @@
-import { cn } from "../../utils/utils";
+import { cn } from "../../lib/utils";
 
 import styles from "./nav.module.css";
 import navCloseIcon from "../../assets/nav-close.svg";

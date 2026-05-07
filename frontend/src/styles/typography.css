@@ -26,12 +26,26 @@
   letter-spacing: 0.0225rem;
 }
 
-.font-nav-button::hover {
+.font-nav-button:hover {
   color: var(--clr-light-90);
 }
 
-.font-nav-button::active {
+.font-nav-button:active {
   color: var(--clr-primary-100);
+}
+
+.font-pagination-number {
+  color: var(--clr-secondary-100);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.font-pagination-text {
+  color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .font-secondary-button {
@@ -41,11 +55,11 @@
   font-weight: 600;
 }
 
-.font-secondary-button::hover {
+.font-secondary-button:hover {
   color: var(--clr-primary-100);
 }
 
-.font-secondary-button::active {
+.font-secondary-button:active {
   color: var(--clr-primary-100);
 }
 
@@ -105,6 +119,16 @@
   .font-nav-button {
     font-size: 1.25em;
     letter-spacing: 0.025em;
+  }
+
+  .font-pagination-number {
+    font-size: 1.125em;
+    letter-spacing: 0.01125em;
+  }
+
+  .font-pagination-text {
+    font-size: 1.125em;
+    letter-spacing: 0.01125em;
   }
 
   .font-secondary-button {

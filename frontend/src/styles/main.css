@@ -22,12 +22,6 @@ body {
   max-width: 100vw;
 }
 
-main {
-  max-width: 108rem;
-  margin: 0 2.4rem;
-  min-height: 100vh;
-}
-
 ol,
 ul,
 menu {
@@ -54,10 +48,4 @@ video {
 
 [hidden]:where(:not([hidden="until-found"])) {
   display: none !important;
-}
-
-@media (min-width: 111rem) {
-  main {
-    margin: 0 auto;
-  }
 }
