@@ -1,0 +1,29 @@
+.wrapper {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-48) var(--spacing-16);
+}
+
+.card {
+  max-width: 40rem;
+  width: 100%;
+  background: var(--clr-bg-component);
+  border: 1px solid var(--clr-divider);
+  border-radius: 1rem;
+  padding: var(--spacing-32);
+  box-shadow: var(--shadow-chart);
+  text-align: center;
+}
+
+.title {
+  font-size: 1.6rem;
+  color: var(--clr-primary-100);
+  margin-bottom: var(--spacing-12);
+}
+
+.subtitle {
+  color: var(--clr-text);
+  line-height: 1.5;
+}

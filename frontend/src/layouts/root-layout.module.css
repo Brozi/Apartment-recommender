@@ -1,0 +1,11 @@
+.main {
+  max-width: 108rem;
+  margin: 0 var(--spacing-16);
+  min-height: 100vh;
+}
+
+@media (min-width: 112.8rem) {
+  .main {
+    margin: 0 auto;
+  }
+}
