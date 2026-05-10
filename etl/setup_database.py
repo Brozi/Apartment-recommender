@@ -1,11 +1,15 @@
 from etl.services import connect_to_database
+from pymongo import GEOSPHERE, ASCENDING
+import logging
 
-def initialize_database(raw_col='Properties'):
+logger = logging.getLogger(__name__)
+def initialize_input_database(raw_col='Properties'):
+
     client = connect_to_database()
 
     raw_collection = client[raw_col]
 
-    print("Building partial index for ETL queue...")
+    logger.info("Building partial index for ETL queue...")
 
     raw_collection.create_index(
         [('etl_processed', 1)],
@@ -13,6 +17,26 @@ def initialize_database(raw_col='Properties'):
     )
 
     print("Database initialization complete.")
+def initialize_output_database(raw_col='Properties_clean'):
+    client = connect_to_database()
+
+    collection = client[raw_col]
+
+    collection.create_index([('geo_location', GEOSPHERE)], name='geo_location_2dsphere')
+
+    collection.create_index([
+        ('localization.city', ASCENDING),
+        ('localization.district', ASCENDING),
+    ], name='localization_compound_idx')
+
+    collection.create_index([('price', ASCENDING)], name='price_idx')
+    collection.create_index([('area', ASCENDING)], name='area_idx')
+
+    logger.info("SUCCES: All indexes created")
+
+    for index in collection.list.indexes():
+        logger.info(f"Index {index} created")
 
 if __name__ == "__main__":
-    initialize_database()
+    initialize_input_database()
+    initialize_output_database()
