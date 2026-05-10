@@ -60,6 +60,7 @@ class Constans:
     DEFAULT_DISTRICT = None
     DEFAULT_PROPERTY_TYPE = PropertyType.FLAT
     DEFAULT_AUCTION_TYPE = AuctionType.SALE
+    DEFAULT_MAX_LISTING_PER_CHUNK = 2800
 
     CSV_KEYS = [
         "_id",
