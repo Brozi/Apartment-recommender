@@ -73,7 +73,7 @@ class Settings:
         logger.info("Running config: " + str(self.__dict__))
 
     @staticmethod
-    def __init_price(settings: dict) -> (int, int):
+    def __init_price(settings: dict) -> tuple[int, int]:
         """
         Initialize the minimum and maximum price from the settings dictionary.
 
