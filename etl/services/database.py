@@ -17,7 +17,7 @@ def connect_to_database(host: str = None) -> MongoClient:
     """
     logger.info("Connecting to the database")
     if host is None:
-        with open("../settings.json", "r", encoding="utf-8") as f:
+        with open("settings.json", "r", encoding="utf-8") as f:
             settings = json.load(f)
             host = settings["transformer"]["host"]
             if not host:

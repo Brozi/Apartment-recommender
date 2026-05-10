@@ -1,2 +1,2 @@
-from database import MongoBatchUploader
-from database import connect_to_database
+from etl.services.database import MongoBatchUploader
+from etl.services.database import connect_to_database

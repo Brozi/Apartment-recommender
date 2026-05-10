@@ -1,21 +1,80 @@
 import logging
+import json
 import pandas as pd
+import os
+from pathlib import Path
 import geopandas as gpd
-from shapely.geometry import Point
+from shapely.geometry import shape, Point
+from shapely.validation import make_valid
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 class OtodomTransformer:
     """
     Handles the specific business logic for transforming Otodom listings.
     """
-    def __init__(self, cities_path='poland_cities.geojson', districts_path='poland_districts.geojson'):
+    def __init__(self, cities_filename='poland_cities.geojson', districts_filename='poland_districts_fixed.geojson'):
         """Loads all Polish districts into memory and builds the R-Tree spatial index"""
-        try:
-            self.cities_gdf = gpd.read_file(cities_path).to_crs(epsg=4326)
+        cities_path = BASE_DIR / cities_filename
+        districts_path = BASE_DIR / districts_filename
 
-            self.districts_gdf = gpd.read_file(districts_path).to_crs(epsg=4326)
+        if not cities_path.exists():
+            raise FileNotFoundError(f"CRITICAL: City data missing at {cities_path}")
+        if not districts_path.exists():
+            raise FileNotFoundError(f"CRITICAL: District data missing at {districts_path}")
+
+        try:
+            # 1. Load Cities normally (Government data is topologically sound)
+            print("Loading national city boundaries...")
+            self.cities_gdf = gpd.read_file(str(cities_path)).to_crs(epsg=4326)
+            self.cities_gdf = self.cities_gdf[['JPT_NAZWA_', 'geometry']]
+
+            # 2. BULLETPROOF DISTRICT LOADER
+            print("Loading and repairing OSM districts feature-by-feature...")
+            with open(str(districts_path), 'r', encoding='utf-8') as f:
+                raw_data = json.load(f)
+
+            valid_rows = []
+            valid_geometries = []
+            failed_count = 0
+
+            for feature in raw_data.get('features', []):
+                try:
+                    geom_dict = feature.get('geometry')
+                    if not geom_dict:
+                        continue
+
+                    # Convert raw JSON dict to a Shapely object
+                    raw_shape = shape(geom_dict)
+
+                    # If it's broken, force a mathematical repair
+                    if not raw_shape.is_valid:
+                        raw_shape = make_valid(raw_shape)
+
+                    # make_valid can sometimes splinter a broken polygon into lines/points.
+                    # We MUST filter those out, or the R-Tree contains() will fail.
+                    if raw_shape.geom_type in ['Polygon', 'MultiPolygon']:
+                        # Keep only the name and the valid shape
+                        props = feature.get('properties', {})
+                        valid_rows.append({'name': props.get('name', 'Unknown')})
+                        valid_geometries.append(raw_shape)
+                    else:
+                        failed_count += 1
+
+                except Exception:
+                    # If a feature is so corrupted Shapely can't even read it, silently drop it.
+                    failed_count += 1
+                    continue
+
+            print(
+                f"District load complete. Successfully repaired {len(valid_rows)} features. Quarantined/Dropped {failed_count} unfixable features.")
+
+            # 3. Manually construct the GeoDataFrame from the surviving data
+            df = pd.DataFrame(valid_rows)
+            self.districts_gdf = gpd.GeoDataFrame(df, geometry=valid_geometries, crs="EPSG:4326")
 
         except Exception as e:
-            raise RuntimeError(f'FATAL: Spatial truth data failed to load: {e}')
+            raise RuntimeError(f"FATAL: Spatial truth data failed to load: {e}")
 
     def get_true_location(self, longitude, latitude) -> tuple[str, str]:
         """
@@ -24,57 +83,57 @@ class OtodomTransformer:
         point = Point(float(longitude), float(latitude))
 
         city_match = self.cities_gdf[self.cities_gdf.geometry.contains(point)]
-        true_city = city_match.iloc[0]['name'] if not city_match.empty else None
+        true_city = city_match.iloc[0]['JPT_NAZWA_'] if not city_match.empty else None
 
         district_match = self.districts_gdf[self.districts_gdf.geometry.contains(point)]
-        true_district = district_match.iloc[0]['name'] if not district_match.empty else None
+        if not district_match.empty:
+            true_district = district_match.iloc[0]['name']
+        else:
+            true_district = true_city
 
         return true_city, true_district
 
     def transform(self, raw_doc):
         clean_doc = {'otodom_id': raw_doc.get('otodom_id')}
 
-        location = raw_doc.get('localization', {}).get('location', {})
-        coords = raw_doc.get('coordinates', [])
+        localization = raw_doc.get('localization', {})
+        location = localization.get('location', {})
+        coords = location.get('coordinates', [])
 
         #the rest of the cleaning logic..
 
         #spatial logic
-        latitude = coords[1]
-        longitude = coords[0]
-        reported_city = location.get('city', {})
-        reported_district = location.get('district', {})
 
-        if pd.notna(latitude) and pd.notna(longitude):
-            latitude_f, longitude_f = float(latitude), float(longitude)
-            clean_doc['localization_latitude'] = latitude_f
-            clean_doc['localization_longitude'] = longitude_f
+        if len(coords) < 2:
+            clean_doc['district_verified'] = False
+            return clean_doc
 
-            clean_doc['location'] = {
-                "type": "Point",
-                "coordinates": [longitude_f, latitude_f]
-            }
-            true_city, true_district = self.get_true_location(longitude_f, latitude_f)
+        longitude_f = float(coords[0])
+        latitude_f = float(coords[1])
 
-            if not true_district:
-                clean_doc['district_verified'] = False
+        clean_doc['localization_latitude'] = latitude_f
+        clean_doc['localization_longitude'] = longitude_f
+        clean_doc['location'] = {
+            "type": "Point",
+            "coordinates": [longitude_f, latitude_f]
+        }
 
-            elif (str(reported_district).lower() != str(true_district).lower()) or \
-                    (true_city and str(reported_city).lower() != str(true_city).lower()):
+        true_city, true_district = self.get_true_location(longitude_f, latitude_f)
 
-                clean_doc['reported_district'] = reported_district
-                clean_doc['localization_district'] = true_district
+        reported_city = localization.get('city', {})
+        reported_district = localization.get('district', None)
 
-                if true_city:
-                    clean_doc['localization_city'] = true_city
-                    clean_doc['reported_city'] = reported_city
+        if true_city:
+            clean_doc['localization_city'] = true_city
+            clean_doc['localization_district'] = true_district
 
-                clean_doc['district_verified'] = True
-            else:
-                clean_doc['district_verified'] = True
+            clean_doc['reported_city'] = reported_city
+            clean_doc['reported_district'] = reported_district
 
+            clean_doc['district_verified'] = (
+                str(reported_district).lower() == str(true_district).lower()
+            )
         else:
             clean_doc['district_verified'] = False
 
-        clean_doc.pop('_id', None)
         return clean_doc
