@@ -19,7 +19,7 @@ def connect_to_database(host: str = None) -> MongoClient:
     if host is None:
         with open("settings.json", "r", encoding="utf-8") as f:
             settings = json.load(f)
-            host = settings["transformer"]["host"]
+            host = settings["database"]["host"]
             if not host:
                 raise ValueError("Database host is not defined in settings.json")
     mongo_connect(host=host)
