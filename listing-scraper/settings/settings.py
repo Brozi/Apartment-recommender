@@ -50,6 +50,7 @@ class Settings:
             with open("settings.json", "r", encoding="utf-8") as f:
                 settings = json.load(f)
                 crawler_settings = settings["crawler"]
+                database_settings = settings["database"]
                 self.base_url = Constans.DEFAULT_URL
                 self.price_min, self.price_max = self.__init_price(crawler_settings)
                 # Get the chunk limit from settings, default to 2800 if not found
@@ -64,7 +65,7 @@ class Settings:
                 # -------------------------------------
 
                 self.auction_type = self.__init_auction_type(crawler_settings)
-                self.mongo_db_host = self.__init_mongo_db_host(settings["database"])
+                self.mongo_db_host = self.__init_mongo_db_host(database_settings)
 
         except Exception as e:
             logger.warning(f"Error loading the settings. Settings are set to default. Error: {e}")
