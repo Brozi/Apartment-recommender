@@ -18,5 +18,8 @@
     },
     "database" : {
         "host": ""
+    },
+    "transformer": {
+        "host": ""
     }
 }
