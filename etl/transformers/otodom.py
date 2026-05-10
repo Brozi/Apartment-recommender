@@ -123,17 +123,17 @@ class OtodomTransformer:
             true_city, true_district = self.get_true_location(longitude_f, latitude_f)
 
             if true_city:
-                clean_doc['localization']['city'] = true_city
-                clean_doc['localization']['district'] = true_district
+                localization['city'] = true_city
+                localization['district'] = true_district
 
                 city_match = str(reported_city).lower() == str(true_city).lower()
                 district_match = str(reported_district).lower() == str(true_district).lower() if reported_district else True
 
-                clean_doc['localization']['verified'] = True
-                clean_doc['localization']['listing_data_accurate'] = city_match and district_match
+                localization['verified'] = True
+                clean_doc['listing_data_accurate'] = city_match and district_match
             else:
-                clean_doc['localization']['verified'] = False
+                localization['verified'] = False
         else:
-            clean_doc['localization']['verified'] = False
+            localization['verified'] = False
 
         return clean_doc
