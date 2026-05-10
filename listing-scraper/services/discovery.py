@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from crawler import Crawler
 
 class RangeDiscoverer:
-    def __init__(self, max_listings_per_chunk=2800, global_max=14000000):
+    def __init__(self, max_listings_per_chunk=2800, max_pages_per_chunk=10, global_max=14000000):
         """
         Initializes the discoverer.
         :param max_listings_per_chunk: The safe limit before we split the range (Otodom max is ~3000).
@@ -20,6 +20,7 @@ class RangeDiscoverer:
         self.min_range_name = "low"
         self.max_range_name = "high"
         self.max_listings_per_chunk = max_listings_per_chunk
+        self.max_pages_per_chunk = max_pages_per_chunk
         self.global_max = global_max
         self.discovered_ranges = []
 
@@ -51,23 +52,27 @@ class RangeDiscoverer:
         # Count pages using the existing crawler logic
         pages, total_listings = crawler.count_pages()
 
-        if total_listings == 0:
-            print(f"  -> Empty range (0 listings). Skipping.")
-            return
+        too_many_listings = total_listings > self.max_listings_per_chunk
+        too_many_pages = pages > self.max_pages_per_chunk
 
-        if total_listings > self.max_listings_per_chunk:
-            print(f"  -> Too many listings ({total_listings}). Splitting range in half...")
+        if (too_many_listings or too_many_pages) and current_min > current_max:
+            print(
+                f"  -> Too large: {pages} pages, {total_listings} listings. "
+                "Splitting range in half..."
+            )
             mid_price = (current_min + current_max) // 2
 
-            # Anti-bot delay
             time.sleep(random.uniform(10.0, 20.0))
 
-            # Recurse on both halves
             self.discover(crawler, current_min, mid_price)
             self.discover(crawler, mid_price + 1, current_max)
         else:
-            print(f"  -> Safe range found! {current_min} - {current_max} PLN ({total_listings} listings)")
-            self.discovered_ranges.append({self.min_range_name: current_min, self.max_range_name: current_max})
+            print(
+                f"  -> Safe range found! {current_min} - {current_max} PLN ({pages} pages, {total_listings} listings)")
+            self.discovered_ranges.append({
+                self.min_range_name: current_min,
+                self.max_range_name: current_max,
+            })
 
     def get_final_matrix(self):
         """Sorts the ranges and adds the final infinite catch-all range."""

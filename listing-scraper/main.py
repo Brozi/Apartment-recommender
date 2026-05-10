@@ -45,81 +45,37 @@ logging.basicConfig(
 
 
 
-def scrape_dynamic_chunk(crawler, current_min, current_max, master_list):
-    """Recursively splits chunks if they have more than 100 pages."""
-    import copy
-    if current_min > current_max:
-        return
-
-    print(f"\n---> Checking chunk: {current_min} PLN to {current_max} PLN")
-
-    # 1. Setup crawler for this exact chunk
-    crawler.settings.price_min = current_min
-    crawler.settings.price_max = current_max
-    crawler.params = crawler.generate_params()
-
-    # 2. Count the pages
+def scrape_assigned_chunk(crawler, master_list):
     pages, total_listings = crawler.count_pages()
-    page_limit = 10
 
-    # 3. Base case: 0 pages (Skip)
     if pages == 0:
-        print(f"Skipping chunk {current_min} - {current_max} PLN (0 listings)")
+        print("Assigned chunk has 0 listings. Skipping.")
         return
 
-    # 4. Recursive case: Over 100 pages (Split in half)
-    if pages > page_limit:
-        print(
-            f"Chunk {current_min} - {current_max} has {pages} pages (>{page_limit} limit), {total_listings} listings. Splitting in half...")
-        mid_price = (current_min + current_max) // 2
+    print(
+        f"Scraping assigned chunk: "
+        f"{crawler.settings.property_type.value}, "
+        f"{crawler.settings.price_min}-{crawler.settings.price_max} PLN "
+        f"({pages} pages, {total_listings} listings)"
+    )
 
-        scrape_dynamic_chunk(crawler, current_min, mid_price, master_list)
-        time.sleep(random.uniform(3.0, 5.0))
-        fresh_crawler = Crawler()
-        fresh_crawler.settings = copy.deepcopy(crawler.settings)
-        scrape_dynamic_chunk(fresh_crawler, mid_price + 1, current_max, master_list)
-        return
+    crawler.start(pages)
 
-    # 5. Base case: Safe to scrape (1 to 100 pages)
-    else:
-        print(f"Scraping SAFE chunk: {current_min} - {current_max} PLN ({pages} pages, {total_listings} listings.)")
-
-        crawler.start(pages)
-
-        if hasattr(crawler, 'listings'):
-            master_list.extend(crawler.listings)
-            crawler.listings.clear()
-        # ADD THIS BLOCK to process investments found in this chunk:
-        if hasattr(crawler, 'investments_queue') and crawler.investments_queue:
-            crawler.process_investment_queue()
-
-        print(f"Waiting ~30 seconds before the next chunk...")
-        time.sleep(random.uniform(45.00, 60.00))
+    master_list.extend(crawler.listings)
+    crawler.listings.clear()
 
 
 def main():
     export_service = ExportService()
-    base_crawler = Crawler()
+    crawler = Crawler()
 
     # 1. Read the EXACT range assigned to this specific GitHub Action runner
     # The workflow file already injected this runner's specific bounds into settings.json
-    target_min = base_crawler.settings.price_min
-    target_max = base_crawler.settings.price_max
 
     all_listings = []
 
     try:
-        for p_type in base_crawler.settings.property_types:
-            print(f"\n{'=' * 60}")
-            print(f"Starting property type: {p_type.value.upper()} for range {target_min} - {target_max} PLN")
-            print(f"{'=' * 60}")
-
-            # 2. Create a fresh crawler and explicitly assign the correct property type
-            crawler = Crawler()
-            crawler.settings.property_type = p_type
-
-            # 3. Scrape the exact range assigned to this runner
-            scrape_dynamic_chunk(crawler, target_min, target_max, all_listings)
+        scrape_assigned_chunk(crawler, all_listings)
 
     except KeyboardInterrupt:
         print("\nManually stopped by user!")
@@ -130,12 +86,8 @@ def main():
         print(f"\nScript finished! Gathered {len(all_listings)} total listings in this chunk.")
         print("Saving gathered data to CSV...")
 
-        if hasattr(base_crawler, 'listings'):
-            base_crawler.listings = all_listings
-            export_service.to_csv_file(all_listings,"listings.csv")
-            export_service.to_excel_file("listings.xlsx")
-        else:
-            print("Could not find the listings list to save the CSV.")
+        export_service.to_csv_file(all_listings,"listings.csv")
+        export_service.to_excel_file("listings.xlsx")
 
 
 if __name__ == "__main__":

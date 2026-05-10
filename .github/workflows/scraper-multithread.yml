@@ -50,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false # If one chunk fails, let the others finish
       matrix:
-        range: ${{ fromJson(needs.discover.outputs.matrix) }}
+        chunk: ${{ fromJson(needs.discover.outputs.matrix) }}
 
     steps:
       - name: Checkout repository
@@ -71,18 +71,20 @@ jobs:
           ${{ env.ACTIVE_SETTINGS_JSON }}
           EOF
 
-      - name: Inject Matrix Prices into settings.json
+      - name: Inject Matrix Chunk into settings.json
         working-directory: ./listing-scraper
-        # This reads the settings.json we just created, updates the min/max prices for this specific chunk, and saves it.
         run: |
           python -c "
           import json
-          with open('settings.json', 'r') as f: data = json.load(f)
-          # Split the 'min-max' string back into variables
-          min_val, max_val = '${{ matrix.range }}'.split('-')
-          data['crawler']['price']['min'] = int(min_val)
-          data['crawler']['price']['max'] = int(max_val)
-          with open('settings.json', 'w') as f: json.dump(data, f, indent=4)
+          with open('settings.json', 'r') as f:
+              data = json.load(f)
+
+          data['crawler']['price']['min'] = int('${{ matrix.chunk.low }}')
+          data['crawler']['price']['max'] = int('${{ matrix.chunk.high }}')
+          data['crawler']['property_type'] = '${{ matrix.chunk.property_type }}'
+
+          with open('settings.json', 'w') as f:
+              json.dump(data, f, indent=4)
           "
 
       - name: Run the Scraper
@@ -94,7 +96,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: scraper-results-${{ matrix.range }}
+          name: scraper-results-${{ matrix.chunk.property_type }}-${{ matrix.chunk.low }}-${{ matrix.chunk.high }}
           path: |
             listing-scraper/*.csv
             listing-scraper/*.xlsx

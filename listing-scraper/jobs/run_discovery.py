@@ -20,14 +20,11 @@ from crawler import Crawler
 from services.discovery import RangeDiscoverer
 
 
-def export_to_github_actions(ranges: list):
+def export_to_github_actions(chunks: list[dict]):
     # Convert [{"min": 0, "max": 10000}, ...] into ["0-10000", ...]
     # This completely bypasses the GitHub Actions JSON secret scanner
-    range = RangeDiscoverer(max_listings_per_chunk=2800)
-    flattened_ranges = [f"{r[range.min_range_name]}-{r[range.max_range_name]}" for r in ranges]
-    matrix_json = json.dumps(flattened_ranges)
-
-    print(f"\nFlattened Matrix: {flattened_ranges}")
+    matrix_json = json.dumps(chunks)
+    print(f"\nMatrix: {matrix_json}")
 
     if "GITHUB_OUTPUT" in os.environ:
         delimiter = f"EOF-{uuid.uuid4()}"
@@ -46,19 +43,31 @@ def main():
 
     # Use getattr() just in case an older settings.json doesn't have the key yet
     chunk_limit = getattr(crawler.settings, "max_listings_per_chunk", 2800)
+    page_limit = getattr(crawler.settings, "max_pages_per_chunk", 10)
 
-    print(f"Loaded global limits: {global_min} - {global_max} PLN")
-    print(f"Configured Max Listings Per Chunk: {chunk_limit}")
+    chunks = []
 
-    # 2. Pass them to the Discoverer
-    discoverer = RangeDiscoverer(max_listings_per_chunk=chunk_limit, global_max=global_max)
+    for p_type in crawler.settings.property_types:
+        print(f"\nDiscovering ranges for {p_type.name.lower()}")
 
-    # 3. Discover
-    discoverer.discover(crawler, global_min, global_max)
+        crawler.settings.property_type = p_type
+        crawler.params = crawler.generate_params()
 
-    final_ranges = discoverer.get_final_matrix()
-    export_to_github_actions(final_ranges)
+        discoverer = RangeDiscoverer(
+            max_listings_per_chunk=chunk_limit,
+            max_pages_per_chunk=page_limit,
+            global_max=global_max,
+        )
+        discoverer.discover(crawler, global_min, global_max)
 
+        for r in discoverer.get_final_matrix():
+            chunks.append({
+                "property_type": p_type.name.lower(),
+                "low": r[discoverer.min_range_name],
+                "high": r[discoverer.max_range_name],
+            })
+
+    export_to_github_actions(chunks)
 
 if __name__ == "__main__":
     main()
