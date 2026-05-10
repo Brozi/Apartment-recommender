@@ -41,7 +41,7 @@ class MongoBatchUploader:
     def queue_operation(self, raw_id, otodom_id, transformed_doc):
         """Adds documents to the queue and flushes to the DB if the batch size is reached"""
         self.clean_operations.append(
-            UpdateOne({'otodom_id': otodom_id }, {'$set': transformed_doc}, upsert=True))
+            UpdateOne({'otodom_id': otodom_id }, {'$set':{**transformed_doc, 'etl_processed': True}}, upsert=True))
         self.raw_ack_operations.append(
             UpdateOne(
                 {'_id': raw_id}, {'$set': {'etl_processed': True}}, upsert=True)
