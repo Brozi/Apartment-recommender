@@ -56,13 +56,7 @@ class PropertyDocument(Document):
     estate_agency = ReferenceField("AgencyDocument", reverse_delete_rule=NULLIFY)
     developer_id = IntField(db_field="developer_id")
 
-    meta = {"collection": "Properties",
-            "indexes":[
-                "localization.district",
-                "localization.city",
-                "price",
-                "area",
-            ]
+    meta = {"collection": "Properties"
             }
 
     def extract_data(self, code: BeautifulSoup) -> None:
