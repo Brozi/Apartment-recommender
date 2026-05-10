@@ -56,7 +56,7 @@ class Constans:
     DEFAULT_PRICE_MIN = 0
     DEFAULT_PRICE_MAX = 10000000
     DEFAULT_PROVINCE = "cala-polska"
-    DEFAULT_CITY = ""
+    DEFAULT_CITY = None
     DEFAULT_DISTRICT = None
     DEFAULT_PROPERTY_TYPE = PropertyType.FLAT
     DEFAULT_AUCTION_TYPE = AuctionType.SALE
