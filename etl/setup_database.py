@@ -6,8 +6,9 @@ logger = logging.getLogger(__name__)
 def initialize_input_database(raw_col='Properties'):
 
     client = connect_to_database()
+    database = client.get_default_database()
 
-    raw_collection = client[raw_col]
+    raw_collection = database[raw_col]
 
     logger.info("Building partial index for ETL queue...")
 
@@ -16,11 +17,13 @@ def initialize_input_database(raw_col='Properties'):
         partialFilterExpression={'etl_processed': {'$ne': True}},
     )
 
-    print("Database initialization complete.")
+    logger.info("Database initialization complete.")
 def initialize_output_database(raw_col='Properties_clean'):
     client = connect_to_database()
 
-    collection = client[raw_col]
+    database=client.get_default_database()
+
+    collection = database[raw_col]
 
     collection.create_index([('geo_location', GEOSPHERE)], name='geo_location_2dsphere')
 
