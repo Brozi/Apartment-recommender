@@ -55,7 +55,7 @@ class RangeDiscoverer:
         too_many_listings = total_listings > self.max_listings_per_chunk
         too_many_pages = pages > self.max_pages_per_chunk
 
-        if (too_many_listings or too_many_pages) and current_min > current_max:
+        if (too_many_listings or too_many_pages) and current_min < current_max:
             print(
                 f"  -> Too large: {pages} pages, {total_listings} listings. "
                 "Splitting range in half..."
