@@ -2,6 +2,7 @@ import logging
 import json
 import pandas as pd
 import geopandas as gpd
+import copy
 
 from pathlib import Path
 from shapely.geometry import shape, Point
@@ -96,46 +97,43 @@ class OtodomTransformer:
         return true_city, true_district
 
     def transform(self, raw_doc):
-        clean_doc = {'otodom_id': raw_doc.get('otodom_id')}
+        clean_doc = copy.deepcopy(raw_doc)
 
-        localization = raw_doc.get('localization', {})
-        location = localization.get('location', {})
-        coords = location.get('coordinates', [])
+        clean_doc.pop('_id', None)
+
+        localization = clean_doc.get('localization', {})
+
+        latitude = localization.get('latitude')
+        longitude = localization.get('longitude')
+
+        reported_city = localization.get('city', None)
+        reported_district = localization.get('district', None)
 
         #the rest of the cleaning logic..
 
         #spatial logic
+        if pd.notna(latitude) and pd.notna(longitude):
+            latitude_f, longitude_f = float(latitude), float(longitude)
 
-        if len(coords) < 2:
-            clean_doc['district_verified'] = False
-            return clean_doc
+            clean_doc['geo_location'] = {
+                'type': 'Point',
+                'coordinates': [longitude_f, latitude_f]
+            }
 
-        longitude_f = float(coords[0])
-        latitude_f = float(coords[1])
+            true_city, true_district = self.get_true_location(longitude_f, latitude_f)
 
-        clean_doc['localization_latitude'] = latitude_f
-        clean_doc['localization_longitude'] = longitude_f
-        clean_doc['location'] = {
-            "type": "Point",
-            "coordinates": [longitude_f, latitude_f]
-        }
+            if true_city:
+                clean_doc['localization']['city'] = true_city
+                clean_doc['localization']['district'] = true_district
 
-        true_city, true_district = self.get_true_location(longitude_f, latitude_f)
+                city_match = str(reported_city).lower() == str(true_city).lower()
+                district_match = str(reported_district).lower() == str(true_district).lower() if reported_district else True
 
-        reported_city = localization.get('city', {})
-        reported_district = localization.get('district', None)
-
-        if true_city:
-            clean_doc['localization_city'] = true_city
-            clean_doc['localization_district'] = true_district
-
-            clean_doc['reported_city'] = reported_city
-            clean_doc['reported_district'] = reported_district
-
-            clean_doc['district_verified'] = (
-                str(reported_district).lower() == str(true_district).lower()
-            )
+                clean_doc['localization']['verified'] = True
+                clean_doc['localization']['listing_data_accurate'] = city_match and district_match
+            else:
+                clean_doc['localization']['verified'] = False
         else:
-            clean_doc['district_verified'] = False
+            clean_doc['localization']['verified'] = False
 
         return clean_doc
