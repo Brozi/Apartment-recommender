@@ -3,7 +3,6 @@ import logging
 
 from common import Constans
 from settings.s_types import AuctionType
-from settings.s_types import PropertyType
 from settings.utils import AVAILABLE_PROVINCES
 from settings.utils import get_auction_type
 from settings.utils import get_property_type
