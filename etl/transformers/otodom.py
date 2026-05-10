@@ -1,11 +1,13 @@
 import logging
 import json
 import pandas as pd
-import os
-from pathlib import Path
 import geopandas as gpd
+
+from pathlib import Path
 from shapely.geometry import shape, Point
 from shapely.validation import make_valid
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -25,12 +27,12 @@ class OtodomTransformer:
 
         try:
             # 1. Load Cities normally (Government data is topologically sound)
-            print("Loading national city boundaries...")
+            logger.info("Loading national city boundaries...")
             self.cities_gdf = gpd.read_file(str(cities_path)).to_crs(epsg=4326)
             self.cities_gdf = self.cities_gdf[['JPT_NAZWA_', 'geometry']]
 
             # 2. BULLETPROOF DISTRICT LOADER
-            print("Loading and repairing OSM districts feature-by-feature...")
+            logger.info("Loading and repairing OSM districts feature-by-feature...")
             with open(str(districts_path), 'r', encoding='utf-8') as f:
                 raw_data = json.load(f)
 
@@ -66,7 +68,7 @@ class OtodomTransformer:
                     failed_count += 1
                     continue
 
-            print(
+            logger.info(
                 f"District load complete. Successfully repaired {len(valid_rows)} features. Quarantined/Dropped {failed_count} unfixable features.")
 
             # 3. Manually construct the GeoDataFrame from the surviving data

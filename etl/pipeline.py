@@ -3,6 +3,8 @@ import logging
 from etl.services import MongoBatchUploader
 from etl.transformers.otodom import  OtodomTransformer
 
+logger = logging.getLogger(__name__)
+
 class ETLPipeline:
     def __init__(self, input_col='Properties', output_col='Properties_clean'):
         """Orchestrates the data extraction, transformation, and loading."""
@@ -22,4 +24,4 @@ class ETLPipeline:
                     transformed_doc=transformed_doc
                 )
         self.uploader.flush_to_db()
-        logging.info(f'ETL complete. Processed {self.uploader.processed_count} listings.')
+        logger.info(f'ETL complete. Processed {self.uploader.processed_count} listings.')
