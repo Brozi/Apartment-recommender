@@ -4,9 +4,9 @@ from etl.services import MongoBatchUploader
 from etl.transformers.otodom import  OtodomTransformer
 
 class ETLPipeline:
-    def __init__(self):
+    def __init__(self, input_col='Properties', output_col='Properties_clean'):
         """Orchestrates the data extraction, transformation, and loading."""
-        self.uploader = MongoBatchUploader(batch_size=100)
+        self.uploader = MongoBatchUploader(input_col=input_col,output_col=output_col,batch_size=100)
         self.transformer = OtodomTransformer()
 
     def run(self):

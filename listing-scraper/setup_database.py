@@ -1,9 +1,9 @@
 from etl.services import connect_to_database
 
-def initialize_database():
+def initialize_database(raw_col='Properties'):
     client = connect_to_database()
 
-    raw_collection = client['Properties']
+    raw_collection = client[raw_col]
 
     print("Building partial index for ETL queue...")
 
