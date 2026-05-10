@@ -31,7 +31,6 @@ class Settings:
         Defaults to "mieszkanie".
         auction_type (AuctionType): The selected auction type for filtering.
         mongo_db_host (str): The MongoDB host for database connections.
-        transformer_host (str): The MongoDB host for the transformer to put data to.
 
     These default values are defined in the Defaults class.
 
@@ -54,7 +53,6 @@ class Settings:
                 settings = json.load(f)
                 crawler_settings = settings["crawler"]
                 database_settings = settings["database"]
-                transformer_settings = settings["transformer"]
                 self.base_url = Constans.DEFAULT_URL
                 self.price_min, self.price_max = self.__init_price(crawler_settings)
                 # Get the chunk limit from settings, default to 2800 if not found
@@ -70,7 +68,6 @@ class Settings:
 
                 self.auction_type = self.__init_auction_type(crawler_settings)
                 self.mongo_db_host = self.__init_mongo_db_host(database_settings)
-                self.transformer_host = self.__init_transformer_host(transformer_settings)
 
         except Exception as e:
             logger.warning(f"Error loading the settings. Settings are set to default. Error: {e}")
@@ -266,24 +263,6 @@ class Settings:
             return Constans.DEFAULT_MAX_LISTING_PER_CHUNK
         return max_listings_per_chunk
 
-    @staticmethod
-    def __init_transformer_host(settings: dict) -> str:
-        """
-        Initialize the mongo db host for the transformer module from the settings dictionary.
-
-        If the host is not a string,
-        a warning message is logged and the default host is returned.
-
-        :param settings: A dictionary containing the settings
-        :return: The transformer database host (the one where the transformer should put data to)
-        """
-        transformer_host = settings.get("host")
-        if not isinstance(transformer_host, str):
-            logger.warning("Transformer host is not correct")
-            exit(1)
-        return transformer_host
-
-
     def set_default(self):
         """
         Set the settings to their default values.
@@ -298,4 +277,3 @@ class Settings:
         self.property_type = Constans.DEFAULT_PROPERTY_TYPE
         self.auction_type = Constans.DEFAULT_AUCTION_TYPE
         self.mongo_db_host = None
-        self.transformer_host = None
