@@ -1,8 +1,16 @@
 from etl.services import connect_to_database
 from pymongo import GEOSPHERE, ASCENDING
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout
+
+)
+
 def initialize_input_database(raw_col='Properties'):
 
     client = connect_to_database()
@@ -14,7 +22,7 @@ def initialize_input_database(raw_col='Properties'):
 
     raw_collection.create_index(
         [('etl_processed', 1)],
-        partialFilterExpression={'etl_processed': {'$ne': True}},
+        partialFilterExpression={'etl_processed': False},
     )
 
     logger.info("Database initialization complete.")
@@ -37,7 +45,7 @@ def initialize_output_database(raw_col='Properties_clean'):
 
     logger.info("SUCCES: All indexes created")
 
-    for index in collection.list.indexes():
+    for index in collection.list_indexes():
         logger.info(f"Index {index} created")
 
 if __name__ == "__main__":
