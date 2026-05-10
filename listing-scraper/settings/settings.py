@@ -223,8 +223,8 @@ class Settings:
             )
             return Constans.DEFAULT_AUCTION_TYPE
         return auction_type
-
-    def __init_mongo_db_host(self, settings: dict) -> str:
+    @staticmethod
+    def __init_mongo_db_host(settings: dict) -> str:
         """
         Initialize the mongo db host from the settings dictionary.
 
