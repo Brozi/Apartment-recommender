@@ -53,7 +53,6 @@ class Crawler:
             url += f"{self.settings.city}/"
         if self.settings.district:
             url += f"{self.settings.district}/"
-        print(url)
         return url
 
     def generate_params(self) -> dict:
