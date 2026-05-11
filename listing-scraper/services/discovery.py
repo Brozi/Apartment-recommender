@@ -62,7 +62,7 @@ class RangeDiscoverer:
             )
             mid_price = (current_min + current_max) // 2
 
-            time.sleep(random.uniform(10.0, 20.0))
+            time.sleep(random.uniform(1.0, 3.0))
 
             self.discover(crawler, current_min, mid_price)
             self.discover(crawler, mid_price + 1, current_max)

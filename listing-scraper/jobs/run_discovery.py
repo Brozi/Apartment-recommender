@@ -19,8 +19,11 @@ os.chdir(scraper_dir)
 from crawler import Crawler
 from services.discovery import RangeDiscoverer
 
+def write_discovery_file(chunks: list[str]):
+    with open ('discovery_matrix.json', 'w', encoding='utf-8') as f:
+        json.dump(chunks, f)
 
-def export_to_github_actions(chunks: list[dict]):
+def export_to_github_actions(chunks: list[str]):
     # Convert [{"min": 0, "max": 10000}, ...] into ["0-10000", ...]
     # This completely bypasses the GitHub Actions JSON secret scanner
     matrix_json = json.dumps(chunks)
@@ -61,12 +64,13 @@ def main():
         discoverer.discover(crawler, global_min, global_max)
 
         for r in discoverer.get_final_matrix():
-            chunks.append({
-                "property_type": p_type.name.lower(),
-                "low": r[discoverer.min_range_name],
-                "high": r[discoverer.max_range_name],
-            })
-
+            chunks.append(
+                f'{p_type.name.lower()}|'
+                f'{crawler.settings.province}|'
+                f'{r[discoverer.min_range_name]}|'
+                f'{r[discoverer.max_range_name]}|'
+            )
+    write_discovery_file(chunks)
     export_to_github_actions(chunks)
 
 if __name__ == "__main__":
