@@ -75,7 +75,7 @@ def discover():
     print(f"==========================================\n")
 
     # Chunk them into arrays of 5 for the GitHub Actions Matrix
-    chunk_size = 5
+    chunk_size = 15
     chunks = [urls[i:i + chunk_size] for i in range(0, len(urls), chunk_size)]
     if not chunks:
         chunks = [[]]
