@@ -10,42 +10,32 @@ env:
 
 jobs:
   # ==========================================
-  # JOB 0: Decide whether to discover one province or all Poland
-  # ==========================================
-  prepare_discovery:
-    runs-on: ubuntu-latest
-    outputs:
-      shards: ${{ steps.prepare.outputs.shards }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Create settings.json
-        working-directory: ./listing-scraper
-        run: |
-          cat << 'EOF' > settings.json
-          ${{ env.ACTIVE_SETTINGS_JSON }}
-          EOF
-
-      - name: Prepare discovery shards
-        id: prepare
-        working-directory: ./listing-scraper
-        run: python -u jobs/prepare_discovery.py
-
-  # ==========================================
   # JOB 1: Discover the price ranges
   # ==========================================
   discover_shard:
-    needs: prepare_discovery
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
-        shard: ${{ fromJson(needs.prepare_discovery.outputs.shards) }}
+        province:
+          - dolnoslaskie
+          - kujawsko-pomorskie
+          - lubelskie
+          - lubuskie
+          - lodzkie
+          - malopolskie
+          - mazowieckie
+          - opolskie
+          - podkarpackie
+          - podlaskie
+          - pomorskie
+          - slaskie
+          - swietokrzyskie
+          - warminsko-mazurskie
+          - wielkopolskie
+          - zachodniopomorskie
+        property_type: [flat, house]
     steps:
         - name: Checkout repository
           uses: actions/checkout@v4
@@ -64,7 +54,27 @@ jobs:
             cat << 'EOF' > settings.json
             ${{ env.ACTIVE_SETTINGS_JSON }}
             EOF
+        - name: Check whether this shard should run
+          id: shard_check
+          working-directory: ./listing-scraper
+          run: |
+            python -c "
+            import json, os
+            
+            with open('settings.json') as f:
+                data = json.load(f)
+            
+            configured_province = data['crawler'].get('province', '').strip().replace('--', '-')
+            shard_province = '${{ matrix.province }}'
+            
+            should_run = configured_province in ['', 'cala-polska', shard_province]
+            
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+                out.write(f'should_run={str(should_run).lower()}\n')
+            "
+
         - name: Inject discovery shard
+          if: steps.shard_check.outputs.should_run == 'true'
           working-directory: ./listing-scraper
           run: |
             python -c "
@@ -73,23 +83,25 @@ jobs:
             with open('settings.json') as f:
                 data = json.load(f)
         
-            data['crawler']['province'] = '${{ matrix.shard.province }}'
+            data['crawler']['province'] = '${{ matrix.province }}'
             data['crawler']['city'] = ''
             data['crawler']['district'] = ''
-            data['crawler']['property_type'] = '${{ matrix.shard.property_type }}'
+            data['crawler']['property_type'] = '${{ matrix.property_type }}'
         
             with open('settings.json', 'w') as f:
                 json.dump(data, f, indent=4)
             "
         - name: Run Discovery Script
+          if: steps.shard_check.outputs.should_run == 'true'
           id: set-matrix
           working-directory: ./listing-scraper
           run: python -u jobs/run_discovery.py
 
         - name: Upload discovery artifact
+          if: steps.shard_check.outputs.should_run == 'true'
           uses: actions/upload-artifact@v4
           with:
-            name: discovery-${{ matrix.shard.property_type }}-${{ matrix.shard.province }}
+            name: discovery-${{ matrix.property_type }}-${{ matrix.province }}
             path: listing-scraper/discovery_matrix.json
             retention-days: 1
 
