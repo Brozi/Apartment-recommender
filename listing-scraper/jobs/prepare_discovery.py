@@ -66,7 +66,7 @@ def main():
     provinces = normalize_provinces(crawler.get("province"))
 
     shards = [
-        {"property_type": property_type, "province": province}
+        f"{PROPERTY_TYPE_TO_ID[property_type]}|{PROVINCE_TO_ID[province]}"
         for property_type in property_types
         for province in provinces
     ]

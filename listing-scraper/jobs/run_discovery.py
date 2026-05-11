@@ -81,7 +81,7 @@ def main():
                 f'{property_type_id}|'
                 f'{province_id}|'
                 f'{r[discoverer.min_range_name]}|'
-                f'{r[discoverer.max_range_name]}|'
+                f'{r[discoverer.max_range_name]}'
             )
     write_discovery_file(chunks)
     export_to_github_actions(chunks)
