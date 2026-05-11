@@ -66,7 +66,7 @@ def main():
         for r in discoverer.get_final_matrix():
             chunks.append(
                 f'{p_type.name.lower()}|'
-                f'{crawler.settings.province}|'
+                f'{crawler.settings.province.replace('--', '-')}|'
                 f'{r[discoverer.min_range_name]}|'
                 f'{r[discoverer.max_range_name]}|'
             )

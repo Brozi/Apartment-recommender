@@ -10,47 +10,130 @@ env:
 
 jobs:
   # ==========================================
-  # JOB 1: Discover the price ranges
+  # JOB 0: Decide whether to discover one province or all Poland
   # ==========================================
-  discover:
+  prepare_discovery:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      shards: ${{ steps.prepare.outputs.shards }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Create base settings.json securely
+      - name: Create settings.json
         working-directory: ./listing-scraper
         run: |
           cat << 'EOF' > settings.json
           ${{ env.ACTIVE_SETTINGS_JSON }}
           EOF
 
-      - name: Run Discovery Script
-        id: set-matrix
+      - name: Prepare discovery shards
+        id: prepare
         working-directory: ./listing-scraper
-        run: python -u jobs/run_discovery.py
+        run: python -u jobs/prepare_discovery.py
 
+  # ==========================================
+  # JOB 1: Discover the price ranges
+  # ==========================================
+  discover_shard:
+    needs: prepare_discovery
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: ${{ fromJson(needs.prepare_discovery.outputs.shards) }}
+    steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
 
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+              python-version: '3.13'
+
+        - name: Install dependencies
+          run: pip install -r requirements.txt
+
+        - name: Create base settings.json securely
+          working-directory: ./listing-scraper
+          run: |
+            cat << 'EOF' > settings.json
+            ${{ env.ACTIVE_SETTINGS_JSON }}
+            EOF
+        - name: Inject discovery shard
+          working-directory: ./listing-scraper
+          run: |
+            python -c "
+            import json
+        
+            with open('settings.json') as f:
+                data = json.load(f)
+        
+            data['crawler']['province'] = '${{ matrix.shard.province }}'
+            data['crawler']['city'] = ''
+            data['crawler']['district'] = ''
+            data['crawler']['property_type'] = '${{ matrix.shard.property_type }}'
+        
+            with open('settings.json', 'w') as f:
+                json.dump(data, f, indent=4)
+            "
+        - name: Run Discovery Script
+          id: set-matrix
+          working-directory: ./listing-scraper
+          run: python -u jobs/run_discovery.py
+
+        - name: Upload discovery artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: discovery-${{ matrix.shard.property_type }}-${{ matrix.shard.province }}
+            path: listing-scraper/discovery_matrix.json
+            retention-days: 1
+
+  # ==========================================
+  # JOB 1B: Combine all discovery shards into scrape matrix
+  # ==========================================
+  combine_discovery:
+    needs: discover_shard
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.combine.outputs.matrix }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: discovery-*
+          path: discovery_data
+
+      - name: Combine discovery matrices
+        id: combine
+        run: |
+              python -c "
+              import glob, json, os
+          
+              chunks = []
+              for path in glob.glob('discovery_data/**/discovery_matrix.json', recursive=True):
+                  with open(path, encoding='utf-8') as f:
+                      chunks.extend(json.load(f))
+          
+              if not chunks:
+                  raise SystemExit('No discovery chunks were produced')
+          
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+                  out.write('matrix=' + json.dumps(chunks) + '\n')
+              "
   # ==========================================
   # JOB 2: Run the scraper N times in parallel
   # ==========================================
   scrape_chunk:
-    needs: discover
+    needs: combine_discovery
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false # If one chunk fails, let the others finish
       matrix:
-        chunk: ${{ fromJson(needs.discover.outputs.matrix) }}
+        chunk: ${{ fromJson(needs.combine_discovery.outputs.matrix) }}
 
     steps:
       - name: Checkout repository
@@ -71,22 +154,27 @@ jobs:
           ${{ env.ACTIVE_SETTINGS_JSON }}
           EOF
 
-      - name: Inject Matrix Chunk into settings.json
+      - name: Inject scrape chunk
         working-directory: ./listing-scraper
         run: |
           python -c "
           import json
-          with open('settings.json', 'r') as f:
+
+          property_type, province, min_val, max_val = '${{ matrix.chunk }}'.split('|')
+
+          with open('settings.json') as f:
               data = json.load(f)
 
-          data['crawler']['price']['min'] = int('${{ matrix.chunk.low }}')
-          data['crawler']['price']['max'] = int('${{ matrix.chunk.high }}')
-          data['crawler']['property_type'] = '${{ matrix.chunk.property_type }}'
+          data['crawler']['property_type'] = property_type
+          data['crawler']['province'] = province
+          data['crawler']['city'] = ''
+          data['crawler']['district'] = ''
+          data['crawler']['price']['min'] = int(min_val)
+          data['crawler']['price']['max'] = int(max_val)
 
           with open('settings.json', 'w') as f:
               json.dump(data, f, indent=4)
           "
-
       - name: Run the Scraper
         working-directory: ./listing-scraper
         timeout-minutes: 355
@@ -96,7 +184,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: scraper-results-${{ matrix.chunk.property_type }}-${{ matrix.chunk.low }}-${{ matrix.chunk.high }}
+          name: scraper-results-${{ strategy.job-index }}
           path: |
             listing-scraper/*.csv
             listing-scraper/*.xlsx

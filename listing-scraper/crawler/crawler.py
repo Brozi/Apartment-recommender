@@ -73,7 +73,7 @@ class Crawler:
         search_url = override_url if override_url else self.generate_search_url()
         print("\n--- Initializing Search ---")
         logger.info("Counting pages to crawl...")
-        response = self.network.get(url=search_url, params=self.params, timeout=20)
+        response = self.network.get(url=search_url, params=self.params, timeout=20, delay_range=(1.0,3.0))
 
         if not response:
             raise Exception("CRITICAL: Failed to count pages. IP might be blocked.")
