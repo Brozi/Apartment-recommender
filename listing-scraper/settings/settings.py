@@ -57,6 +57,7 @@ class Settings:
                 self.price_min, self.price_max = self.__init_price(crawler_settings)
                 # Get the chunk limit from settings, default to 2800 if not found
                 self.max_listings_per_chunk = self.__init_max_listings_per_chunk(crawler_settings)
+                self.max_pages_per_chunk = self.__init_max_pages_per_chunk(crawler_settings)
                 self.province = self.__init_province(crawler_settings)
                 self.city = self.__init_city(crawler_settings)
                 self.district = self.__init_district(crawler_settings)
@@ -262,6 +263,28 @@ class Settings:
             logger.warning("Chunk number cannot be negative. Chunk number is set to default")
             return Constans.DEFAULT_MAX_LISTING_PER_CHUNK
         return max_listings_per_chunk
+
+    @staticmethod
+    def __init_max_pages_per_chunk(settings: dict) -> int:
+        """
+        Initialize the max_pages_per_chunk from the settings dictionary.
+
+        If value is not an integer or is less than 0, a warning message is logged
+        and the default value is returned.
+
+        :param settings: A dictionary containing the settings
+        :return: An int containing the max_listings_per_chunk value
+        """
+
+        max_pages_per_chunk = settings.get("max_pages_per_chunk")
+
+        if not isinstance(max_pages_per_chunk, int):
+            logger.warning("Max_pages_per_chunk is not of int type. Max_pages_per_chunk is set to default")
+            max_pages_per_chunk = Constans.DEFAULT_MAX_PAGES_PER_CHUNK
+        if max_pages_per_chunk < 0 or max_pages_per_chunk < 0:
+            logger.warning("Chunk number cannot be negative. Page number is set to default")
+            return Constans.DEFAULT_MAX_PAGES_PER_CHUNK
+        return max_pages_per_chunk
 
     def set_default(self):
         """

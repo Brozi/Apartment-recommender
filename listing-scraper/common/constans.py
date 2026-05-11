@@ -61,6 +61,7 @@ class Constans:
     DEFAULT_PROPERTY_TYPE = PropertyType.FLAT
     DEFAULT_AUCTION_TYPE = AuctionType.SALE
     DEFAULT_MAX_LISTING_PER_CHUNK = 2800
+    DEFAULT_MAX_PAGES_PER_CHUNK = 40
 
     CSV_KEYS = [
         "_id",
