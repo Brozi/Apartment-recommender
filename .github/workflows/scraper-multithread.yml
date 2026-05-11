@@ -9,101 +9,88 @@ env:
     ACTIVE_SETTINGS_JSON: ${{ secrets.SETTINGS_JSON_SPEED }}
 
 jobs:
+  prepare_discovery:
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.prepare.outputs.shards }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Create settings.json
+        working-directory: ./listing-scraper
+        run: |
+          cat << 'EOF' > settings.json
+          ${{ env.ACTIVE_SETTINGS_JSON }}
+          EOF
+
+      - name: Prepare discovery shards
+        id: prepare
+        working-directory: ./listing-scraper
+        run: python -u jobs/prepare_discovery.py
   # ==========================================
   # JOB 1: Discover the price ranges
   # ==========================================
   discover_shard:
+    needs: prepare_discovery
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
-        province:
-          - dolnoslaskie
-          - kujawsko-pomorskie
-          - lubelskie
-          - lubuskie
-          - lodzkie
-          - malopolskie
-          - mazowieckie
-          - opolskie
-          - podkarpackie
-          - podlaskie
-          - pomorskie
-          - slaskie
-          - swietokrzyskie
-          - warminsko-mazurskie
-          - wielkopolskie
-          - zachodniopomorskie
-        property_type: [flat, house]
+        shard: ${{ fromJson(needs.prepare_discovery.outputs.shards) }}
     steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-        - name: Set up Python
-          uses: actions/setup-python@v5
-          with:
-              python-version: '3.13'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
 
-        - name: Install dependencies
-          run: pip install -r requirements.txt
+      - run: pip install -r requirements.txt
 
-        - name: Create base settings.json securely
-          working-directory: ./listing-scraper
-          run: |
-            cat << 'EOF' > settings.json
-            ${{ env.ACTIVE_SETTINGS_JSON }}
-            EOF
-        - name: Check whether this shard should run
-          id: shard_check
-          working-directory: ./listing-scraper
-          run: |
-            python -c "
-            import json, os
-            
-            with open('settings.json') as f:
-                data = json.load(f)
-            
-            configured_province = data['crawler'].get('province', '').strip().replace('--', '-')
-            shard_province = '${{ matrix.province }}'
-            
-            should_run = configured_province in ['', 'cala-polska', shard_province]
-            
-            with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
-                out.write(f'should_run={str(should_run).lower()}\n')
-            "
+      - name: Create settings.json
+        working-directory: ./listing-scraper
+        run: |
+          cat << 'EOF' > settings.json
+          ${{ env.ACTIVE_SETTINGS_JSON }}
+          EOF
 
-        - name: Inject discovery shard
-          if: steps.shard_check.outputs.should_run == 'true'
-          working-directory: ./listing-scraper
-          run: |
-            python -c "
-            import json
-        
-            with open('settings.json') as f:
-                data = json.load(f)
-        
-            data['crawler']['province'] = '${{ matrix.province }}'
-            data['crawler']['city'] = ''
-            data['crawler']['district'] = ''
-            data['crawler']['property_type'] = '${{ matrix.property_type }}'
-        
-            with open('settings.json', 'w') as f:
-                json.dump(data, f, indent=4)
-            "
-        - name: Run Discovery Script
-          if: steps.shard_check.outputs.should_run == 'true'
-          id: set-matrix
-          working-directory: ./listing-scraper
-          run: python -u jobs/run_discovery.py
+      - name: Inject discovery shard
+        working-directory: ./listing-scraper
+        run: |
+          python -c "
+          import json
+          from settings.utils import AVAILABLE_PROVINCES, PROPERTY_TYPE_MAP
 
-        - name: Upload discovery artifact
-          if: steps.shard_check.outputs.should_run == 'true'
-          uses: actions/upload-artifact@v4
-          with:
-            name: discovery-${{ matrix.property_type }}-${{ matrix.province }}
-            path: listing-scraper/discovery_matrix.json
-            retention-days: 1
+          property_types = list(PROPERTY_TYPE_MAP.keys())
+          property_type_id, province_id = '${{ matrix.shard }}'.split('|')
+
+          with open('settings.json') as f:
+              data = json.load(f)
+
+          data['crawler']['property_type'] = property_types[int(property_type_id)]
+          data['crawler']['province'] = AVAILABLE_PROVINCES[int(province_id)]
+          data['crawler']['city'] = ''
+          data['crawler']['district'] = ''
+
+          with open('settings.json', 'w') as f:
+              json.dump(data, f, indent=4)
+          "
+
+      - name: Run Discovery Script
+        working-directory: ./listing-scraper
+        run: python -u jobs/run_discovery.py
+
+      - name: Upload discovery artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-${{ strategy.job-index }}
+          path: listing-scraper/discovery_matrix.json
+          retention-days: 1
+
 
   # ==========================================
   # JOB 1B: Combine all discovery shards into scrape matrix
@@ -122,20 +109,21 @@ jobs:
       - name: Combine discovery matrices
         id: combine
         run: |
-              python -c "
-              import glob, json, os
-          
-              chunks = []
-              for path in glob.glob('discovery_data/**/discovery_matrix.json', recursive=True):
-                  with open(path, encoding='utf-8') as f:
-                      chunks.extend(json.load(f))
-          
-              if not chunks:
-                  raise SystemExit('No discovery chunks were produced')
-          
-              with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
-                  out.write('matrix=' + json.dumps(chunks) + '\n')
-              "
+          python -c "
+          import glob, json, os
+
+          chunks = []
+          for path in glob.glob('discovery_data/**/discovery_matrix.json', recursive=True):
+              with open(path, encoding='utf-8') as f:
+                  chunks.extend(json.load(f))
+
+          if not chunks:
+              raise SystemExit('No discovery chunks were produced')
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write('matrix=' + json.dumps(chunks) + '\n')
+          "
+
   # ==========================================
   # JOB 2: Run the scraper N times in parallel
   # ==========================================
@@ -171,14 +159,16 @@ jobs:
         run: |
           python -c "
           import json
+          from settings.utils import AVAILABLE_PROVINCES, PROPERTY_TYPE_MAP
 
-          property_type, province, min_val, max_val = '${{ matrix.chunk }}'.split('|')
+          property_types = list(PROPERTY_TYPE_MAP.keys())
+          property_type_id, province_id, min_val, max_val = '${{ matrix.chunk }}'.split('|')
 
           with open('settings.json') as f:
               data = json.load(f)
 
-          data['crawler']['property_type'] = property_type
-          data['crawler']['province'] = province
+          data['crawler']['property_type'] = property_types[int(property_type_id)]
+          data['crawler']['province'] = AVAILABLE_PROVINCES[int(province_id)]
           data['crawler']['city'] = ''
           data['crawler']['district'] = ''
           data['crawler']['price']['min'] = int(min_val)
@@ -187,6 +177,7 @@ jobs:
           with open('settings.json', 'w') as f:
               json.dump(data, f, indent=4)
           "
+
       - name: Run the Scraper
         working-directory: ./listing-scraper
         timeout-minutes: 355

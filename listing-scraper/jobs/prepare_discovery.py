@@ -8,20 +8,11 @@ scraper_dir = os.path.dirname(current_dir)
 sys.path.append(scraper_dir)
 os.chdir(scraper_dir)
 
-from settings.utils import AVAILABLE_PROVINCES, get_property_type, replace_polish_characters
+from settings.utils import AVAILABLE_PROVINCES, get_property_type, replace_polish_characters, PROPERTY_TYPE_MAP
 
-import json
-import os
-import sys
-import uuid
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-scraper_dir = os.path.dirname(current_dir)
-sys.path.append(scraper_dir)
-os.chdir(scraper_dir)
-
-from settings.utils import AVAILABLE_PROVINCES, get_property_type, replace_polish_characters
-
+PROPERTY_TYPES = list(PROPERTY_TYPE_MAP.keys())
+PROPERTY_TYPE_TO_ID = {name: index for index, name in enumerate(PROPERTY_TYPES)}
+PROVINCE_TO_ID = {name: index for index, name in enumerate(AVAILABLE_PROVINCES)}
 
 def write_output(name: str, value) -> None:
     if "GITHUB_OUTPUT" not in os.environ:
@@ -38,8 +29,11 @@ def normalize_property_types(raw):
     if isinstance(raw, str):
         raw = [raw]
 
+    if not isinstance(raw, list):
+        raw = ["flat"]
+
     result = []
-    for item in raw or ["flat"]:
+    for item in raw:
         prop = get_property_type(item)
         if prop:
             result.append(prop.name.lower())

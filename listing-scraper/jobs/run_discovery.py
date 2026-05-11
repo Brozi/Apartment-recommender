@@ -18,6 +18,15 @@ os.chdir(scraper_dir)
 
 from crawler import Crawler
 from services.discovery import RangeDiscoverer
+from settings.utils import AVAILABLE_PROVINCES, PROPERTY_TYPE_MAP
+
+PROPERTY_TYPES = list(PROPERTY_TYPE_MAP.keys())
+PROPERTY_TYPE_ID_BY_ENUM = {
+    enum_value: index
+    for index, enum_value in enumerate(PROPERTY_TYPE_MAP.values())
+}
+PROVINCE_TO_ID = {name: index for index, name in enumerate(AVAILABLE_PROVINCES)}
+
 
 def write_discovery_file(chunks: list[str]):
     with open ('discovery_matrix.json', 'w', encoding='utf-8') as f:
@@ -46,7 +55,7 @@ def main():
 
     # Use getattr() just in case an older settings.json doesn't have the key yet
     chunk_limit = getattr(crawler.settings, "max_listings_per_chunk", 2800)
-    page_limit = getattr(crawler.settings, "max_pages_per_chunk", 10)
+    page_limit = getattr(crawler.settings, "max_pages_per_chunk", 35)
 
     chunks = []
 
@@ -63,10 +72,14 @@ def main():
         )
         discoverer.discover(crawler, global_min, global_max)
 
+        property_type_id = PROPERTY_TYPE_ID_BY_ENUM[p_type]
+        province = crawler.settings.province.replace("--", "-")
+        province_id = PROVINCE_TO_ID[province]
+
         for r in discoverer.get_final_matrix():
             chunks.append(
-                f'{p_type.name.lower()}|'
-                f'{crawler.settings.province.replace('--', '-')}|'
+                f'{property_type_id}|'
+                f'{province_id}|'
                 f'{r[discoverer.min_range_name]}|'
                 f'{r[discoverer.max_range_name]}|'
             )
