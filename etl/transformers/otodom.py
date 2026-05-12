@@ -95,8 +95,7 @@ class OtodomTransformer:
             true_district = true_city
 
         return true_city, true_district
-
-    def transform(self, raw_doc):
+    def clean_localization(self, raw_doc):
         clean_doc = copy.deepcopy(raw_doc)
 
         clean_doc.pop('_id', None)

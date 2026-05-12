@@ -15,7 +15,7 @@ class ETLPipeline:
         cursor = self.uploader.input_collection.find({'etl_processed': {'$ne': True}})
 
         for raw_doc in cursor:
-            transformed_doc = self.transformer.transform(raw_doc)
+            transformed_doc = self.transformer.clean_localization(raw_doc)
 
             if transformed_doc:
                 self.uploader.queue_operation(
