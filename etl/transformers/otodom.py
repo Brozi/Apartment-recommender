@@ -1,5 +1,7 @@
 import logging
 import json
+from os import stat_result
+
 import pandas as pd
 import geopandas as gpd
 import copy
@@ -79,7 +81,7 @@ class OtodomTransformer:
         except Exception as e:
             raise RuntimeError(f"FATAL: Spatial truth data failed to load: {e}")
 
-    def get_true_location(self, longitude, latitude) -> tuple[str, str]:
+    def get_true_location(self, longitude:str, latitude:str) -> tuple[str, str]:
         """
         Pings both R-trees independently to find the true city and true district.
         """
@@ -95,7 +97,81 @@ class OtodomTransformer:
             true_district = true_city
 
         return true_city, true_district
-    def clean_localization(self, raw_doc):
+
+    @staticmethod
+    def clean_rent(rent: str, min_rent=20) -> dict:
+        if rent is None:
+            return {
+                "rent": None,
+                "rent_status": "unknown",
+                "rent_useable": False,
+                "rent_raw": rent
+            }
+        try:
+            rent = int(rent)
+        except (TypeError, ValueError):
+            return {
+                "rent": None,
+                "rent_status": "unknown",
+                "rent_useable": False,
+                "rent_raw": rent
+            }
+
+        if rent < min_rent:
+            return {
+                "rent": None,
+                "rent_status": "suspicious",
+                "rent_useable": False,
+                "raw_rent": rent
+            }
+        else:
+            return {
+                "rent": rent,
+                "rent_status": "known",
+                "rent_useable": True,
+                "raw_rent": rent
+            }
+
+    @staticmethod
+    def clean_price_per_m(price_per_m: float ,area:int, price:int):
+        if price_per_m is None or price_per_m == 0:
+            try:
+                price_per_m = price / area
+                if price_per_m == 0:
+                    return None, "missing"
+                else:
+                    return price_per_m, "known"
+            except ZeroDivisionError:
+                    return None, "unknown"
+        else:
+                return price_per_m, "known"
+
+    @staticmethod
+    def clean_floor(floor:str):
+        floor_map = {
+            '0': 'Ground Floor',
+            'higher_10': '10+',
+            'cellar': 'Basement',
+            'garret': 'Attic',
+            '<10': 'unknown',
+        }
+        if floor is None:
+            return "unknown"
+
+        floor = str(floor)
+
+        if floor.endswith(".0"):
+            floor = floor[:-2]
+
+        mapped = floor_map.get(floor)
+        if mapped is not None:
+            return mapped
+        try:
+            return str(int(floor))
+        except (TypeError, ValueError):
+            return floor
+
+    def clean_localization(self, raw_doc: dict) -> dict:
         clean_doc = copy.deepcopy(raw_doc)
 
         clean_doc.pop('_id', None)
@@ -107,8 +183,6 @@ class OtodomTransformer:
 
         reported_city = localization.get('city', None)
         reported_district = localization.get('district', None)
-
-        #the rest of the cleaning logic..
 
         #spatial logic
         if pd.notna(latitude) and pd.notna(longitude):
