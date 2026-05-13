@@ -1,6 +1,5 @@
 import logging
 import json
-from os import stat_result
 
 import pandas as pd
 import geopandas as gpd
@@ -9,6 +8,8 @@ import copy
 from pathlib import Path
 from shapely.geometry import shape, Point
 from shapely.validation import make_valid
+
+from etl.cleaners.cleaners import clean_rooms, clean_price, clean_floor, clean_rent, clean_localization, clean_price_per_meter
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,21 @@ class OtodomTransformer:
         except Exception as e:
             raise RuntimeError(f"FATAL: Spatial truth data failed to load: {e}")
 
-    def get_true_location(self, longitude:str, latitude:str) -> tuple[str, str]:
+    def transform(self, raw_doc: dict, price_threshold=None) -> dict:
+        clean_doc = copy.deepcopy(raw_doc)
+        clean_doc.pop('_id', None)
+
+        clean_price(clean_doc, price_threshold)
+        clean_price_per_meter(clean_doc)
+        clean_rent(clean_doc)
+        clean_floor(clean_doc)
+        clean_rooms(clean_doc)
+        clean_localization(clean_doc, self.get_true_location)
+
+        return clean_doc
+
+
+    def get_true_location(self, longitude:float, latitude:float) -> tuple[str, str]:
         """
         Pings both R-trees independently to find the true city and true district.
         """
@@ -98,115 +113,6 @@ class OtodomTransformer:
 
         return true_city, true_district
 
-    @staticmethod
-    def clean_rent(rent: str, min_rent=20) -> dict:
-        if rent is None:
-            return {
-                "rent": None,
-                "rent_status": "unknown",
-                "rent_useable": False,
-                "rent_raw": rent
-            }
-        try:
-            rent = int(rent)
-        except (TypeError, ValueError):
-            return {
-                "rent": None,
-                "rent_status": "unknown",
-                "rent_useable": False,
-                "rent_raw": rent
-            }
 
-        if rent < min_rent:
-            return {
-                "rent": None,
-                "rent_status": "suspicious",
-                "rent_useable": False,
-                "raw_rent": rent
-            }
-        else:
-            return {
-                "rent": rent,
-                "rent_status": "known",
-                "rent_useable": True,
-                "raw_rent": rent
-            }
 
-    @staticmethod
-    def clean_price_per_m(price_per_m: float ,area:int, price:int):
-        if price_per_m is None or price_per_m == 0:
-            try:
-                price_per_m = price / area
-                if price_per_m == 0:
-                    return None, "missing"
-                else:
-                    return price_per_m, "known"
-            except ZeroDivisionError:
-                    return None, "unknown"
-        else:
-                return price_per_m, "known"
 
-    @staticmethod
-    def clean_floor(floor:str):
-        floor_map = {
-            '0': 'Ground Floor',
-            'higher_10': '10+',
-            'cellar': 'Basement',
-            'garret': 'Attic',
-            '<10': 'unknown',
-        }
-        if floor is None:
-            return "unknown"
-
-        floor = str(floor)
-
-        if floor.endswith(".0"):
-            floor = floor[:-2]
-
-        mapped = floor_map.get(floor)
-        if mapped is not None:
-            return mapped
-        try:
-            return str(int(floor))
-        except (TypeError, ValueError):
-            return floor
-
-    def clean_localization(self, raw_doc: dict) -> dict:
-        clean_doc = copy.deepcopy(raw_doc)
-
-        clean_doc.pop('_id', None)
-
-        localization = clean_doc.get('localization', {})
-
-        latitude = localization.get('latitude')
-        longitude = localization.get('longitude')
-
-        reported_city = localization.get('city', None)
-        reported_district = localization.get('district', None)
-
-        #spatial logic
-        if pd.notna(latitude) and pd.notna(longitude):
-            latitude_f, longitude_f = float(latitude), float(longitude)
-
-            clean_doc['geo_location'] = {
-                'type': 'Point',
-                'coordinates': [longitude_f, latitude_f]
-            }
-
-            true_city, true_district = self.get_true_location(longitude_f, latitude_f)
-
-            if true_city:
-                localization['city'] = true_city
-                localization['district'] = true_district
-
-                city_match = str(reported_city).lower() == str(true_city).lower()
-                district_match = str(reported_district).lower() == str(true_district).lower() if reported_district else True
-
-                localization['verified'] = True
-                clean_doc['listing_data_accurate'] = city_match and district_match
-            else:
-                localization['verified'] = False
-        else:
-            localization['verified'] = False
-
-        return clean_doc
