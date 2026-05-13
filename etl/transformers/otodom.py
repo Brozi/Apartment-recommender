@@ -28,6 +28,7 @@ class OtodomTransformer:
 
         self.cities_gdf = self.load_cities(cities_path)
         self.districts_gdf = self.load_districts(districts_path)
+        self.neighbourhoods_gdf = self.load_neighbourhoods(neighbourhoods_path)
 
         self.cleaner = OtodomCleaner(get_true_location=self.get_true_location)
 
@@ -41,22 +42,29 @@ class OtodomTransformer:
         return clean_doc
 
 
-    def get_true_location(self, longitude:float, latitude:float) -> tuple[str, str]:
+    def get_true_location(self, longitude:float, latitude:float) -> tuple[str, str, str] | tuple[None, None, None]:
         """
         Pings both R-trees independently to find the true city and true district.
         """
         point = Point(float(longitude), float(latitude))
 
-        city_match = self.cities_gdf[self.cities_gdf.geometry.contains(point)]
-        true_city = city_match.iloc[0]['JPT_NAZWA_'] if not city_match.empty else None
+        # 1. Check City (The highest strict truth)
+        city_match = self.cities_gdf[self.cities_gdf.contains(point)]
+        if city_match.empty:
+            return None, None, None
 
-        district_match = self.districts_gdf[self.districts_gdf.geometry.contains(point)]
-        if not district_match.empty:
-            true_district = district_match.iloc[0]['name']
-        else:
-            true_district = true_city
+        true_city = city_match.iloc[0]['JPT_NAZWA_']
 
-        return true_city, true_district
+        # 2. Check District
+        dist_match = self.districts_gdf[self.districts_gdf.contains(point)]
+        true_district = dist_match.iloc[0]['name'] if not dist_match.empty else None
+
+        # 3. Check Neighbourhood (The most fragile layer)
+        hood_match = self.neighbourhoods_gdf[self.neighbourhoods_gdf.contains(point)]
+        true_hood = hood_match.iloc[0]['name'] if not hood_match.empty else None
+
+        return true_city, true_district, true_hood
+
 
     @staticmethod
     def load_cities(cities_path) -> gpd.GeoDataFrame:
