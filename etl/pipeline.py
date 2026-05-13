@@ -40,10 +40,11 @@ class ETLPipeline:
 
     def run(self):
         price_threshold = calculate_price_threshold(collection=self.uploader.input_collection)
+        logging.info(f'Calculated price threshold: {price_threshold}')
         cursor = self.uploader.input_collection.find({'etl_processed': {'$ne': True}})
 
         for raw_doc in cursor:
-            transformed_doc = self.transformer.transform(raw_doc, price_threshold=price_threshold)
+            transformed_doc = self.transformer.transform(raw_doc, price_threshold)
 
             if transformed_doc:
                 self.uploader.queue_operation(
