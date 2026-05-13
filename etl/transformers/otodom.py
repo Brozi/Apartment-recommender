@@ -87,13 +87,7 @@ class OtodomTransformer:
         clean_doc = copy.deepcopy(raw_doc)
         clean_doc.pop('_id', None)
 
-        self.cleaner.clean_price(clean_doc, price_threshold)
-        self.cleaner.clean_price_per_meter(clean_doc)
-        self.cleaner.clean_construction_status(clean_doc)
-        self.cleaner.clean_rent(clean_doc)
-        self.cleaner.clean_floor(clean_doc)
-        self.cleaner.clean_rooms(clean_doc)
-        self.cleaner.clean_localization(clean_doc)
+        self.cleaner.clean(clean_doc, price_threshold)
 
         return clean_doc
 
