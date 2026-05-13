@@ -39,7 +39,7 @@ class ETLPipeline:
         self.transformer = OtodomTransformer()
 
     def run(self):
-        price_threshold = calculate_price_threshold(collection=self.uploader.input_collection)
+        price_threshold = calculate_price_threshold(collection=self.uploader.input_collection, q=0.0015)
         logging.info(f'Calculated price threshold: {price_threshold}')
         cursor = self.uploader.input_collection.find({'etl_processed': {'$ne': True}})
 
