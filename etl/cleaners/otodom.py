@@ -3,6 +3,16 @@ import pandas as pd
 class OtodomCleaner:
     def __init__(self, get_true_location):
         self.get_true_location = get_true_location
+    def clean(self, clean_doc: dict, price_threshold:float=None) -> None:
+
+        self.clean_rooms(clean_doc)
+        self.clean_floor(clean_doc)
+        self.clean_rent(clean_doc)
+        self.clean_price_per_meter(clean_doc)
+        self.clean_price(clean_doc, price_threshold)
+        self.clean_localization(clean_doc)
+        self.clean_construction_status(clean_doc)
+        self.clean_offered_by(clean_doc)
 
     def clean_localization(self, clean_doc: dict) -> None:
         localization = clean_doc.get('localization', {})
@@ -160,7 +170,7 @@ class OtodomCleaner:
             return
 
     @staticmethod
-    def clean_price(clean_doc, threshold=None):
+    def clean_price(clean_doc:dict, threshold:float=None):
         value = clean_doc.get('price', None)
         if value is None:
             clean_doc['price'] = None
@@ -192,5 +202,22 @@ class OtodomCleaner:
         clean_doc['price'] = price
         clean_doc['price_usable'] = True
         return
+
+    @staticmethod
+    def clean_offered_by(clean_doc: dict) -> None:
+        offered_by_map = {
+            'developer_unit': 'Developer',
+            'agency': 'Agency',
+            'private': 'Private',
+
+        }
+        offered_by = clean_doc.get('offered_by', None)
+        if offered_by is None:
+            clean_doc['offered_by'] = 'unknown'
+            return
+        if offered_by in offered_by_map:
+            clean_doc['offered_by'] = offered_by_map[offered_by]
+            return
+
 
 
