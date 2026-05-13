@@ -1,5 +1,9 @@
 import pandas as pd
 
+class Cleaner:
+    def __init__(self):
+
+
 def clean_rent(clean_doc: dict, min_rent: int = 20) -> None:
     rent = clean_doc.get('rent', None)
     if rent is None:
@@ -83,11 +87,18 @@ def clean_floor(clean_doc: dict) -> None:
         return
 
 def clean_construction_status(clean_doc: dict) -> None:
+    construction_status = clean_doc.get('construction_status', None)
+    if construction_status is None:
+        clean_doc['construction_status'] = None
+        return
     construction_status_map = {
         'to_renovation': 'To Renovation',
         'to_completion': 'To Completion',
         'ready_to_use': 'Ready to Use',
     }
+    if construction_status in construction_status_map:
+        clean_doc['construction_status'] = construction_status_map.get(construction_status)
+        return
 
 
 
