@@ -129,6 +129,33 @@ class OtodomTransformer:
         if not neighbourhoods_path.exists():
             raise FileNotFoundError(f"CRITICAL: Neighbourhood data missing at {neighbourhoods_path}")
 
+        logging.info("Loading and repairing neighbourhood boundaries...")
+        with open(str(neighbourhoods_path), 'r', encoding='utf-8') as f:
+            raw_hoods = json.load(f)
+
+        valid_rows = []
+        valid_geometries = []
+
+        for feature in raw_hoods.get('features', []):
+            try:
+                geom_dict = feature.get('geometry')
+                if not geom_dict: continue
+
+                raw_shape = shape(geom_dict)
+                if not raw_shape.is_valid:
+                    raw_shape = make_valid(raw_shape)
+
+                if raw_shape.geom_type in ['Polygon', 'MultiPolygon']:
+                    props = feature.get('properties', {})
+                    valid_rows.append({'name': props.get('name', 'Unknown')})
+                    valid_geometries.append(raw_shape)
+            except Exception:
+                continue
+
+        neighbourhoods_gdf = gpd.GeoDataFrame(pd.DataFrame(valid_rows), geometry=valid_geometries, crs="EPSG:4326")
+
+        return neighbourhoods_gdf
+
 
 
 
