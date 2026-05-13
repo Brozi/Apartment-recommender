@@ -126,7 +126,7 @@ class OtodomCleaner:
     def clean_construction_status(clean_doc: dict) -> None:
         construction_status = clean_doc.get('construction_status', None)
         if construction_status is None:
-            clean_doc['construction_status'] = None
+            clean_doc['construction_status'] = 'unknown'
             return
         construction_status_map = {
             'to_renovation': 'To Renovation',
@@ -141,7 +141,7 @@ class OtodomCleaner:
     def clean_rooms(clean_doc: dict) -> None:
         rooms = clean_doc.get('rooms', None)
         if rooms is None:
-            clean_doc['rooms'] = 'missing'
+            clean_doc['rooms'] = 'unknown'
             return
 
         rooms_str = str(rooms).strip()
