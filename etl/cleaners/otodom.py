@@ -179,7 +179,12 @@ class OtodomCleaner:
             clean_doc['price_usable'] = False
             return
 
-        if threshold is not None and price <= threshold:
+        if price < 50000:
+            clean_doc['price'] = None
+            clean_doc['price_usable'] = False
+            return
+
+        elif threshold is not None and price <= threshold:
             clean_doc['price'] = price
             clean_doc['price_usable'] = False
             return
