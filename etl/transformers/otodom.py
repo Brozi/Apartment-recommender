@@ -9,7 +9,7 @@ from pathlib import Path
 from shapely.geometry import shape, Point
 from shapely.validation import make_valid
 
-from etl.cleaners.cleaners import clean_rooms, clean_price, clean_floor, clean_rent, clean_localization, clean_price_per_meter
+from etl.cleaners import OtodomCleaner
 
 logger = logging.getLogger(__name__)
 
@@ -81,17 +81,18 @@ class OtodomTransformer:
 
         except Exception as e:
             raise RuntimeError(f"FATAL: Spatial truth data failed to load: {e}")
+        self.cleaner = OtodomCleaner(get_true_location=self.get_true_location)
 
     def transform(self, raw_doc: dict, price_threshold=None) -> dict:
         clean_doc = copy.deepcopy(raw_doc)
         clean_doc.pop('_id', None)
 
-        clean_price(clean_doc, price_threshold)
-        clean_price_per_meter(clean_doc)
-        clean_rent(clean_doc)
-        clean_floor(clean_doc)
-        clean_rooms(clean_doc)
-        clean_localization(clean_doc, self.get_true_location)
+        self.cleaner.clean_price(clean_doc, price_threshold)
+        self.cleaner.clean_price_per_meter(clean_doc)
+        self.cleaner.clean_rent(clean_doc)
+        self.cleaner.clean_floor(clean_doc)
+        self.cleaner.clean_rooms(clean_doc)
+        self.cleaner.clean_localization(clean_doc)
 
         return clean_doc
 
