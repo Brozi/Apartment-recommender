@@ -13,6 +13,8 @@ class OtodomCleaner:
         self.clean_localization(clean_doc)
         self.clean_construction_status(clean_doc)
         self.clean_offered_by(clean_doc)
+        self.clean_market_type(clean_doc)
+        self.clean_extras(clean_doc)
 
     def clean_localization(self, clean_doc: dict) -> None:
         localization = clean_doc.get('localization', {})
@@ -220,6 +222,39 @@ class OtodomCleaner:
         if offered_by in offered_by_map:
             clean_doc['offered_by'] = offered_by_map[offered_by]
             return
+
+    @staticmethod
+    def clean_market_type(clean_doc:dict) -> None:
+        market_type_map = {
+            'primary': 'Primary',
+            'secondary': 'Secondary',
+        }
+        market_type = clean_doc.get('market_type')
+        if market_type is None:
+            clean_doc['market_type'] = 'unknown'
+            return
+        if market_type in market_type_map:
+            clean_doc['market_type'] = market_type_map[market_type]
+            return
+
+    @staticmethod
+    def clean_extras(clean_doc:dict) -> None:
+        extras_raw = clean_doc.get('extras')
+        if pd.isna(extras_raw) or str(extras_raw).strip().lower() == 'nan' or not extras_raw:
+            clean_doc['extras'] = 'unknown'
+            return
+        extras = str(extras_raw).split(',')
+
+        extras_clean = []
+        for extra in extras:
+            extra_clean = extra.strip()
+            if extra_clean:
+                extra_final = extra_clean.replace('_', ' ').title()
+                extras_clean.append(extra_final)
+
+        clean_doc['extras'] = extras_clean
+        return
+
 
 
 
