@@ -20,7 +20,7 @@ class OtodomTransformer:
     Handles the specific business logic for transforming Otodom listings.
     """
     def __init__(self, cities_filename='poland_cities.geojson', districts_filename='poland_districts_fixed.geojson',
-                 neighbourhoods_filename='poland_neighbourhoods.geojson'):
+                 neighbourhoods_filename='poland_neighbourhoods_fixed.geojson'):
         """Loads all Polish districts into memory and builds the R-Tree spatial index"""
         cities_path = BASE_DIR / cities_filename
         districts_path = BASE_DIR / districts_filename
