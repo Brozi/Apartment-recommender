@@ -32,11 +32,12 @@ class OtodomCleaner:
                 'coordinates': [longitude_f, latitude_f]
             }
 
-            true_city, true_district = self.get_true_location(longitude_f, latitude_f)
+            true_city, true_district, true_neighbourhood = self.get_true_location(longitude_f, latitude_f)
 
             if true_city:
                 localization['city'] = true_city
                 localization['district'] = true_district
+                localization['neighbourhood'] = true_neighbourhood
 
                 city_match = str(reported_city).lower() == str(true_city).lower()
                 district_match = str(reported_district).lower() == str(
