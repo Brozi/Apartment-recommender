@@ -3,7 +3,7 @@ import pandas as pd
 class OtodomCleaner:
     def __init__(self, get_true_location):
         self.get_true_location = get_true_location
-    def clean(self, clean_doc: dict, price_threshold:float=None) -> None:
+    def clean(self, clean_doc: dict, price_threshold:float|None=None) -> None:
 
         self.clean_rooms(clean_doc)
         self.clean_floor(clean_doc)
@@ -53,20 +53,21 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_rent(clean_doc: dict, min_rent: int = 20) -> None:
-        rent = clean_doc.get('rent', None)
-        if rent is None:
+        rent_raw = clean_doc.get('rent')
+        if rent_raw is None:
             clean_doc['rent'] = None
             clean_doc['rent_usable'] = False
-            clean_doc['rent_raw'] = rent
+            clean_doc['rent_raw'] = rent_raw
             return
+
         try:
-            rent = int(rent)
+            rent = int(rent_raw)
             clean_doc['rent'] = rent
             clean_doc['rent_usable'] = True
         except (TypeError, ValueError):
             clean_doc['rent'] = None
             clean_doc['rent_usable'] = False
-            clean_doc['rent_raw'] = rent
+            clean_doc['rent_raw'] = rent_raw
             return
 
         if rent < min_rent:
@@ -82,7 +83,7 @@ class OtodomCleaner:
     @staticmethod
     def clean_price_per_meter(clean_doc: dict) -> None:
         price_per_meter = clean_doc.get('price_per_meter', None)
-        area = clean_doc.get('area', None)
+        area = clean_doc.get('area', 0)
         price = clean_doc.get('price', 0)
 
         if price_per_meter is None or price_per_meter == 0:
@@ -135,7 +136,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_construction_status(clean_doc: dict) -> None:
-        construction_status = clean_doc.get('construction_status', None)
+        construction_status = clean_doc.get('construction_status')
         if construction_status is None:
             clean_doc['construction_status'] = 'unknown'
             return
@@ -171,14 +172,14 @@ class OtodomCleaner:
             return
 
     @staticmethod
-    def clean_price(clean_doc:dict, threshold:float=None):
-        value = clean_doc.get('price', None)
-        if value is None:
+    def clean_price(clean_doc:dict, threshold:float|None=None):
+        value_raw = clean_doc.get('price')
+        if value_raw is None:
             clean_doc['price'] = None
             clean_doc['price_usable'] = False
             return
         try:
-            clean_doc['price'] = int(value)
+            clean_doc['price'] = int(value_raw)
             price = clean_doc['price']
         except (TypeError, ValueError):
             clean_doc['price'] = None
@@ -212,7 +213,7 @@ class OtodomCleaner:
             'private': 'Private',
 
         }
-        offered_by = clean_doc.get('offered_by', None)
+        offered_by = clean_doc.get('offered_by')
         if offered_by is None:
             clean_doc['offered_by'] = 'unknown'
             return
