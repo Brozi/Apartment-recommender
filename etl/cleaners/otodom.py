@@ -255,6 +255,26 @@ class OtodomCleaner:
         clean_doc['extras'] = extras_clean
         return
 
+    @staticmethod
+    def clean_heating(clean_doc:dict) -> None:
+        heating_map = {
+            'urban': 'Urban',
+            'gas': 'Gas',
+            'other': 'Other',
+            'electrical': 'Electric',
+            'boiler_rooms': 'Boiler Room'
+        }
+        heating_raw = clean_doc.get('heating')
+        if heating_raw is None:
+            clean_doc['heating'] = 'unknown'
+            return
+
+        if heating_raw in heating_map:
+            clean_doc['heating'] = heating_map[heating_raw]
+
+
+
+
 
 
 
