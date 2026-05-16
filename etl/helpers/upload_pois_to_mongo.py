@@ -1,6 +1,10 @@
 import json
 import logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
 from etl.services import connect_to_database
 
 def upload_to_mongo(json_path, db_name):
