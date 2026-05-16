@@ -11,7 +11,7 @@ logging.basicConfig(
 
 )
 
-def initialize_input_database(raw_col='Properties'):
+def initialize_input_database(raw_col='listings'):
 
     client = connect_to_database()
     database = client.get_default_database()
@@ -26,7 +26,7 @@ def initialize_input_database(raw_col='Properties'):
     )
 
     logger.info("Database initialization complete.")
-def initialize_output_database(raw_col='Properties_clean'):
+def initialize_output_database(raw_col='listings_clean'):
     client = connect_to_database()
 
     database=client.get_default_database()

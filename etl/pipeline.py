@@ -33,7 +33,7 @@ def calculate_price_threshold(collection, q=0.0015):
 
 
 class ETLPipeline:
-    def __init__(self, input_col='Properties', output_col='Properties_clean'):
+    def __init__(self, input_col='listings', output_col='listings_clean'):
         """Orchestrates the data extraction, transformation, and loading."""
         self.uploader = MongoBatchUploader(input_col=input_col,output_col=output_col,batch_size=100)
         self.transformer = OtodomTransformer()
