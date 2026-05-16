@@ -57,7 +57,7 @@ class PropertyDocument(Document):
     developer_id = IntField(db_field="developer_id")
     etl_processed = BooleanField(db_field="etl_processed")
 
-    meta = {"collection": "Properties"
+    meta = {"collection": "listings"
             }
 
     def extract_data(self, code: BeautifulSoup) -> None:
