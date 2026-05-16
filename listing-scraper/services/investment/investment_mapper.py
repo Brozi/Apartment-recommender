@@ -5,7 +5,7 @@ from common.constans import Constans, OfferedBy, PropertyType, MarketType, Aucti
 from services.property import PropertyService
 import logging
 import re
-import datetime
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class InvestmentMapper:
     @staticmethod
     def map_investment_unit(unit_dict: dict, investment_url: str, main_location: dict = None, developer_id: int = None,
                             default_city: str = "", default_province: str = "",
-                            default_district: str = "") -> PropertyDocument | None:
+                            default_district: str = "", description: str = " ") -> PropertyDocument | None:
         """
         Maps a single unit's JSON dictionary to a PropertyDocument.
 
@@ -31,6 +31,7 @@ class InvestmentMapper:
             unit_dict (dict): The raw JSON dictionary representing the apartment unit.
             investment_url (str): The URL of the parent developer investment.
             main_location (dict, optional): The overarching location dict of the developer project.
+            investment_url (str): The description of the parent developer investment.
             developer_id (int, optional): The Otodom seller/developer ID.
             default_city (str, optional): Fallback city from crawler settings.
             default_province (str, optional): Fallback province from crawler settings.
@@ -62,8 +63,9 @@ class InvestmentMapper:
             property_ = PropertyDocument()
             property_.link = full_url
             property_.otodom_id = otodom_id
-            property_.created_at = datetime.datetime.now()
+            property_.created_at = datetime.strptime(unit_dict.get('createdAt'), "%Y-%m-%dT%H:%M:%S%z")
             property_.title = unit_dict.get('title', 'Developer Unit')
+            property_.description = description
 
             if developer_id:
                 property_.developer_id = int(developer_id)
@@ -84,7 +86,7 @@ class InvestmentMapper:
             security_list = target_data.get("Security_types", [])
             if security_list: property_.security_types = ", ".join(security_list)
 
-            heating_list = target_data.get("Heating", [])
+            heating_list = target_data.get("Heating_types", [])
             if heating_list: property_.heating = ", ".join(heating_list)
 
             floor_list = target_data.get("Floor_no", [])
@@ -107,8 +109,6 @@ class InvestmentMapper:
             images = unit_dict.get("images", [])
             photo_urls = [img.get("large") or img.get("medium") or img.get("small") for img in images]
             property_.photos = ", ".join(filter(None, photo_urls))
-            property_.description = unit_dict.get("description", "Brak opisu (oferta deweloperska).")
-
             property_.localization = InvestmentMapper._map_localization(
                 target_data, unit_dict, main_location, default_city, default_province, default_district
             )

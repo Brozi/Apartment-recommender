@@ -79,9 +79,10 @@ class InvestmentProcessor:
         data = json.loads(match.group(1))
         ad_data = data.get("props", {}).get("pageProps", {}).get("ad", {})
 
-        main_location = ad_data.get("location", {})
-        seller_type = ad_data.get("target", {}).get("user_type", {})
-        developer_id = ad_data.get("target", {}).get("seller_id") if seller_type == "developer" else None
+        self.main_location = ad_data.get("location", {})
+        self.seller_type = ad_data.get("target", {}).get("user_type", {})
+        self.developer_id = ad_data.get("target", {}).get("seller_id") if self.seller_type == "developer" else None
+        self.description = ad_data.get("description", {})
 
         if "paginatedUnits" not in ad_data:
             queue.remove(investment_url)
@@ -102,12 +103,12 @@ class InvestmentProcessor:
 
         # Process Page 1
         for unit_dict in items_page_1:
-            self._save_unit(unit_dict, investment_url, main_location, developer_id)
+            self._save_unit(unit_dict, investment_url, self.main_location, self.developer_id, self.description)
 
         investment_id = ad_data.get("id")
         if total_pages > 1 and investment_id:
-            self._fetch_api_pages(investment_url, investment_id, total_pages, dynamic_page_size, main_location,
-                                  developer_id)
+            self._fetch_api_pages(investment_url, investment_id, total_pages, dynamic_page_size, self.main_location,
+                                  self.developer_id)
 
         with open("scraped_investments.txt", "a", encoding="utf-8") as f:
             f.write(investment_url + "\n")
@@ -175,7 +176,7 @@ class InvestmentProcessor:
 
                 saved_count = 0
                 for unit_dict in next_items:
-                    if self._save_unit(unit_dict, investment_url, main_location, developer_id):
+                    if self._save_unit(unit_dict, investment_url, main_location, developer_id, self.description):
                         saved_count += 1
                 print(f" Page {page}: saved {saved_count}/{len(next_items)} units")
                 page += 1
@@ -183,7 +184,7 @@ class InvestmentProcessor:
                 logger.error(f"Error parsing API JSON on page {page}: {e}")
                 page += 1
 
-    def _save_unit(self, unit_dict, investment_url, main_location, developer_id):
+    def _save_unit(self, unit_dict, investment_url, main_location, developer_id, description):
         """
         A helper function that passes raw unit data to the InvestmentMapper and
         appends valid results to the crawler's main listings state.
