@@ -1,9 +1,14 @@
 import json
 import logging
+import sys
+
+from pymongo import UpdateOne
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout
+)
 
 from etl.services import connect_to_database
 
@@ -12,33 +17,44 @@ def upload_to_mongo(json_path, db_name):
     db = client[db_name]
     poi_collection = db['pois']
 
+    poi_collection.create_index([('location', '2dsphere')])
+
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    bulk_docs = []
+    bulk_operations = []
 
     for element in data.get('elements', []):
         lat = element.get('lat') or element.get('center', {}).get('lat')
         lon = element.get('lon') or element.get('center', {}).get('lon')
 
         if lat and lon:
+            unique_id = f'{element['type']}_{element['id']}'
             doc = {
                 'osm_id': element['id'],
                 'type': element['type'],
                 'tags': element.get('tags', {}),
-                'name': element.get('tags', {}).get('name'),
                 'category': determine_category(element.get('tags', {})),
                 'location': {
                     'type': 'Point',
                     'coordinates': [lon, lat]
                 }
             }
-            bulk_docs.append(doc)
+            bulk_operations.append(
+                UpdateOne(
+                    {'_id': unique_id},
+                    {'$set': doc},
+                    upsert=True
+                )
+            )
             logging.info(f'Successfully parsed document: {doc["osm_id"]}')
-    if bulk_docs:
-        poi_collection.insert_many(bulk_docs)
-        poi_collection.create_index([('location', '2dsphere')])
-        logging.info(f'Successfully indexed {len(bulk_docs)} pois')
+    if bulk_operations:
+        logging.info(f'Executing bulk upsert for {len(bulk_operations)} documents...')
+        try:
+            result = poi_collection.bulk_write(bulk_operations, ordered=False)
+            logging.info(f'Successfully indexed {result.upserted_count} and modified existing {result.modified_count} POIs.')
+        except Exception as e:
+            logging.error(f'FATAL: Bulk write failed. {e}')
 
 def determine_category(tags):
     if 'amenity' in tags: return beautify_string(tags['amenity'])
