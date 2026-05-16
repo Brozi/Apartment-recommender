@@ -175,6 +175,8 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_price(clean_doc:dict, threshold:float|None=None):
+        price_per_meter = clean_doc.get('price_per_meter', None)
+        area = clean_doc.get('area', 0)
         value_raw = clean_doc.get('price')
         if value_raw is None:
             clean_doc['price'] = None
@@ -189,8 +191,12 @@ class OtodomCleaner:
             return
 
         if price <= 0:
-            clean_doc['price'] = None
-            clean_doc['price_usable'] = False
+            try:
+                clean_doc['price'] = price_per_meter * area
+                return
+            except price <=0:
+                clean_doc['price'] = None
+                clean_doc['price_usable'] = False
             return
 
         if price < 50000:
@@ -271,6 +277,24 @@ class OtodomCleaner:
 
         if heating_raw in heating_map:
             clean_doc['heating'] = heating_map[heating_raw]
+
+    @staticmethod
+    def clean_security(clean_doc: dict) -> None:
+        extras_raw = clean_doc.get('extras')
+        if pd.isna(extras_raw) or str(extras_raw).strip().lower() == 'nan' or not extras_raw:
+            clean_doc['extras'] = 'unknown'
+            return
+        extras = str(extras_raw).split(',')
+
+        extras_clean = []
+        for extra in extras:
+            extra_clean = extra.strip()
+            if extra_clean:
+                extra_final = extra_clean.replace('_', ' ').title()
+                extras_clean.append(extra_final)
+
+        clean_doc['extras'] = extras_clean
+        return
 
 
 
