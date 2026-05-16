@@ -280,20 +280,20 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_security(clean_doc: dict) -> None:
-        extras_raw = clean_doc.get('extras')
-        if pd.isna(extras_raw) or str(extras_raw).strip().lower() == 'nan' or not extras_raw:
-            clean_doc['extras'] = 'unknown'
+        security_raw = clean_doc.get('security_types')
+        if pd.isna(security_raw) or str(security_raw).strip().lower() == 'nan' or not security_raw:
+            clean_doc['security_types'] = 'unknown'
             return
-        extras = str(extras_raw).split(',')
+        security_types = str(security_raw).split(',')
 
-        extras_clean = []
-        for extra in extras:
-            extra_clean = extra.strip()
-            if extra_clean:
-                extra_final = extra_clean.replace('_', ' ').title()
-                extras_clean.append(extra_final)
+        security_types_clean = []
+        for security_type in security_types:
+            security_clean = security_type.strip()
+            if security_clean:
+                security_final = security_clean.replace('_', ' ').title()
+                security_types_clean.append(security_final)
 
-        clean_doc['extras'] = extras_clean
+        clean_doc['security_types'] = security_types_clean
         return
 
 
