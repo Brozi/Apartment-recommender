@@ -43,7 +43,7 @@ def initialize_output_database(raw_col='Properties_clean'):
     collection.create_index([('price', ASCENDING)], name='price_idx')
     collection.create_index([('area', ASCENDING)], name='area_idx')
 
-    logger.info("SUCCES: All indexes created")
+    logger.info("SUCCESS: All indexes created")
 
     for index in collection.list_indexes():
         logger.info(f"Index {index} created")
