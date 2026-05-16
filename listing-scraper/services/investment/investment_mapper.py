@@ -84,7 +84,7 @@ class InvestmentMapper:
             security_list = target_data.get("Security_types", [])
             if security_list: property_.security_types = ", ".join(security_list)
 
-            heating_list = target_data.get("Heating", [])
+            heating_list = target_data.get("Heating_types", [])
             if heating_list: property_.heating = ", ".join(heating_list)
 
             floor_list = target_data.get("Floor_no", [])
