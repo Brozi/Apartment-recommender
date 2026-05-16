@@ -5,7 +5,7 @@ from common.constans import Constans, OfferedBy, PropertyType, MarketType, Aucti
 from services.property import PropertyService
 import logging
 import re
-import datetime
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class InvestmentMapper:
             property_ = PropertyDocument()
             property_.link = full_url
             property_.otodom_id = otodom_id
-            property_.created_at = datetime.datetime.now()
+            property_.created_at = datetime.strptime(unit_dict.get('createdAt'), "%Y-%m-%dT%H:%M:%S%z")
             property_.title = unit_dict.get('title', 'Developer Unit')
 
             if developer_id:
