@@ -34,6 +34,7 @@ def upload_to_mongo(json_path, db_name):
                 }
             }
             bulk_docs.append(doc)
+            logging.info(f'Successfully parsed document: {doc["osm_id"]}')
     if bulk_docs:
         poi_collection.insert_many(bulk_docs)
         poi_collection.create_index([('location', '2dsphere')])
