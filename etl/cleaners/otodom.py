@@ -336,7 +336,7 @@ class OtodomCleaner:
             if photo_clean:
                 photos_clean.append(photo_clean)
 
-        clean_doc['security_types'] = photos_clean
+        clean_doc['photo_urls'] = photos_clean
         return
 
     @staticmethod
