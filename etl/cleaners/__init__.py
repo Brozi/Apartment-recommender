@@ -1,0 +1,1 @@
+from etl.cleaners.otodom import OtodomCleaner

@@ -49,8 +49,8 @@ class Crawler:
         url += f"{self.settings.auction_type.value}/"
         url += f"{self.settings.property_type.value}/"
         url += f"{self.settings.province}/"
-        url += f"{self.settings.city}/"
-
+        if self.settings.city:
+            url += f"{self.settings.city}/"
         if self.settings.district:
             url += f"{self.settings.district}/"
         return url

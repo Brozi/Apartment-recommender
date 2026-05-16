@@ -165,4 +165,5 @@ listings.csv
 listings.json
 settings.json
 listings.xlsx
-*.txt
+
+poland_neighbourhoods.geojson

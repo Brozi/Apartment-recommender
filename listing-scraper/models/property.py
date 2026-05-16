@@ -55,15 +55,9 @@ class PropertyDocument(Document):
     offered_by = EnumField(OfferedBy, required=True)
     estate_agency = ReferenceField("AgencyDocument", reverse_delete_rule=NULLIFY)
     developer_id = IntField(db_field="developer_id")
+    etl_processed = BooleanField(db_field="etl_processed")
 
-    meta = {"collection": "Properties",
-            "indexes":[
-                "localization.location",
-                "localization.district",
-                "localization.city",
-                "price",
-                "area",
-            ]
+    meta = {"collection": "listings"
             }
 
     def extract_data(self, code: BeautifulSoup) -> None:
@@ -111,6 +105,7 @@ class PropertyDocument(Document):
         self.photos = self.extract_photos(listing_information)
         self.building = self.extract_building(listing_properties["target"])
         self.offered_by = self.extract_offered_by(listing_properties)
+        self.etl_processed = False
 
     def set_link(self, code: BeautifulSoup) -> None:
         """

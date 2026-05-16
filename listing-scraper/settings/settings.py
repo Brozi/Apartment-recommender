@@ -29,6 +29,8 @@ class Settings:
         district (str): The selected district for property search. Defaults to None.
         property_type (str): The selected property type for filtering.
         Defaults to "mieszkanie".
+        auction_type (AuctionType): The selected auction type for filtering.
+        mongo_db_host (str): The MongoDB host for database connections.
 
     These default values are defined in the Defaults class.
 

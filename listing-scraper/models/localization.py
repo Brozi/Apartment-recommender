@@ -17,8 +17,6 @@ class LocalizationDocument(EmbeddedDocument):
     county = StringField()
     latitude = FloatField()
     longitude = FloatField()
-    location = PointField()
-    #New object prepared for MongoDBs GeoJSON point field type
 
     def extract_data(self, properties: dict):
         """
@@ -33,10 +31,6 @@ class LocalizationDocument(EmbeddedDocument):
         self.street = self.extract_street(properties["address"])
         self.county = self.extract_county(properties["address"])
         self.latitude, self.longitude = self.extract_coordinates(properties)
-
-        if self.longitude and self.latitude:
-            self.location = [self.longitude, self.latitude]
-
     @staticmethod
     def extract_district(properties: dict) -> str:
         """
