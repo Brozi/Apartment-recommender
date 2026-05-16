@@ -15,6 +15,12 @@ class OtodomCleaner:
         self.clean_offered_by(clean_doc)
         self.clean_market_type(clean_doc)
         self.clean_extras(clean_doc)
+        self.clean_security(clean_doc)
+        self.clean_heating(clean_doc)
+        self.clean_property_type(clean_doc)
+        self.clean_photos(clean_doc)
+        self.clean_auction_type(clean_doc)
+        self.clean_building_type(clean_doc)
 
     def clean_localization(self, clean_doc: dict) -> None:
         localization = clean_doc.get('localization', {})
@@ -295,6 +301,56 @@ class OtodomCleaner:
 
         clean_doc['security_types'] = security_types_clean
         return
+
+    @staticmethod
+    def clean_property_type(clean_doc: dict) -> None:
+        property_type = clean_doc.get('property_type')
+        if property_type is None:
+            clean_doc['property_type'] = 'unknown'
+            return
+        else:
+            clean_doc['property_type'] = property_type.title()
+            return
+
+    @staticmethod
+    def clean_auction_type(clean_doc: dict) -> None:
+        auction_type = clean_doc.get('auction_type')
+        if auction_type is None:
+            clean_doc['auction_type'] = 'unknown'
+            return
+        else:
+            clean_doc['auction_type'] = auction_type.title()
+            return
+
+    @staticmethod
+    def clean_photos(clean_doc: dict) -> None:
+        photos = clean_doc.get('photo_urls')
+        if pd.isna(photos) or str(photos).strip().lower() == 'nan' or not photos:
+            clean_doc['photo_urls'] = 'unknown'
+            return
+        photos = str(photos).split(',')
+
+        photos_clean = []
+        for photo in photos:
+            photo_clean = photo.strip()
+            if photo_clean:
+                photos_clean.append(photo_clean)
+
+        clean_doc['security_types'] = photos_clean
+        return
+
+    @staticmethod
+    def clean_building_type(clean_doc: dict) -> None:
+        building_type = clean_doc.get('building').get('type', None)
+        building = clean_doc['building']
+        if building_type is None:
+            building['type'] = 'unknown'
+            return
+        else:
+            building['type'] = building_type.title()
+            return
+
+
 
 
 
