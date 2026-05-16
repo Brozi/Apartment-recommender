@@ -1,6 +1,6 @@
 import json
 import re
-
+from typing import Any
 from bs4 import BeautifulSoup
 from mongoengine import Document
 from mongoengine import IntField
@@ -20,7 +20,7 @@ class AgencyDocument(Document):
     postal_code = StringField()
     county = StringField()
 
-    meta = {"collection": "Agencies"}
+    meta = {"collection": "agencies"}
 
     def extract_data(self, code: BeautifulSoup):
         """
@@ -48,7 +48,7 @@ class AgencyDocument(Document):
     @staticmethod
     def extract_estate_agency_address(
         agency_data: dict,
-    ) -> tuple[str, str, str, str, str]:
+    ) -> tuple[Any, Any, Any, Any, Any]:
         """
         Extracts the details of the estate agency from the properties.
 
@@ -57,7 +57,6 @@ class AgencyDocument(Document):
         2. city, postal_code, street, province
         3. _ , street, city, postal_code
 
-        :param properties: The properties containing the estate agency details
         :param agency_data: The JSON data for the agency
         :return: The details of the estate agency
         """
