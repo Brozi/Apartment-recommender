@@ -13,8 +13,21 @@ class OtodomDashAggregator:
     def build_dash_aggregates(self):
         pipeline = [
             {
+                '$match':{
+                    'price_usable': True,
+                    'price_per_meter_usable': True,
+
+                }
+            },
+            {
                 '$group': {
                     '_id': {
+                        'period': {
+                            '$dateToString': {
+                                'format': '%Y-%m',
+                                'date': '$scraped_at',
+                            }
+                        },
                         'city': '$localization.city',
                         'district': '$localization.district',
                         'subdistrict': '$localization.neighbourhood',
@@ -37,7 +50,7 @@ class OtodomDashAggregator:
                     'count': {'$sum': 1}
 
                 }
-            }
+            },
         ]
 
         now = datetime.now(timezone.utc)
