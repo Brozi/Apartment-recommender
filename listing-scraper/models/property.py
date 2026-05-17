@@ -107,6 +107,7 @@ class PropertyDocument(Document):
         self.building = self.extract_building(listing_properties["target"])
         self.offered_by = self.extract_offered_by(listing_properties)
         self.etl_processed = False
+        self.scraped_at = datetime.now()
 
     def set_link(self, code: BeautifulSoup) -> None:
         """

@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 
 from models import PropertyDocument
 from mongoengine import QuerySet
@@ -47,7 +46,6 @@ class PropertyService:
         try:
             property_.validate()
             property_ = property_.save()
-            property_.scraped_at = datetime.now()
             return property_
         except Exception as e:
             error_msg = str(e)
