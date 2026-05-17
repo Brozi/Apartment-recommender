@@ -62,6 +62,7 @@ class OtodomDashAggregator:
             operations.append(UpdateOne(
                 {
                     'metric': 'market_by_district_month',
+                    'group_key.period': group.get('period'),
                     'group_key.city': group.get('city'),
                     'group_key.district': group.get('district'),
                     'group_key.subdistrict': group.get('subdistrict'),
@@ -69,6 +70,7 @@ class OtodomDashAggregator:
                 {
                     '$set': {
                         'metric': 'market_by_district_month',
+                        'period': group.get('period'),
                         'group_key':{
                             'city': group.get('city'),
                             'district': group.get('district'),
