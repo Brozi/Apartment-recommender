@@ -15,6 +15,12 @@ class OtodomCleaner:
         self.clean_offered_by(clean_doc)
         self.clean_market_type(clean_doc)
         self.clean_extras(clean_doc)
+        self.clean_security(clean_doc)
+        self.clean_heating(clean_doc)
+        self.clean_property_type(clean_doc)
+        self.clean_photos(clean_doc)
+        self.clean_auction_type(clean_doc)
+        self.clean_building_type(clean_doc)
 
     def clean_localization(self, clean_doc: dict) -> None:
         localization = clean_doc.get('localization', {})
@@ -175,6 +181,8 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_price(clean_doc:dict, threshold:float|None=None):
+        price_per_meter = clean_doc.get('price_per_meter', None)
+        area = clean_doc.get('area', 0)
         value_raw = clean_doc.get('price')
         if value_raw is None:
             clean_doc['price'] = None
@@ -189,8 +197,12 @@ class OtodomCleaner:
             return
 
         if price <= 0:
-            clean_doc['price'] = None
-            clean_doc['price_usable'] = False
+            try:
+                clean_doc['price'] = price_per_meter * area
+                return
+            except price <=0:
+                clean_doc['price'] = None
+                clean_doc['price_usable'] = False
             return
 
         if price < 50000:
@@ -271,6 +283,74 @@ class OtodomCleaner:
 
         if heating_raw in heating_map:
             clean_doc['heating'] = heating_map[heating_raw]
+
+    @staticmethod
+    def clean_security(clean_doc: dict) -> None:
+        security_raw = clean_doc.get('security_types')
+        if pd.isna(security_raw) or str(security_raw).strip().lower() == 'nan' or not security_raw:
+            clean_doc['security_types'] = 'unknown'
+            return
+        security_types = str(security_raw).split(',')
+
+        security_types_clean = []
+        for security_type in security_types:
+            security_clean = security_type.strip()
+            if security_clean:
+                security_final = security_clean.replace('_', ' ').title()
+                security_types_clean.append(security_final)
+
+        clean_doc['security_types'] = security_types_clean
+        return
+
+    @staticmethod
+    def clean_property_type(clean_doc: dict) -> None:
+        property_type = clean_doc.get('property_type')
+        if property_type is None:
+            clean_doc['property_type'] = 'unknown'
+            return
+        else:
+            clean_doc['property_type'] = property_type.title()
+            return
+
+    @staticmethod
+    def clean_auction_type(clean_doc: dict) -> None:
+        auction_type = clean_doc.get('auction_type')
+        if auction_type is None:
+            clean_doc['auction_type'] = 'unknown'
+            return
+        else:
+            clean_doc['auction_type'] = auction_type.title()
+            return
+
+    @staticmethod
+    def clean_photos(clean_doc: dict) -> None:
+        photos = clean_doc.get('photo_urls')
+        if pd.isna(photos) or str(photos).strip().lower() == 'nan' or not photos:
+            clean_doc['photo_urls'] = 'unknown'
+            return
+        photos = str(photos).split(',')
+
+        photos_clean = []
+        for photo in photos:
+            photo_clean = photo.strip()
+            if photo_clean:
+                photos_clean.append(photo_clean)
+
+        clean_doc['photo_urls'] = photos_clean
+        return
+
+    @staticmethod
+    def clean_building_type(clean_doc: dict) -> None:
+        building_type = clean_doc.get('building').get('type', None)
+        building = clean_doc['building']
+        if building_type is None:
+            building['type'] = 'unknown'
+            return
+        else:
+            building['type'] = building_type.title()
+            return
+
+
 
 
 
