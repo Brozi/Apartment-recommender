@@ -55,8 +55,8 @@ class PropertyDocument(Document):
     offered_by = EnumField(OfferedBy, required=True)
     estate_agency = ReferenceField("AgencyDocument", reverse_delete_rule=NULLIFY)
     developer_id = IntField(db_field="developer_id")
-    etl_processed = BooleanField(db_field="etl_processed")
-    scraped_at = DateTimeField(db_field="scraped_at")
+    etl_processed = BooleanField(db_field="etl_processed", required=True)
+    scraped_at = DateTimeField(db_field="scraped_at", required=True)
 
     meta = {"collection": "listings"
             }
