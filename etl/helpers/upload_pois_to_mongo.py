@@ -57,14 +57,14 @@ def upload_to_mongo(json_path, db_name):
             logging.error(f'FATAL: Bulk write failed. {e}')
 
 def determine_category(tags):
-    if 'amenity' in tags: return beautify_string(tags['amenity'])
-    if 'vending' in tags: return beautify_string(tags['vending'])
-    if 'highway' in tags: return beautify_string(tags['highway'])
-    if 'shop' in tags: return beautify_string(tags['shop'])
-    if 'railway' in tags: return beautify_string(tags['railway'])
+    if 'amenity' in tags: return _beautify_string(tags['amenity'])
+    if 'vending' in tags: return _beautify_string(tags['vending'])
+    if 'highway' in tags: return _beautify_string(tags['highway'])
+    if 'shop' in tags: return _beautify_string(tags['shop'])
+    if 'railway' in tags: return _beautify_string(tags['railway'])
     return 'other'
 
-def beautify_string(string):
+def _beautify_string(string):
     string = string.replace('_', ' ')
     string = string.title()
     return string
