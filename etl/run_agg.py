@@ -1,4 +1,4 @@
-from etl.aggregators.otodom import OtodomGeoAggregator, OtodomDashAggregator
+from etl.aggregators import OtodomGeoAggregator, OtodomDashAggregator
 
 import json
 
