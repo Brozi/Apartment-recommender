@@ -8,6 +8,6 @@ if __name__ == '__main__':
     print(json.dumps(nearby_pois, indent=4))
     metrics = agg.build_poi_metrics(nearby_pois)
     print(json.dumps(metrics, indent=4))
-    agg = OtodomDashAggregator()
+    agg = OtodomDashAggregator(dashboard_col='dashboard_aggregates_v3')
     updated_count = agg.build_dash_aggregates()
     print(f'Updated count: {updated_count}')

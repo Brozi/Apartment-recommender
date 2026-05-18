@@ -1,4 +1,4 @@
-from otodom_aggregator import OtodomAggregator
+from etl.aggregators.otodom_aggregator import OtodomAggregator
 
 class OtodomGeoAggregator(OtodomAggregator):
     def __init__(self, poi_col='pois', listings_col='listings_clean'):

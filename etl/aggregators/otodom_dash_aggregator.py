@@ -1,4 +1,4 @@
-from otodom_aggregator import OtodomAggregator
+from etl.aggregators.otodom_aggregator import OtodomAggregator
 
 from datetime import datetime, timezone
 from pymongo import UpdateOne
@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class OtodomDashAggregator(OtodomAggregator):
-    def __init__(self, listings_col = 'listings_clean', dashboard_col = 'dashboard_aggregates_v2'):
+    def __init__(self, listings_col = 'listings_clean', dashboard_col = 'dashboard_aggregates'):
         super().__init__()
         self.listings_col = self.db[listings_col]
         self.dashboard_aggregates_col = self.db[dashboard_col]
@@ -144,11 +144,20 @@ class OtodomDashAggregator(OtodomAggregator):
             {
                 '$group': {
                     '_id': {'period': self.period},
-                    'avg_area': {'$avg': '$area'},
+                    'avg_area': {
+                        {
+                            '$round':[{'$avg': '$area'},2]
+                        }
+                    },
                     'med_area': {
-                        '$median':{
-                            'input': '$area',
-                            'method': 'approximate',
+                        {
+                            '$round':
+                                [
+                                {'$median': {
+                                    'input': '$area',
+                                    'method': 'approximate', }
+                                },
+                                2]
                         }
 
                     },
