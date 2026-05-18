@@ -349,7 +349,8 @@ class OtodomCleaner:
             building['type'] = 'unknown'
             return
         else:
-            building['type'] = building_type.title().replace('_', ' ')
+            building_type = building_type.replace('_', ' ')
+            building['type'] = building_type.title()
             return
 
     @staticmethod
