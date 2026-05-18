@@ -4,9 +4,9 @@ from etl.services import connect_to_database
 
 from pymongo import UpdateOne
 
-class OtodomDashAggregator:
-    def __init__(self, listings_col='listings_clean', dashboard_col='dashboard_aggregates'):
-        self.db = connect_to_database()['otodom_data']
+class OtodomAggregator:
+    def __init__(self, db_name='otodom_data', listings_col='listings_clean', dashboard_col='dashboard_aggregates'):
+        self.db = connect_to_database()[db_name]
         self.listings_col = self.db[listings_col]
         self.dashboard_aggregates_col = self.db[dashboard_col]
 
