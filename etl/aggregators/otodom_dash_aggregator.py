@@ -2,11 +2,14 @@ from otodom_aggregator import OtodomAggregator
 
 from datetime import datetime, timezone
 from pymongo import UpdateOne
+import logging
+logger = logging.getLogger(__name__)
 
 class OtodomDashAggregator(OtodomAggregator):
-    def __init__(self, listings_col = 'listings_clean'):
+    def __init__(self, listings_col = 'listings_clean', dashboard_col = 'dashboard_aggregates_v2'):
         super().__init__()
         self.listings_col = self.db[listings_col]
+        self.dashboard_aggregates_col = self.db[dashboard_col]
         self.period = {
             '$dateToString': {
                 'format': '%Y-%m',
@@ -74,6 +77,7 @@ class OtodomDashAggregator(OtodomAggregator):
             rows = list(self.listings_col.aggregate(pipeline, allowDiskUse=True))
             total_updated += self._save_dashboard_metric(metric_name, rows)
 
+        logger.info(f'Total updated count: {total_updated}')
         return total_updated
 
 
