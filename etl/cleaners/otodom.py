@@ -1,5 +1,7 @@
 import pandas as pd
 
+from bs4 import BeautifulSoup
+
 class OtodomCleaner:
     def __init__(self, get_true_location):
         self.get_true_location = get_true_location
@@ -302,6 +304,13 @@ class OtodomCleaner:
                 security_types_clean.append(security_final)
 
         clean_doc['security_types'] = security_types_clean
+        return
+
+    @staticmethod
+    def clean_description(clean_doc: dict) -> None:
+        description_raw = clean_doc.get('description')
+        description = BeautifulSoup(description_raw, 'html.parser').get_text(separator=" ", strip=True)
+        clean_doc['description'] = description
         return
 
     @staticmethod
