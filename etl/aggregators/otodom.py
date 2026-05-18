@@ -72,6 +72,7 @@ class OtodomDashAggregator:
                         'metric': 'market_by_district_month',
                         'period': group.get('period'),
                         'group_key':{
+                            'period': group.get('period'),
                             'city': group.get('city'),
                             'district': group.get('district'),
                             'subdistrict': group.get('subdistrict'),
