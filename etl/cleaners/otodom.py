@@ -386,9 +386,9 @@ class OtodomCleaner:
             return
         else:
             if int(floors) < 0:
-                building['build_year'] = 'unknown'
+                building['floors'] = 'unknown'
                 return
-            building['build_year'] = floors
+            building['floors'] = floors
             return
 
     @staticmethod
