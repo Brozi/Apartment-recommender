@@ -1,26 +1,12 @@
+from otodom_aggregator import OtodomAggregator
+
 from datetime import datetime, timezone
-
-from etl.services import connect_to_database
-
 from pymongo import UpdateOne
 
-class OtodomAggregator:
-    def __init__(self, db_name='otodom_data', listings_col='listings_clean', dashboard_col='dashboard_aggregates'):
-        self.db = connect_to_database()[db_name]
-        self.listings_col = self.db[listings_col]
-        self.dashboard_aggregates_col = self.db[dashboard_col]
-        self.market_type = '$market_type'
-        self.auction_type = '$auction_type'
-        self.offered_by = '$offered_by'
-        self.floor = '$floor'
-        self.construction_status = '$construction_status'
-        self.rooms = '$rooms'
-        self.build_year = '$building.build_year'
-        self.building_type = '$building.type'
-
 class OtodomDashAggregator(OtodomAggregator):
-    def __init__(self):
+    def __init__(self, listings_col = 'listings_clean'):
         super().__init__()
+        self.listings_col = self.db[listings_col]
         self.period = {
             '$dateToString': {
                 'format': '%Y-%m',
@@ -130,11 +116,12 @@ class OtodomDashAggregator(OtodomAggregator):
 
     @staticmethod
     def _count_by_basic_field_pipeline(field:str):
+        output_key = field.replace('.', '_')
         return [
             {
                 '$group': {
                     '_id': {
-                        f'{field}': {'$ifNull': [f'${field}', 'unknown']}
+                        output_key: {'$ifNull': [f'${field}', 'unknown']}
                     },
                     'count': {'$sum': 1},
                 }
@@ -182,7 +169,7 @@ class OtodomDashAggregator(OtodomAggregator):
                 '$group': {
                     '_id': {
                         'period': self.period,
-                        'auction_type': self.auction_type
+                        'auction_type': f'${self.auction_type}'
                     },
                     'avg_price':{'$avg': '$price'},
                     'median_price': {
@@ -238,7 +225,7 @@ class OtodomDashAggregator(OtodomAggregator):
             {
                 '$group': {
                     '_id': {
-                        'period': {self.period},
+                        'period': self.period,
                         'city': '$localization.city',
                         'district': '$localization.district',
                         'subdistrict': '$localization.neighbourhood',
@@ -270,7 +257,7 @@ class OtodomDashAggregator(OtodomAggregator):
                         '$median': {
                         'input': {
                             '$convert': {
-                                input: "$rooms",
+                                'input': "$rooms",
                                 'to': "double",
                                 'onError': None,
                                 'onNull': None
@@ -286,77 +273,3 @@ class OtodomDashAggregator(OtodomAggregator):
                 }
             }
         ]
-
-
-class OtodomGeoAggregator(OtodomAggregator):
-    def __init__(self, poi_col='pois'):
-        super().__init__()
-        self.poi_col = self.db[poi_col]
-
-    def find_pois_near(self, longitude:str=None, latitude:str=None, max_distance:int=1500, categories=('School', 'Kindergarten','Supermarket', 'Restaurant'), limit=None) -> list:
-        query = {}
-        col = self.poi_col
-
-        if categories:
-            query['category'] = {'$in': categories}
-
-        pipeline = [
-            {
-                '$geoNear': {
-                    'near': {
-                        'type': 'Point',
-                        'coordinates': [float(longitude), float(latitude)],
-                    },
-                    'distanceField': 'distance_m',
-                    'maxDistance': max_distance,
-                    'spherical': True,
-                    'query': query,
-
-                }
-            },
-            {
-                    '$project': {
-                        '_id': 1,
-                        'osm_id': 1,
-                        'category': 1,
-                        'tags.name': 1,
-                        'location': 1,
-                        'distance_m': 1,
-                    }
-            },
-        ]
-
-        if limit:
-            pipeline.append({'$limit': limit})
-
-        return list(col.aggregate(pipeline))
-
-    @staticmethod
-    def build_poi_metrics(pois, ranges=(500,1000,1500)):
-        metrics = {}
-        for poi in pois:
-            category = poi.get('category', 'other')
-            distance = poi['distance_m']
-
-            if category not in metrics:
-                metrics[category] = {
-                    'nearest_m': int(distance),
-                    'nearest':{
-                        'poi_id': str(poi['_id']),
-                        'name': poi.get('tags', {}).get('name'),
-                        'distance_m': int(distance),
-                    },
-                    **{f'count{r}m': 0 for r in ranges},
-                }
-            metrics[category]['nearest_m'] = min(metrics[category]['nearest_m'], distance)
-
-            for r in ranges:
-                if distance <= r:
-                    metrics[category][f'count{r}m'] += 1
-
-        return metrics
-
-
-
-
-

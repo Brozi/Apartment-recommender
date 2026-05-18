@@ -1,0 +1,1 @@
+from etl.aggregators.otodom_aggregator import OtodomAggregator
