@@ -144,22 +144,23 @@ class OtodomDashAggregator(OtodomAggregator):
             {
                 '$group': {
                     '_id': {'period': self.period},
-                    'avg_area': {
-                            '$round':[{'$avg': '$area'},2]
-                    },
+                    'avg_area': {'$avg': '$area'},
                     'med_area': {
-                            '$round':
-                                [
-                                {'$median': {
-                                    'input': '$area',
-                                    'method': 'approximate', }
-                                },
-                                2]
-
+                        '$median': {
+                            'input': '$area',
+                            'method': 'approximate',
+                        }
                     },
                     'count': {'$sum': 1},
                 }
 
+            },
+            {
+                '$project': {
+                    'avg_area': {'$round': ['$avg_area', 2]},
+                    'med_area': {'$round': ['$med_area', 2]},
+                    'count': 1,
+                }
             }
         ]
 
@@ -191,6 +192,13 @@ class OtodomDashAggregator(OtodomAggregator):
                     'count': {'$sum': 1},
 
                 }
+            },
+            {
+                '$project': {
+                    'avg_price': {'$round': ['$avg_price', 2]},
+                    'med_price': {'$round': ['$med_price', 2]},
+                    'count': 1,
+                }
             }
         ]
 
@@ -208,19 +216,22 @@ class OtodomDashAggregator(OtodomAggregator):
             {
                 '$group': {
                     '_id': {'period': self.period,},
-                    'avg_price_per_meter': {'$round': [{'$avg': '$price_per_meter'}, 2]},
+                    'avg_price_per_meter': {'$avg': '$price_per_meter'},
                     'med_price_per_meter': {
-                        '$round':[
-                            {'$median': {
-                                'input': '$price_per_meter',
-                                'method': 'approximate',
-
-                            }
-                            }
-                        ,2]
+                        '$median': {
+                            'input': '$price_per_meter',
+                            'method': 'approximate',
+                        }
                     },
                     'count': {'$sum': 1},
 
+                }
+            },
+            {
+                '$project': {
+                    'avg_price_per_meter': {'$round': ['$avg_price_per_meter', 2]},
+                    'med_price_per_meter': {'$round': ['$med_price_per_meter', 2]},
+                    'count': 1,
                 }
             }
         ]
@@ -243,40 +254,26 @@ class OtodomDashAggregator(OtodomAggregator):
                         'subdistrict': '$localization.neighbourhood',
 
                     },
-                    'avg_price': {'$round': [{'$avg': '$price'}, 2]},
+                    'avg_price': {'$avg': '$price'},
                     'med_price': {
-                        '$round':{
-                            [
-                            {'$median': {
-                                'input': '$price',
-                                'method': 'approximate',
-                            }
-                            }
-                                ,2]
+                        '$median': {
+                            'input': '$price',
+                            'method': 'approximate',
                         }
                     },
-                    'avg_price_per_meter': {'$round': [{'$avg': '$price_per_meter'}, 2]},
+                    'avg_price_per_meter': {'$avg': '$price_per_meter'},
                     'med_price_per_meter': {
-                        '$round': {
-                            [{'$median': {
-                                'input': '$price_per_meter',
-                                'method': 'approximate',
-                            }
-                            }
-                                ,2]
+                        '$median': {
+                            'input': '$price_per_meter',
+                            'method': 'approximate',
                         }
                     },
-                    'avg_area': {'$round':[{'$avg': '$area'}, 2]},
+                    'avg_area': {'$avg': '$area'},
                     'med_area': {
-                        '$round': {
-                            [{'$median': {
-                                'input': '$area',
-                                'method': 'approximate',
-                            }
-                            }
-                                ,2]
+                        '$median': {
+                            'input': '$area',
+                            'method': 'approximate',
                         }
-
                     },
                     'med_rooms':{
                         '$median': {
@@ -295,6 +292,18 @@ class OtodomDashAggregator(OtodomAggregator):
 
                     'count': {'$sum': 1}
 
+                }
+            },
+            {
+                '$project': {
+                    'avg_price': {'$round': ['$avg_price', 2]},
+                    'med_price': {'$round': ['$med_price', 2]},
+                    'avg_price_per_meter': {'$round': ['$avg_price_per_meter', 2]},
+                    'med_price_per_meter': {'$round': ['$med_price_per_meter', 2]},
+                    'avg_area': {'$round': ['$avg_area', 2]},
+                    'med_area': {'$round': ['$med_area', 2]},
+                    'med_rooms': 1,
+                    'count': 1,
                 }
             }
         ]
