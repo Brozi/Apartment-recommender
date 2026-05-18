@@ -10,81 +10,57 @@ class OtodomAggregator:
         self.listings_col = self.db[listings_col]
         self.dashboard_aggregates_col = self.db[dashboard_col]
 
+class OtodomDashAggregator(OtodomAggregator):
+    def __init__(self):
+        super().__init__()
+
+
     def build_dash_aggregates(self):
-        pipeline = [
-            {
-                '$match':{
-                    'price_usable': True,
-                    'price_per_meter_usable': True,
+        metrics = {
+           'offer_count_by_construction_status': self._count_by_construction_status_pipeline(),
+           'offer_count_by_rooms': self._count_by_rooms_pipeline(),
+           'offer_count_by_build_year': self._count_by_build_year_pipeline(),
+           'monthly_area_stats': self._monthly_area_stats_pipeline(),
+           'monthly_price_stats': self._monthly_price_stats_pipeline(),
+           'monthly_price_per_meter_stats': self._monthly_price_per_meter_stats_pipeline(),
+           'offer_count_by_market_type': self._count_by_market_type_pipeline()
 
-                }
-            },
-            {
-                '$group': {
-                    '_id': {
-                        'period': {
-                            '$dateToString': {
-                                'format': '%Y-%m',
-                                'date': '$scraped_at',
-                            }
-                        },
-                        'city': '$localization.city',
-                        'district': '$localization.district',
-                        'subdistrict': '$localization.neighbourhood',
+       }
 
-                    },
-                    'avg_price': {'$avg': '$price'},
-                    'avg_price_per_meter': {'$avg': '$price_per_meter'},
-                    'med_price': {
-                        '$median': {
-                            'input':'$price',
-                            'method': 'approximate',
-                            }
-                    },
-                    'med_price_per_meter': {
-                        '$median': {
-                            'input':'$price_per_meter',
-                            'method': 'approximate',
-                            }
-                    },
-                    'count': {'$sum': 1}
+        total_updated = 0
 
-                }
-            },
-        ]
+        for metric_name, pipeline in metrics.items():
+            rows = list(self.listings_col.aggregate(pipeline, allowDiskUse=True))
+            total_updated += self._save_dashboard_metric(metric_name, rows)
 
+        return total_updated
+
+
+    def _save_dashboard_metric(self, metric_name, rows):
         now = datetime.now(timezone.utc)
         operations = []
 
-        for row in self.listings_col.aggregate(pipeline):
-            group = row['_id']
+        for row in rows:
+            group_key = row['_id']
+            key = '|'.join(f'{k}={v}' for k, v in sorted(group_key.items()))
+
+            values = {
+                k: v
+                for k, v in row.items()
+                if k!='_id'
+            }
 
             operations.append(UpdateOne(
                 {
-                    'metric': 'market_by_district_month',
-                    'group_key.period': group.get('period'),
-                    'group_key.city': group.get('city'),
-                    'group_key.district': group.get('district'),
-                    'group_key.subdistrict': group.get('subdistrict'),
+                    'metric': metric_name,
+                    'key': key,
                 },
                 {
                     '$set': {
-                        'metric': 'market_by_district_month',
-                        'period': group.get('period'),
-                        'group_key':{
-                            'period': group.get('period'),
-                            'city': group.get('city'),
-                            'district': group.get('district'),
-                            'subdistrict': group.get('subdistrict'),
-                        },
-                        'values': {
-                            'avg_price': row.get('avg_price'),
-                            'med_price': row.get('med_price'),
-                            'avg_price_per_meter': row.get('avg_price_per_meter'),
-                            'med_price_per_meter': row.get('med_price_per_meter'),
-
-                        },
-                        'count': row['count'],
+                        'metric': metric_name,
+                        'key': key,
+                        'group_key':group_key,
+                        'values': values,
                         'computed_at': now
                     }
                 },
@@ -98,8 +74,8 @@ class OtodomAggregator:
         return len(operations)
 
 
-class OtodomGeoAggregator(OtodomDashAggregator):
-    def __init__(self, poi_col):
+class OtodomGeoAggregator(OtodomAggregator):
+    def __init__(self, poi_col='pois'):
         super().__init__()
         self.poi_col = self.db[poi_col]
 
