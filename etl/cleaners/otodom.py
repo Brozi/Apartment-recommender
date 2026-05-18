@@ -21,6 +21,8 @@ class OtodomCleaner:
         self.clean_photos(clean_doc)
         self.clean_auction_type(clean_doc)
         self.clean_building_type(clean_doc)
+        self.clean_building_build_year(clean_doc)
+        self.clean_building_floors(clean_doc)
 
     def clean_localization(self, clean_doc: dict) -> None:
         localization = clean_doc.get('localization', {})
@@ -348,6 +350,34 @@ class OtodomCleaner:
             return
         else:
             building['type'] = building_type.title()
+            return
+
+    @staticmethod
+    def clean_building_build_year(clean_doc: dict) -> None:
+        build_year = clean_doc.get('building').get('build_year', None)
+        building = clean_doc['building']
+        if build_year is None:
+            building['build_year'] = 'unknown'
+            return
+        else:
+            if int(build_year) < 1000:
+                building['build_year'] = 'unknown'
+                return
+            building['build_year'] = build_year
+            return
+
+    @staticmethod
+    def clean_building_floors(clean_doc: dict) -> None:
+        floors = clean_doc.get('building').get('floors', None)
+        building = clean_doc['building']
+        if floors is None:
+            building['floors'] = 'unknown'
+            return
+        else:
+            if int(floors) < 0:
+                building['build_year'] = 'unknown'
+                return
+            building['build_year'] = floors
             return
 
 
