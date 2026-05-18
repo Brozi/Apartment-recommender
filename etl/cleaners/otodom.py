@@ -25,6 +25,7 @@ class OtodomCleaner:
         self.clean_building_type(clean_doc)
         self.clean_building_build_year(clean_doc)
         self.clean_building_floors(clean_doc)
+        self.clean(clean_doc)
 
     def clean_localization(self, clean_doc: dict) -> None:
         localization = clean_doc.get('localization', {})
@@ -389,6 +390,12 @@ class OtodomCleaner:
                 return
             building['build_year'] = floors
             return
+
+    @staticmethod
+    def clean_area(clean_doc: dict) -> None:
+        area = clean_doc.get('area')
+        clean_doc['area'] = float(area)
+        return
 
 
 
