@@ -1,7 +1,7 @@
 from etl.services import connect_to_database
 
 class OtodomAggregator:
-    def __init__(self, db_name='otodom_data', listings_col='listings_clean', dashboard_col='dashboard_aggregates_v2'):
+    def __init__(self, db_name='otodom_data', listings_col='listings_clean'):
         self.db = connect_to_database()[db_name]
         self.listings_col = self.db[listings_col]
         self.market_type = 'market_type'
