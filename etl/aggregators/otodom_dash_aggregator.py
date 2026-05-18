@@ -145,12 +145,9 @@ class OtodomDashAggregator(OtodomAggregator):
                 '$group': {
                     '_id': {'period': self.period},
                     'avg_area': {
-                        {
                             '$round':[{'$avg': '$area'},2]
-                        }
                     },
                     'med_area': {
-                        {
                             '$round':
                                 [
                                 {'$median': {
@@ -158,7 +155,6 @@ class OtodomDashAggregator(OtodomAggregator):
                                     'method': 'approximate', }
                                 },
                                 2]
-                        }
 
                     },
                     'count': {'$sum': 1},
@@ -185,10 +181,10 @@ class OtodomDashAggregator(OtodomAggregator):
                         'auction_type': f'${self.auction_type}'
                     },
                     'avg_price':{'$avg': '$price'},
-                    'median_price': {
+                    'med_price': {
                         '$median': {
-                        'input': '$price',
-                        'method': 'approximate',
+                            'input': '$price',
+                            'method': 'approximate',
 
                         }
                     },
@@ -212,13 +208,16 @@ class OtodomDashAggregator(OtodomAggregator):
             {
                 '$group': {
                     '_id': {'period': self.period,},
-                    'avg_price_per_meter': {'$avg': '$price_per_meter'},
-                    'median_price': {
-                        '$median': {
-                            'input': '$price_per_meter',
-                            'method': 'approximate',
+                    'avg_price_per_meter': {'$round': [{'$avg': '$price_per_meter'}, 2]},
+                    'med_price_per_meter': {
+                        '$round':[
+                            {'$median': {
+                                'input': '$price_per_meter',
+                                'method': 'approximate',
 
-                        }
+                            }
+                            }
+                        ,2]
                     },
                     'count': {'$sum': 1},
 
@@ -244,25 +243,38 @@ class OtodomDashAggregator(OtodomAggregator):
                         'subdistrict': '$localization.neighbourhood',
 
                     },
-                    'avg_price': {'$avg': '$price'},
+                    'avg_price': {'$round': [{'$avg': '$price'}, 2]},
                     'med_price': {
-                        '$median': {
-                            'input': '$price',
-                            'method': 'approximate',
+                        '$round':{
+                            [
+                            {'$median': {
+                                'input': '$price',
+                                'method': 'approximate',
+                            }
+                            }
+                                ,2]
                         }
                     },
-                    'avg_price_per_meter': {'$avg': '$price_per_meter'},
+                    'avg_price_per_meter': {'$round': [{'$avg': '$price_per_meter'}, 2]},
                     'med_price_per_meter': {
-                        '$median': {
-                            'input': '$price_per_meter',
-                            'method': 'approximate',
+                        '$round': {
+                            [{'$median': {
+                                'input': '$price_per_meter',
+                                'method': 'approximate',
+                            }
+                            }
+                                ,2]
                         }
                     },
-                    'avg_area': {'$avg': '$area'},
+                    'avg_area': {'$round':[{'$avg': '$area'}, 2]},
                     'med_area': {
-                        '$median':{
-                            'input': '$area',
-                            'method': 'approximate',
+                        '$round': {
+                            [{'$median': {
+                                'input': '$area',
+                                'method': 'approximate',
+                            }
+                            }
+                                ,2]
                         }
 
                     },
