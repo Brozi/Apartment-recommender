@@ -1,5 +1,7 @@
 import logging
 import sys
+
+from etl.aggregators import OtodomDashAggregator
 from etl.pipeline import ETLPipeline
 
 
@@ -16,3 +18,8 @@ if __name__ == "__main__":
         output_col='listings_clean',
     )
     pipeline.run()
+
+    dash = OtodomDashAggregator(
+        listings_col = 'listings_clean'
+    )
+    dash.build_dash_aggregates()
