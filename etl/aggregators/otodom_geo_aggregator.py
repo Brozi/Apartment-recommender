@@ -6,15 +6,23 @@ class OtodomGeoAggregator(OtodomAggregator):
         self.poi_col = self.db[poi_col]
         self.listings_col = self.db[listings_col]
 
-    def find_pois_near(self, longitude:str=None, latitude:str=None,
+    def find_pois_near(self,
+                       longitude:str=None,
+                       latitude:str=None,
                        max_distance:int=1500,
-                       categories=('tram_stop', 'bus_stop','education', 'grocery_retail', 'parcel_service'),
+                       category_groups=(
+                               'tram_stop',
+                               'bus_stop',
+                               'education',
+                               'grocery_retail',
+                               'parcel_service'
+                       ),
                        limit=None) -> list:
         query = {}
         col = self.poi_col
 
-        if categories:
-            query['category'] = {'$in': categories}
+        if category_groups:
+            query['category'] = {'$in': category_groups}
 
         pipeline = [
             {
@@ -34,7 +42,10 @@ class OtodomGeoAggregator(OtodomAggregator):
                     '$project': {
                         '_id': 1,
                         'osm_id': 1,
+                        'category_group': 1,
+                        'category_groups': 1,
                         'category': 1,
+                        'raw_category': 1,
                         'tags.name': 1,
                         'location': 1,
                         'distance_m': 1,
