@@ -77,6 +77,9 @@ def _tokenize_values(values):
 def _choose_primary_category(matches):
     priority = [
         'education',
+        'kindergarten',
+        'school',
+        'university',
         'grocery_retail',
         'tram_stop',
         'bus_stop',
