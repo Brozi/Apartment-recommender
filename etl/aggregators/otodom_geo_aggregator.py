@@ -22,7 +22,7 @@ class OtodomGeoAggregator(OtodomAggregator):
         col = self.poi_col
 
         if category_groups:
-            query['category'] = {'$in': category_groups}
+            query['category_group'] = {'$in': category_groups}
 
         pipeline = [
             {
