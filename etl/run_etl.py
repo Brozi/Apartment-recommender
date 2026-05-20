@@ -20,6 +20,7 @@ if __name__ == "__main__":
     pipeline.run()
 
     dash = OtodomDashAggregator(
-        listings_col = 'listings_clean'
+        listings_col = 'listings_clean',
+        dashboard_col='dashboard_aggregates_v3'
     )
     dash.build_dash_aggregates()
