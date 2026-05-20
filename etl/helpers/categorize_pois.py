@@ -9,7 +9,7 @@ def categorize_poi(tags):
     #Specific tag-aware rules first
     if tags.get('amenity') == 'parcel_locker' or tags.get('vending') == 'parcel_pickup':
         return _result(
-            group='logistics',
+            group='parcel_service',
             detail='parcel_locker',
             raw_values=raw_values,
             groups=['logistics'],
