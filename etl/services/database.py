@@ -25,6 +25,36 @@ def connect_to_database(host: str = None) -> MongoClient:
     mongo_connect(host=host)
     return MongoClient(host)
 
+
+class MongoBulkWriter:
+    def __init__(self, collection, batch_size=5000, ordered=False):
+        self.collection = collection
+        self.batch_size = batch_size
+        self.ordered = ordered
+        self.operations = []
+        self.processed_count = 0
+
+    def queue(self, operation):
+        self.operations.append(operation)
+        if len(self.operations) >= self.batch_size:
+            self.flush()
+
+    def flush(self):
+        if not self.operations:
+            result = None
+            return result
+
+        result = self.collection.bulk_write(
+            self.operations,
+            ordered=self.ordered,
+        )
+
+        self.processed_count += len(self.operations)
+        logging.info(f"Commited batch of {len(self.operations)} documents...")
+        self.operations.clear()
+
+        return result
+
 class MongoBatchListingUploader:
     def __init__(self, input_col='listings', output_col='listings_clean', batch_size: int = 100):
         """Handles the state of database connections and batch operations."""
@@ -32,34 +62,44 @@ class MongoBatchListingUploader:
         self.input_collection = self.database[input_col]
         self.output_collection = self.database[output_col]
 
-        self.batch_size = batch_size
-        self.clean_operations = []
-        self.raw_ack_operations = []
+        self.clean_writer = MongoBulkWriter(
+            self.output_collection,
+            batch_size=batch_size,
+            ordered=False,
+        )
+
+        self.raw_ack_writer = MongoBulkWriter(
+            self.input_collection,
+            batch_size=batch_size,
+            ordered=False,
+        )
+
         self.processed_count = 0
 
 
     def queue_operation(self, raw_id, otodom_id, transformed_doc):
         """Adds documents to the queue and flushes to the DB if the batch size is reached"""
-        self.clean_operations.append(
-            UpdateOne({'otodom_id': otodom_id }, {'$set':{**transformed_doc, 'etl_processed': True}}, upsert=True))
-        self.raw_ack_operations.append(
+        self.clean_writer.queue(
             UpdateOne(
-                {'_id': raw_id}, {'$set': {'etl_processed': True}}, upsert=True)
+                {'otodom_id': otodom_id },
+                {'$set':{**transformed_doc, 'etl_processed': True}},
+                upsert=True,
+            )
+        )
+
+        self.raw_ack_writer.queue(
+            UpdateOne(
+                {'_id': raw_id},
+                {'$set': {'etl_processed': True}},
+                upsert=True
+            )
         )
         self.processed_count += 1
-
-        if len(self.clean_operations) >= self.batch_size:
-            self.flush_to_db()
 
 
     def flush_to_db(self):
         """Commits the current queues to the database and clears them."""
-        if not self.clean_operations:
-            return
-        self.output_collection.bulk_write(self.clean_operations)
-        self.input_collection.bulk_write(self.raw_ack_operations)
-        logging.info(f"Commited batch of {len(self.clean_operations)} documents...")
+        self.clean_writer.flush()
+        self.raw_ack_writer.flush()
 
-        self.clean_operations.clear()
-        self.raw_ack_operations.clear()
 
