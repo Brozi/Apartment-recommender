@@ -38,18 +38,18 @@ TOKEN_TO_CATEGORY = {
     'ice cream': ('food_drink', 'ice_cream'),
 
     # Transit
-    'bus stop': ('transit', 'bus_stop'),
-    'tram stop': ('transit', 'tram_stop'),
-    'bus station': ('transit', 'bus_station'),
+    'bus stop': ('bus_stop', 'bus_stop'),
+    'tram stop': ('tram_stop', 'tram_stop'),
+    'bus station': ('bus_stop', 'bus_station'),
     'stop': ('transit', 'stop'),
     'public transport tickets': ('transit', 'tickets'),
     'shelter': ('transit', 'shelter'),
 
     # Logistics
-    'parcel locker': ('logistics', 'parcel_locker'),
-    'parcel pickup': ('logistics', 'parcel_locker'),
-    'post office': ('logistics', 'post_office'),
-    'post box': ('logistics', 'post_box'),
+    'parcel locker': ('parcel_service', 'parcel_locker'),
+    'parcel pickup': ('parcel_service', 'parcel_locker'),
+    'post office': ('parcel_service', 'post_office'),
+    'post box': ('parcel_service', 'post_box'),
 
     # Car services
     'parking': ('car_services', 'parking'),

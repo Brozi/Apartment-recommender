@@ -78,8 +78,8 @@ def _choose_primary_category(matches):
     priority = [
         'education',
         'grocery_retail',
-        'transit',
-        'logistics',
+        'tram_stop',
+        'parcel_service',
         'food_drink',
         'health_finance',
         'car_services',
