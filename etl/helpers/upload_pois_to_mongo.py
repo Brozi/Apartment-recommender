@@ -11,7 +11,7 @@ logging.basicConfig(
 )
 
 from etl.helpers.categorize_pois import categorize_poi
-from etl.services import connect_to_database
+from etl.services import connect_to_database, MongoBulkWriter
 
 def upload_to_mongo(json_path, db_name):
     client = connect_to_database()
@@ -63,12 +63,15 @@ def upload_to_mongo_grouped_categories(json_path, db_name):
     db = client[db_name]
     poi_collection = db['pois_v2']
 
-    poi_collection.create_index([('location', '2dsphere')])
+    writer = MongoBulkWriter(
+        poi_collection,
+        batch_size=50000,
+        ordered=False,
+    )
 
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    bulk_operations = []
 
     for element in data.get('elements', []):
         lat = element.get('lat') or element.get('center', {}).get('lat')
@@ -88,21 +91,29 @@ def upload_to_mongo_grouped_categories(json_path, db_name):
                     'coordinates': [lon, lat]
                 },
             }
-            bulk_operations.append(
+
+            writer.queue(
                 UpdateOne(
                     {'_id': unique_id},
                     {'$set': doc},
                     upsert=True
                 )
             )
-            logging.info(f'Successfully parsed document: {doc["osm_id"]}')
-    if bulk_operations:
-        logging.info(f'Executing bulk upsert for {len(bulk_operations)} documents...')
-        try:
-            result = poi_collection.bulk_write(bulk_operations, ordered=False)
-            logging.info(f'Successfully indexed {result.upserted_count} and modified existing {result.modified_count} POIs.')
-        except Exception:
-            logging.exception(f'FATAL: Bulk write failed')
+
+    try:
+        writer.flush()
+        logging.info(f'Successfully processed {writer.processed_count} POIs.')
+
+        logging.info('Creating POI indexes...')
+        poi_collection.create_index([('location', '2dsphere')])
+        poi_collection.create_index([('category_group', 1)])
+        poi_collection.create_index([('category_groups', 1)])
+        poi_collection.create_index([('category', 1)])
+        logging.info('POI indexes created.')
+
+    except Exception:
+        logging.exception(f'FATAL: Bulk write failed')
+        raise
 
 def determine_category(tags):
     if 'amenity' in tags: return _beautify_string(tags['amenity'])
