@@ -12,7 +12,7 @@ def categorize_poi(tags):
             group='parcel_service',
             detail='parcel_locker',
             raw_values=raw_values,
-            groups=['logistics'],
+            groups=['parcel_service'],
         )
 
     matched = []
@@ -79,6 +79,7 @@ def _choose_primary_category(matches):
         'education',
         'grocery_retail',
         'tram_stop',
+        'bus_stop',
         'parcel_service',
         'food_drink',
         'health_finance',
