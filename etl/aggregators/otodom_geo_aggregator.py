@@ -6,7 +6,10 @@ class OtodomGeoAggregator(OtodomAggregator):
         self.poi_col = self.db[poi_col]
         self.listings_col = self.db[listings_col]
 
-    def find_pois_near(self, longitude:str=None, latitude:str=None, max_distance:int=1500, categories=('School', 'Kindergarten','Supermarket', 'Restaurant'), limit=None) -> list:
+    def find_pois_near(self, longitude:str=None, latitude:str=None,
+                       max_distance:int=1500,
+                       categories=('tram_stop', 'bus_stop','education', 'grocery_retail', 'parcel_service'),
+                       limit=None) -> list:
         query = {}
         col = self.poi_col
 
@@ -48,11 +51,11 @@ class OtodomGeoAggregator(OtodomAggregator):
     def build_poi_metrics(pois, ranges=(500,1000,1500)):
         metrics = {}
         for poi in pois:
-            category = poi.get('category', 'other')
+            category_group = poi.get('category_group', 'other')
             distance = poi['distance_m']
 
-            if category not in metrics:
-                metrics[category] = {
+            if category_group not in metrics:
+                metrics[category_group] = {
                     'nearest_m': int(distance),
                     'nearest':{
                         'poi_id': str(poi['_id']),
@@ -61,10 +64,10 @@ class OtodomGeoAggregator(OtodomAggregator):
                     },
                     **{f'count{r}m': 0 for r in ranges},
                 }
-            metrics[category]['nearest_m'] = min(metrics[category]['nearest_m'], distance)
+            metrics[category_group]['nearest_m'] = min(metrics[category_group]['nearest_m'], distance)
 
             for r in ranges:
                 if distance <= r:
-                    metrics[category][f'count{r}m'] += 1
+                    metrics[category_group][f'count{r}m'] += 1
 
         return metrics
