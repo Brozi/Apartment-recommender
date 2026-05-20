@@ -25,7 +25,7 @@ def connect_to_database(host: str = None) -> MongoClient:
     mongo_connect(host=host)
     return MongoClient(host)
 
-class MongoBatchUploader:
+class MongoBatchListingUploader:
     def __init__(self, input_col='listings', output_col='listings_clean', batch_size: int = 100):
         """Handles the state of database connections and batch operations."""
         self.database = connect_to_database()['otodom_data']
