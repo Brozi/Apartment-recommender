@@ -1,0 +1,68 @@
+.subpageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-32);
+  width: 100%;
+  margin-top: var(--spacing-32);
+  margin-bottom: var(--spacing-64);
+}
+
+.btnGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-16);
+}
+
+.primaryButton {
+  width: 100%;
+}
+
+.select {
+  width: 100%;
+}
+
+.mapSection {
+  margin: 0 auto;
+}
+
+.mapAddon {
+  display: none;
+}
+
+@media (min-width: 70rem) {
+  .subpageHeader {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--spacing-40);
+  }
+
+  .btnGroup {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-24);
+  }
+
+  .primaryButton {
+    width: auto;
+  }
+
+  .select {
+    width: auto;
+  }
+}
+
+@media (min-width: 111rem) {
+  .mapSection {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+
+  .mapAddon {
+    display: block;
+  }
+}

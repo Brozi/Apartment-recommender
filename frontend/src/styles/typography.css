@@ -5,8 +5,14 @@
 @import "@fontsource/plus-jakarta-sans/800.css";
 
 :root {
-  --font-primary: "Inter", sans-serif;
   --font-heading: "Plus Jakarta Sans", sans-serif;
+}
+
+.font-subpage-title {
+  color: var(--clr-primary-100);
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 800;
 }
 
 .font-logo {
@@ -36,16 +42,45 @@
 
 .font-pagination-number {
   color: var(--clr-secondary-100);
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 500;
 }
 
 .font-pagination-text {
   color: var(--clr-primary-100);
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 700;
+}
+
+.font-primary-button-light {
+  color: var(--clr-primary-90);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.font-primary-button-light:hover {
+  color: var(--clr-primary-100);
+}
+
+.font-primary-button-dark {
+  color: var(--clr-light-80);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.font-primary-button-dark:hover {
+  color: var(--clr-light-100);
+}
+
+.font-select-info {
+  color: var(--clr-secondary-100);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 400;
 }
 
 .font-secondary-button {
@@ -65,7 +100,7 @@
 
 .font-paragraph {
   color: var(--clr-text);
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.6;
@@ -73,7 +108,7 @@
 
 .font-paragraph-dark {
   color: var(--clr-primary-100);
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.6;
@@ -81,7 +116,7 @@
 
 .font-chart-heading {
   color: var(--clr-primary-100);
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.35;
@@ -90,7 +125,7 @@
 
 .font-chart-heading-info {
   color: var(--clr-text);
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.35;
@@ -105,12 +140,16 @@
 
 .font-chart-info {
   color: var(--clr-text);
-  font-family: var(--font-primary);
+  font-family: var(--font-heading);
   font-size: 0.6875rem;
   font-weight: 500;
 }
 
 @media (min-width: 37.5rem) {
+  .font-subpage-title {
+    font-size: 2em;
+  }
+
   .font-logo {
     font-size: 1.25em;
     letter-spacing: 0.0125em;
@@ -129,6 +168,18 @@
   .font-pagination-text {
     font-size: 1.125em;
     letter-spacing: 0.01125em;
+  }
+
+  .font-primary-button-light {
+    font-size: 1.25em;
+  }
+
+  .font-primary-button-dark {
+    font-size: 1.25em;
+  }
+
+  .font-select-info {
+    font-size: 1.25em;
   }
 
   .font-secondary-button {

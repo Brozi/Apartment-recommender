@@ -22,11 +22,6 @@
   margin: 0 1rem;
 }
 
-.navSide {
-  display: flex;
-  align-items: center;
-}
-
 .divider {
   height: 0.25rem;
   background-color: var(--clr-secondary-100);
@@ -61,6 +56,10 @@
   color: var(--clr-light-100);
 }
 
+.navAddon {
+  display: none;
+}
+
 .navItems {
   position: fixed;
   top: 5.25rem;
@@ -86,16 +85,15 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  box-shadow: inset 0 0 0 0.125rem var(--clr-acc-green-50);
-  background-color: transparent;
+  background-color: var(--clr-secondary-100);
   transition: background-color 0.2s;
   color: var(--clr-light-80);
-  transition: all 0.1s ease;
+  transition: all 0.2s ease-in-out;
   cursor: pointer;
 }
 
 .navItem:hover {
-  box-shadow: inset 0 0 0 0.125rem var(--clr-acc-green-75);
+  box-shadow: inset 0 0 0 0.125rem var(--clr-light-50);
   color: var(--clr-light-100);
 }
 
@@ -107,8 +105,9 @@
 }
 
 .navItem.active {
-  background-color: var(--clr-acc-green-100);
-  color: var(--clr-primary-100);
+  background-color: var(--clr-secondary-100);
+  color: var(--clr-light-100);
+  box-shadow: inset 0 0 0 0.125rem var(--clr-light-50);
 }
 
 .navToggle {
@@ -118,30 +117,44 @@
 }
 
 @media (min-width: 64rem) {
-  .navSide {
-    flex: 1;
-  }
-
-  .navSideEnd {
-    justify-content: flex-end;
-  }
-
   .navToggle {
     display: none;
+  }
+
+  .navItem {
+    height: 2.25em;
+    padding: 0 var(--spacing-32);
+    background-color: transparent;
+  }
+
+  .navItem:hover {
+    box-shadow: inset 0 0 0 0.0625rem var(--clr-light-35);
+    background-color: var(--clr-secondary-50);
+  }
+
+  .navItem.active {
+    box-shadow: inset 0 0 0 0.0625rem var(--clr-light-50);
+  }
+
+  .navItemsContainer {
+    display: flex;
+    width: 35.3125em;
+    gap: var(--spacing-32);
+  }
+
+  .navAddon {
+    display: block;
   }
 
   .navItems {
     position: static;
     height: auto;
-    width: auto;
+    width: 100%;
     background: none;
     flex-direction: row;
+    justify-content: space-between;
+    gap: 0;
     padding: 0;
-    gap: var(--spacing-24);
-  }
-
-  .navItem {
-    width: 12rem;
   }
 }
 
