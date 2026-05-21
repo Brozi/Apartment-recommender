@@ -273,6 +273,28 @@ class OtodomCleaner:
             clean_doc['heating'] = heating_map[heating_raw]
 
 
+    def clean_auction_type(clean_doc: dict) -> None:
+        auction_type = clean_doc.get('auction_type', None)
+
+        #TODO: Uzupelnic typy auction_type
+        auction_type_map = {
+            'sale': 'Niewiemcotoznaczy, dodać resztę',
+        }
+        if auction_type is None:
+            clean_doc['auction_type'] = 'unknown'
+            return
+
+        auction_type = str(auction_type)
+
+        mapped = auction_type_map.get(auction_type)
+        if mapped is not None:
+            clean_doc['auction_type'] = mapped
+            return
+        try:
+            clean_doc['auction_type'] = str(int(auction_type))
+        except (TypeError, ValueError):
+            clean_doc['auction_type'] = auction_type
+            return
 
 
 
