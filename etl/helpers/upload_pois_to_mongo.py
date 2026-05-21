@@ -106,8 +106,8 @@ def upload_to_mongo_grouped_categories(json_path, db_name):
 
         logging.info('Creating POI indexes...')
         poi_collection.create_index([('location', '2dsphere')])
-        poi_collection.create_index([('category_group', 1)])
-        poi_collection.create_index([('category_groups', 1)])
+        # poi_collection.create_index([('category_group', 1)])
+        # poi_collection.create_index([('category_groups', 1)])
         poi_collection.create_index([('category', 1)])
         logging.info('POI indexes created.')
 
