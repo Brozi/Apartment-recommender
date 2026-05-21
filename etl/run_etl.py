@@ -21,6 +21,6 @@ if __name__ == "__main__":
 
     dash = OtodomDashAggregator(
         listings_col = 'listings_clean',
-        dashboard_col='dashboard_aggregates_v3'
+        dashboard_col='dashboard_aggregates'
     )
     dash.build_dash_aggregates()
