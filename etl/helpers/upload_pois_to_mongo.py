@@ -61,7 +61,7 @@ def upload_to_mongo(json_path, db_name):
 def upload_to_mongo_grouped_categories(json_path, db_name):
     client = connect_to_database()
     db = client[db_name]
-    poi_collection = db['pois_v2']
+    poi_collection = db['pois']
 
     writer = MongoBulkWriter(
         poi_collection,
