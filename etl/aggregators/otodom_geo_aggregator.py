@@ -13,7 +13,7 @@ class OtodomGeoAggregator(OtodomAggregator):
                        category_groups=(
                                'tram_stop',
                                'bus_stop',
-                               'education',
+                               'school',
                                'grocery_retail',
                                'parcel_service'
                        ),
