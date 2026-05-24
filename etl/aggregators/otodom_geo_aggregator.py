@@ -6,10 +6,10 @@ from etl.aggregators.otodom_aggregator import OtodomAggregator
 from etl.services import MongoBulkWriter
 
 class OtodomGeoAggregator(OtodomAggregator):
-    def __init__(self, poi_col='pois', listings_col='listings_clean'):
+    def __init__(self, poi_col='pois', output_col='listings_clean'):
         super().__init__()
         self.poi_col = self.db[poi_col]
-        self.listings_col = self.db[listings_col]
+        self.listings_col = self.db[output_col]
 
     def find_pois_near(self,
                        longitude:float=None,
