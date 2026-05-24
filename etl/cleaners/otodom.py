@@ -1,6 +1,6 @@
 import pandas as pd
-
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
+import warnings
 
 class OtodomCleaner:
     def __init__(self, get_true_location):
@@ -318,10 +318,15 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_description(clean_doc: dict) -> None:
-        description_raw = clean_doc.get('description', None)
-        description = BeautifulSoup(description_raw, 'html.parser').get_text(separator=" ", strip=True)
-        clean_doc['description'] = description
-        return
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=MarkupResemblesLocatorWarning)
+            description_raw = clean_doc.get('description', None)
+            if description_raw is None:
+                clean_doc['description'] = 'unknown'
+                return
+            description = BeautifulSoup(description_raw, 'html.parser').get_text(separator=" ", strip=True)
+            clean_doc['description'] = description
+            return
 
     @staticmethod
     def clean_property_type(clean_doc: dict) -> None:
