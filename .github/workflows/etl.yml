@@ -1,0 +1,41 @@
+name: Otodom ETL
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Multithread Otodom Scraper"]
+    types: ["completed"]
+
+concurrency:
+  group: otodom-etl
+  cancel-in-progress: false
+
+jobs:
+  etl:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    env:
+      ACTIVE_SETTINGS_JSON: ${{ secrets.SETTINGS_JSON }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install -r requirements_etl.txt
+
+      - name: Create settings.json securely
+        run: |
+            cat << 'EOF' > settings.json 
+            ${{ env.ACTIVE_SETTINGS_JSON }}
+            EOF
+
+      - name: Run ETL pipeline
+        run: PYTHONPATH=. python -m etl.run_etl
