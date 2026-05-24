@@ -19,7 +19,7 @@ class OtodomGeoAggregator(OtodomAggregator):
                                'bus_stop',
                                'school',
                                'grocery_retail',
-                               'parcel_service'
+                               'parcel_service',
                        ),
                        limit=None) -> list:
         query = {}
@@ -94,14 +94,18 @@ class OtodomGeoAggregator(OtodomAggregator):
         lat = float(coordinates_array[1])
         return lon, lat
 
-    def add_poi_metrics(self):
+    def add_poi_metrics(self, category_groups:tuple, max_distance:int=1500):
         writer = MongoBulkWriter(self.listings_col, batch_size=500, ordered=False)
 
         cursor = self.listings_col.find()
 
         for listing in cursor:
             lon, lat = self._extract_coordinates(listing)
-            pois = self.find_pois_near(latitude=lat, longitude=lon)
+            pois = self.find_pois_near(latitude=lat,
+                                       longitude=lon,
+                                       max_distance=max_distance,
+                                       category_groups=category_groups
+                                       )
             metrics = self.build_poi_metrics(pois)
 
             writer.queue(

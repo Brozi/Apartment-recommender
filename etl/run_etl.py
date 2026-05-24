@@ -29,5 +29,15 @@ if __name__ == "__main__":
         poi_col = 'pois',
         output_col = 'listings_clean',
     )
-    geo.add_poi_metrics()
+    category_groups = (
+        'tram_stop',
+        'bus_stop',
+        'kindergarten',
+        'school',
+        'university',
+        'specialized_school',
+        'grocery_retail',
+        'parcel_service'
+    )
+    geo.add_poi_metrics(category_groups=category_groups, max_distance=1500)
 
