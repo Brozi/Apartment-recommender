@@ -66,7 +66,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_rent(clean_doc: dict, min_rent: int = 20) -> None:
-        rent_raw = clean_doc.get('rent')
+        rent_raw = clean_doc.get('rent', None)
         if rent_raw is None:
             clean_doc['rent'] = None
             clean_doc['rent_usable'] = False
@@ -149,7 +149,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_construction_status(clean_doc: dict) -> None:
-        construction_status = clean_doc.get('construction_status')
+        construction_status = clean_doc.get('construction_status', None)
         if construction_status is None:
             clean_doc['construction_status'] = 'unknown'
             return
@@ -188,7 +188,7 @@ class OtodomCleaner:
     def clean_price(clean_doc:dict, threshold:float|None=None):
         price_per_meter = clean_doc.get('price_per_meter', None)
         area = clean_doc.get('area', 0)
-        value_raw = clean_doc.get('price')
+        value_raw = clean_doc.get('price', None)
         if value_raw is None:
             clean_doc['price'] = None
             clean_doc['price_usable'] = False
@@ -203,10 +203,17 @@ class OtodomCleaner:
 
         if price <= 0:
             try:
-                clean_doc['price'] = price_per_meter * area
-                clean_doc['price_usable'] = True
-                return
-            except price <=0:
+                calculated_price = price_per_meter * area
+
+                if calculated_price <= 0:
+                    clean_doc['price'] = None
+                    clean_doc['price_usable'] = False
+                    return
+                else:
+                    clean_doc['price'] = calculated_price
+                    clean_doc['price_usable'] = True
+                    return
+            except TypeError, ValueError:
                 clean_doc['price'] = None
                 clean_doc['price_usable'] = False
             return
@@ -233,7 +240,7 @@ class OtodomCleaner:
             'private': 'Private',
 
         }
-        offered_by = clean_doc.get('offered_by')
+        offered_by = clean_doc.get('offered_by', None)
         if offered_by is None:
             clean_doc['offered_by'] = 'unknown'
             return
@@ -247,7 +254,7 @@ class OtodomCleaner:
             'primary': 'Primary',
             'secondary': 'Secondary',
         }
-        market_type = clean_doc.get('market_type')
+        market_type = clean_doc.get('market_type', None)
         if market_type is None:
             clean_doc['market_type'] = 'unknown'
             return
@@ -257,7 +264,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_extras(clean_doc:dict) -> None:
-        extras_raw = clean_doc.get('extras')
+        extras_raw = clean_doc.get('extras', None)
         if pd.isna(extras_raw) or str(extras_raw).strip().lower() == 'nan' or not extras_raw:
             clean_doc['extras'] = 'unknown'
             return
@@ -282,7 +289,7 @@ class OtodomCleaner:
             'electrical': 'Electric',
             'boiler_rooms': 'Boiler Room'
         }
-        heating_raw = clean_doc.get('heating')
+        heating_raw = clean_doc.get('heating', None)
         if heating_raw is None:
             clean_doc['heating'] = 'unknown'
             return
@@ -292,7 +299,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_security(clean_doc: dict) -> None:
-        security_raw = clean_doc.get('security_types')
+        security_raw = clean_doc.get('security_types', None)
         if pd.isna(security_raw) or str(security_raw).strip().lower() == 'nan' or not security_raw:
             clean_doc['security_types'] = 'unknown'
             return
@@ -310,14 +317,14 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_description(clean_doc: dict) -> None:
-        description_raw = clean_doc.get('description')
+        description_raw = clean_doc.get('description', None)
         description = BeautifulSoup(description_raw, 'html.parser').get_text(separator=" ", strip=True)
         clean_doc['description'] = description
         return
 
     @staticmethod
     def clean_property_type(clean_doc: dict) -> None:
-        property_type = clean_doc.get('property_type')
+        property_type = clean_doc.get('property_type', None)
         if property_type is None:
             clean_doc['property_type'] = 'unknown'
             return
@@ -327,7 +334,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_auction_type(clean_doc: dict) -> None:
-        auction_type = clean_doc.get('auction_type')
+        auction_type = clean_doc.get('auction_type', None)
         if auction_type is None:
             clean_doc['auction_type'] = 'unknown'
             return
@@ -337,7 +344,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_photos(clean_doc: dict) -> None:
-        photos = clean_doc.get('photo_urls')
+        photos = clean_doc.get('photo_urls', None)
         if pd.isna(photos) or str(photos).strip().lower() == 'nan' or not photos:
             clean_doc['photo_urls'] = 'unknown'
             return
@@ -354,7 +361,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_building_type(clean_doc: dict) -> None:
-        building_type = clean_doc.get('building').get('type', None)
+        building_type = clean_doc.get('building', {}).get('type', None)
         building = clean_doc['building']
         if building_type is None:
             building['type'] = 'unknown'
@@ -366,7 +373,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_building_build_year(clean_doc: dict) -> None:
-        build_year = clean_doc.get('building').get('build_year', None)
+        build_year = clean_doc.get('building', {}).get('build_year', None)
         building = clean_doc['building']
         if build_year is None:
             building['build_year'] = 'unknown'
@@ -380,7 +387,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_building_floors(clean_doc: dict) -> None:
-        floors = clean_doc.get('building').get('floors', None)
+        floors = clean_doc.get('building', {}).get('floors', None)
         building = clean_doc['building']
         if floors is None:
             building['floors'] = 'unknown'
@@ -394,7 +401,7 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_area(clean_doc: dict) -> None:
-        area = clean_doc.get('area')
+        area = clean_doc.get('area', None)
         if area is None:
             clean_doc['area'] = None
             clean_doc['area_usable'] = False
