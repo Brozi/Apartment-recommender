@@ -117,4 +117,4 @@ class OtodomGeoAggregator(OtodomAggregator):
                     upsert=False
                 )
             )
-            writer.flush()
+        writer.flush()
