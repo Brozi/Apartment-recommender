@@ -1,6 +1,6 @@
 from pymongo import UpdateOne
 
-from otodom_aggregator import OtodomAggregator
+from .otodom_aggregator import OtodomAggregator
 from etl.common import NOW
 from etl.services import MongoBulkWriter
 

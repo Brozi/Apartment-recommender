@@ -1,4 +1,4 @@
-from otodom_aggregator import OtodomAggregator
+from .otodom_aggregator import OtodomAggregator
 from pymongo import UpdateOne
 import logging
 
