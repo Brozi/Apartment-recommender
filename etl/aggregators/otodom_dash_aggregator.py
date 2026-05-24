@@ -1,3 +1,5 @@
+from jedi.inference.base_value import iterator_to_value_set
+
 from .otodom_aggregator import OtodomAggregator
 from pymongo import UpdateOne
 import logging
@@ -63,7 +65,7 @@ class OtodomDashAggregator(OtodomAggregator):
         metrics = {
             'offer_count_by_construction_status': self._count_by_basic_field_pipeline(self.construction_status),
             'offer_count_by_rooms': self._count_by_basic_field_pipeline(self.rooms),
-            'offer_count_by_build_year': self._count_by_basic_field_pipeline(self.build_year),
+            'offer_count_by_build_year': self._count_by_build_year_range_pipeline(self.build_year),
             'offer_count_by_market_type': self._count_by_basic_field_pipeline(self.market_type),
             'monthly_area_stats': self._monthly_area_stats_pipeline(),
             'monthly_price_stats': self._monthly_price_stats_pipeline(),
@@ -131,6 +133,81 @@ class OtodomDashAggregator(OtodomAggregator):
                 }
             }
         ]
+
+    def _count_by_build_year_range_pipeline(self):
+        ranges = [
+            {'label': 'before 1945', 'min': 1800, 'max': 1944, 'sort_order': 1},
+            {'label': '1945 - 1970', 'min': 1945, 'max': 1970, 'sort_order': 2},
+            {'label': '1971 - 1989', 'min': 1971, 'max': 1989, 'sort_order': 3},
+            {'label': '1990 - 2000', 'min': 1990, 'max': 2000, 'sort_order': 4},
+            {'label': '2001 - 2010', 'min': 2001, 'max': 2010, 'sort_order': 5},
+            {'label': '2011 - 2020', 'min': 2011, 'max': 2020, 'sort_order': 6},
+            {'label': '2021+', 'min': 2021, 'max': None, 'sort_order': 7},
+        ]
+
+        def build_branch(item):
+            conditions = [
+                {'$gte': ['$build_year_int', item['min']]},
+                #greater than or equal
+            ]
+
+            if item[max] is not None:
+                conditions.append({'$lte': ['build_year_int', item['max']]})
+
+            return {
+                'case': {'$and': conditions},
+                'then': {
+                    'label': item['label'],
+                    'sort_order': item['sort_order'],
+                }
+            }
+
+        return [
+            {
+
+                '$project': {
+                    'build_year_int': {
+                        '$convert': {
+                            'input': f'${self.build_year}',
+                            'to': 'int',
+                            'onError': None,
+                            'onNull': None,
+                        }
+                    }
+                }
+
+            },
+            {
+                '$project': {
+                    'build_year_bucket': {
+                        '$switch': {
+                            'branches': [build_branch(item) for item in ranges],
+                            'default': {
+                                'label': 'unknown',
+                                'sort_order': 99,
+                            },
+                        }
+                    }
+                }
+            },
+            {
+                '$group': {
+                    '_id': {
+                        'build_year_range': '$build_year_bucket.label',
+                        'sort_order': '$build_year_bucket.sort_order',
+                    },
+                    'count': {'$sum': 1},
+                }
+            },
+            {
+                '$sort':{
+                    '_id.sort_order': 1,
+
+                }
+            }
+        ]
+
+
 
     def _monthly_area_stats_pipeline(self):
         return [
