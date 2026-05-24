@@ -1,5 +1,3 @@
-from jedi.inference.base_value import iterator_to_value_set
-
 from .otodom_aggregator import OtodomAggregator
 from pymongo import UpdateOne
 import logging
