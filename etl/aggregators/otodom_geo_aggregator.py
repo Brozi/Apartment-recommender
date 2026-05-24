@@ -72,7 +72,6 @@ class OtodomGeoAggregator(OtodomAggregator):
             distance = poi['distance_m']
 
             location = poi.get('location', {})
-            coordinates = location.get('coordinates')
 
             nearest = {
                 'poi_id': str(poi['_id']),
@@ -80,10 +79,6 @@ class OtodomGeoAggregator(OtodomAggregator):
                 'distance_m': int(distance),
                 'location': location,
             }
-
-            if coordinates and len(coordinates) ==2:
-                nearest['longitude'] = coordinates[0]
-                nearest['latitude'] = coordinates[1]
 
             if category_group not in metrics:
                 metrics[category_group] = {
