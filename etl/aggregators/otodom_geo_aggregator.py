@@ -101,11 +101,12 @@ class OtodomGeoAggregator(OtodomAggregator):
 
         for listing in cursor:
             lon, lat = self._extract_coordinates(listing)
-            pois = self.find_pois_near(latitude=lat,
-                                       longitude=lon,
-                                       max_distance=max_distance,
-                                       category_groups=category_groups
-                                       )
+            pois = self.find_pois_near(
+                latitude=lat,
+                longitude=lon,
+                max_distance=max_distance,
+                category_groups=category_groups
+            )
             metrics = self.build_poi_metrics(pois)
 
             writer.queue(
