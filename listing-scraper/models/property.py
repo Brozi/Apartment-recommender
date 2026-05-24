@@ -55,8 +55,8 @@ class PropertyDocument(Document):
     offered_by = EnumField(OfferedBy, required=True)
     estate_agency = ReferenceField("AgencyDocument", reverse_delete_rule=NULLIFY)
     developer_id = IntField(db_field="developer_id")
-    etl_processed = BooleanField(db_field="etl_processed")
-    scraped_at = DateTimeField(db_field="scraped_at")
+    etl_processed = BooleanField(db_field="etl_processed", required=True)
+    scraped_at = DateTimeField(db_field="scraped_at", required=True)
 
     meta = {"collection": "listings"
             }
@@ -107,6 +107,7 @@ class PropertyDocument(Document):
         self.building = self.extract_building(listing_properties["target"])
         self.offered_by = self.extract_offered_by(listing_properties)
         self.etl_processed = False
+        self.scraped_at = datetime.now()
 
     def set_link(self, code: BeautifulSoup) -> None:
         """

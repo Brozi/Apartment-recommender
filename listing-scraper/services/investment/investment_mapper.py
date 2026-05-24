@@ -112,6 +112,8 @@ class InvestmentMapper:
             property_.localization = InvestmentMapper._map_localization(
                 target_data, unit_dict, main_location, default_city, default_province, default_district
             )
+            property_.etl_processed = False
+            property_.scraped_at = datetime.now()
 
             logger.info(f" Saved Unit directly from JSON: {property_.link}")
             PropertyService.put(property_)

@@ -107,7 +107,7 @@ class Constans:
         "rent",
         "construction_status",
         "rooms",
-        "security_types"
+        "security_types",
         "scraped_at",
         "title",
     ]

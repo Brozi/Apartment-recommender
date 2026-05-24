@@ -200,8 +200,8 @@ class InvestmentProcessor:
         """
         property_ = InvestmentMapper.map_investment_unit(
             unit_dict, investment_url, main_location, developer_id,
-            self.settings.city, self.settings.province, self.settings.district
-        )
+            self.settings.city, self.settings.province, self.settings.district,
+        description)
         if property_:
             listing = Listing()
             listing.property_ = property_
