@@ -1,6 +1,6 @@
 import logging
 
-from etl.services import MongoBatchUploader
+from etl.services import MongoBatchListingUploader
 from etl.transformers.otodom import  OtodomTransformer
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ def calculate_price_threshold(collection, q=0.0015):
 class ETLPipeline:
     def __init__(self, input_col='listings', output_col='listings_clean'):
         """Orchestrates the data extraction, transformation, and loading."""
-        self.uploader = MongoBatchUploader(input_col=input_col,output_col=output_col,batch_size=100)
+        self.uploader = MongoBatchListingUploader(input_col=input_col,output_col=output_col,batch_size=100)
         self.transformer = OtodomTransformer()
 
     def run(self):

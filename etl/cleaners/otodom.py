@@ -1,5 +1,7 @@
 import pandas as pd
 
+from bs4 import BeautifulSoup
+
 class OtodomCleaner:
     def __init__(self, get_true_location):
         self.get_true_location = get_true_location
@@ -21,6 +23,9 @@ class OtodomCleaner:
         self.clean_photos(clean_doc)
         self.clean_auction_type(clean_doc)
         self.clean_building_type(clean_doc)
+        self.clean_building_build_year(clean_doc)
+        self.clean_building_floors(clean_doc)
+        self.clean_area(clean_doc)
 
     def clean_localization(self, clean_doc: dict) -> None:
         localization = clean_doc.get('localization', {})
@@ -303,6 +308,13 @@ class OtodomCleaner:
         return
 
     @staticmethod
+    def clean_description(clean_doc: dict) -> None:
+        description_raw = clean_doc.get('description')
+        description = BeautifulSoup(description_raw, 'html.parser').get_text(separator=" ", strip=True)
+        clean_doc['description'] = description
+        return
+
+    @staticmethod
     def clean_property_type(clean_doc: dict) -> None:
         property_type = clean_doc.get('property_type')
         if property_type is None:
@@ -347,7 +359,47 @@ class OtodomCleaner:
             building['type'] = 'unknown'
             return
         else:
+            building_type = building_type.replace('_', ' ')
             building['type'] = building_type.title()
+            return
+
+    @staticmethod
+    def clean_building_build_year(clean_doc: dict) -> None:
+        build_year = clean_doc.get('building').get('build_year', None)
+        building = clean_doc['building']
+        if build_year is None:
+            building['build_year'] = 'unknown'
+            return
+        else:
+            if int(build_year) < 1000:
+                building['build_year'] = 'unknown'
+                return
+            building['build_year'] = build_year
+            return
+
+    @staticmethod
+    def clean_building_floors(clean_doc: dict) -> None:
+        floors = clean_doc.get('building').get('floors', None)
+        building = clean_doc['building']
+        if floors is None:
+            building['floors'] = 'unknown'
+            return
+        else:
+            if int(floors) < 0:
+                building['floors'] = 'unknown'
+                return
+            building['floors'] = floors
+            return
+
+    @staticmethod
+    def clean_area(clean_doc: dict) -> None:
+        area = clean_doc.get('area')
+        if area is None:
+            clean_doc['area'] = None
+            clean_doc['area_usable'] = False
+            return
+        else:
+            clean_doc['area'] = float(area)
             return
 
 

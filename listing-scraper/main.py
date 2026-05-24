@@ -3,11 +3,10 @@ import time
 import random
 import re
 import sys
-import datetime
 import logging
 import os
 
-from jobs import export_to_github_actions
+from etl.common import NOW
 from services import ExportService
 
 
@@ -32,7 +31,7 @@ class TerminalLogger:
         self.log_file.flush()
 
 
-log_filename = datetime.datetime.now().strftime("log/scraper_log_%Y-%m-%d_%H-%M-%S.txt")
+log_filename = NOW.strftime("log/scraper_log_%Y-%m-%d_%H-%M-%S.txt")
 sys.stdout = TerminalLogger(log_filename, sys.stdout)
 sys.stderr = TerminalLogger(log_filename, sys.stderr)
 

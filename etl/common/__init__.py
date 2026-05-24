@@ -1,0 +1,1 @@
+from etl.common.common import NOW
