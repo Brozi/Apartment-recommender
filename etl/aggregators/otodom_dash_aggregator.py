@@ -164,7 +164,7 @@ class OtodomDashAggregator(OtodomAggregator):
         return (list[dict]): Aggregation pipeline for mongodb
         """
         ranges = [
-            {'label': 'before 1945', 'min': 1000, 'max': 1944, 'sort_order': 1},
+            {'label': 'before 1945', 'min': None, 'max': 1944, 'sort_order': 1},
             {'label': '1945 - 1970', 'min': 1945, 'max': 1970, 'sort_order': 2},
             {'label': '1971 - 1989', 'min': 1971, 'max': 1989, 'sort_order': 3},
             {'label': '1990 - 2000', 'min': 1990, 'max': 2000, 'sort_order': 4},
@@ -178,10 +178,11 @@ class OtodomDashAggregator(OtodomAggregator):
             Helper function responsible for creating a mongodb switch branch to create the build_year ranges
             :return (dict): the switch branch
             """
-            conditions = [
-                {'$gte': ['$build_year_int', item['min']]},
-                #greater than or equal
-            ]
+            conditions = []
+
+            if item['min'] is not None:
+                conditions.append({'$gte': ['$build_year_int', item['min']]})
+                # greater than or equal
 
             if item['max'] is not None:
                 conditions.append({'$lte': ['build_year_int', item['max']]})
