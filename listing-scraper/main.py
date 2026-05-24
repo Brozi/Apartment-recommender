@@ -6,7 +6,7 @@ import sys
 import logging
 import os
 
-from etl.common.common import NOW
+from etl.common import NOW
 from services import ExportService
 
 

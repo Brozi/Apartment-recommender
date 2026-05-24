@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from etl.common.common import NOW
+from etl.common import NOW
 
 from models import PropertyDocument
 from mongoengine import QuerySet
