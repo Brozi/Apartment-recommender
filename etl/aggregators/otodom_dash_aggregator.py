@@ -134,7 +134,7 @@ class OtodomDashAggregator(OtodomAggregator):
 
     def _count_by_build_year_range_pipeline(self):
         ranges = [
-            {'label': 'before 1945', 'min': 1800, 'max': 1944, 'sort_order': 1},
+            {'label': 'before 1945', 'min': 1000, 'max': 1944, 'sort_order': 1},
             {'label': '1945 - 1970', 'min': 1945, 'max': 1970, 'sort_order': 2},
             {'label': '1971 - 1989', 'min': 1971, 'max': 1989, 'sort_order': 3},
             {'label': '1990 - 2000', 'min': 1990, 'max': 2000, 'sort_order': 4},
