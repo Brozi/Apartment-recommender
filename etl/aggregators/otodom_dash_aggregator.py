@@ -1,8 +1,9 @@
-from etl.aggregators.otodom_aggregator import OtodomAggregator
-
-from datetime import datetime, timezone
+from otodom_aggregator import OtodomAggregator
 from pymongo import UpdateOne
 import logging
+
+from etl.common import NOW
+
 logger = logging.getLogger(__name__)
 
 class OtodomDashAggregator(OtodomAggregator):
@@ -82,7 +83,6 @@ class OtodomDashAggregator(OtodomAggregator):
 
 
     def _save_dashboard_metric(self, metric_name, rows):
-        now = datetime.now(timezone.utc)
         operations = []
 
         for row in rows:
@@ -106,7 +106,7 @@ class OtodomDashAggregator(OtodomAggregator):
                         'key': key,
                         'group_key':group_key,
                         'values': values,
-                        'computed_at': now
+                        'computed_at': NOW
                     }
                 },
                 upsert=True

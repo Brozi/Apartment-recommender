@@ -1,8 +1,7 @@
-from datetime import datetime, timezone
-
 from pymongo import UpdateOne
 
-from etl.aggregators.otodom_aggregator import OtodomAggregator
+from otodom_aggregator import OtodomAggregator
+from etl.common import NOW
 from etl.services import MongoBulkWriter
 
 class OtodomGeoAggregator(OtodomAggregator):
@@ -111,7 +110,7 @@ class OtodomGeoAggregator(OtodomAggregator):
                     {
                         '$set': {
                             'geo_aggregations': metrics,
-                            'geo_aggregations_computed_at': datetime.now(timezone.utc)
+                            'geo_aggregations_computed_at': NOW
                         }
                     },
                     upsert=False

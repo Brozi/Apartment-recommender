@@ -12,11 +12,3 @@ class OtodomAggregator:
         self.rooms = 'rooms'
         self.build_year = 'building.build_year'
         self.building_type = 'building.type'
-
-
-
-
-
-
-
-
