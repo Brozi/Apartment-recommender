@@ -151,7 +151,7 @@ class OtodomDashAggregator(OtodomAggregator):
                 #greater than or equal
             ]
 
-            if item[max] is not None:
+            if item['max'] is not None:
                 conditions.append({'$lte': ['build_year_int', item['max']]})
 
             return {
