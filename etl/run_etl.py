@@ -29,4 +29,5 @@ if __name__ == "__main__":
         poi_col = 'pois',
         output_col = 'listings_clean',
     )
+    geo.add_poi_metrics()
 
