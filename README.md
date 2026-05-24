@@ -1,7 +1,7 @@
 
 # Otodom Scraper
 
-**Otodom Scraper** is a simple python module, which is capable of scraping **thousands of listings within a minutes** from the polish property marketplace site otodom.pl. From each of the listing, there may be **more than 30** parameters fetched.
+**Otodom Scraper** is a simple python module, which is capable of scraping **thousands of listings within a minutes** from the polish property marketplace site otodom.pl (over 30 parameters included), as well as running an ETL pipeline on the data, and aggregating it. The ETL module runs a geo aggregation too - using POIs data downloaded from OpenStreetMap it identifies POIs near each flat in given ranges.
 
 Integrated with **MongoDB** gives a powerfull combo in managing found listings. It is possible to extract data to the both **CSV** and **JSON** file.
 
