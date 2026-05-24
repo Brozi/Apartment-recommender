@@ -204,6 +204,7 @@ class OtodomCleaner:
         if price <= 0:
             try:
                 clean_doc['price'] = price_per_meter * area
+                clean_doc['price_usable'] = True
                 return
             except price <=0:
                 clean_doc['price'] = None
