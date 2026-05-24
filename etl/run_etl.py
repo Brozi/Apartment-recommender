@@ -14,7 +14,7 @@ logging.basicConfig(
 )
 if __name__ == "__main__":
     pipeline = ETLPipeline(
-        input_col='properties_test',
+        input_col='listings',
         output_col='listings_clean',
     )
     pipeline.run()
