@@ -63,23 +63,37 @@ class OtodomGeoAggregator(OtodomAggregator):
         return list(col.aggregate(pipeline))
 
     @staticmethod
-    def build_poi_metrics(pois, ranges=(500,1000,1500)):
+    def build_poi_metrics(pois, max_distance:int=1500, step:int=500):
+        ranges = tuple(range(0, max_distance+1, step))
+        ranges = ranges[1:]
         metrics = {}
         for poi in pois:
             category_group = poi.get('category_group', 'other')
             distance = poi['distance_m']
 
+            location = poi.get('location', {})
+            coordinates = location.get('coordinates')
+
+            nearest = {
+                'poi_id': str(poi['_id']),
+                'name': poi.get('tags', {}).get('name', 'Unknown'),
+                'distance_m': int(distance),
+                'location': location,
+            }
+
+            if coordinates and len(coordinates) ==2:
+                nearest['longitude'] = coordinates[0]
+                nearest['latitude'] = coordinates[1]
+
             if category_group not in metrics:
                 metrics[category_group] = {
                     'nearest_m': int(distance),
-                    'nearest':{
-                        'poi_id': str(poi['_id']),
-                        'name': poi.get('tags', {}).get('name', 'Unknown'),
-                        'distance_m': int(distance),
-                    },
+                    'nearest':nearest,
                     **{f'count_{r}m': 0 for r in ranges},
                 }
-            metrics[category_group]['nearest_m'] = min(metrics[category_group]['nearest_m'], distance)
+            elif distance < metrics[category_group]['nearest_m']:
+                metrics[category_group]['nearest_m'] = int(distance)
+                metrics[category_group]['nearest'] = nearest
 
             for r in ranges:
                 if distance <= r:
