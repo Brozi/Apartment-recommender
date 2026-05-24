@@ -7,13 +7,24 @@ logger = logging.getLogger(__name__)
 
 
 class NetworkService:
-    """Handles HTTP requests and evades DataDome bot protection."""
+    """
+    Handles HTTP requests and evades DataDome bot protection.
+    Attributes:
+        session: New session from curl_cffi
+    """
 
     def __init__(self):
         self.session = requests.Session(impersonate="chrome120")
 
     def _request(self, method: str, url: str, max_retries: int = 3, delay_range: tuple = (6.0, 10.0), **kwargs):
-        """Internal method to handle HTTP requests, proactive delays, bot detection, and retries."""
+        """
+        Internal method to handle HTTP requests, proactive delays, bot detection, and retries.
+        Parameters:
+            method (str): HTTP method to use
+            url (str): URL to request
+            max_retries (int): Maximum number of retries
+            delay_range (tuple): Delay range to use
+        """
 
         response = None
 

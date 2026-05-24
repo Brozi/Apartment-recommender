@@ -4,6 +4,9 @@ from models import PropertyDocument
 
 
 class Listing:
+    """
+    This class is responsible for converting the mongo documents to a python dictionary
+    """
     def __init__(self):
         self.property_: PropertyDocument = None
         self.agency: AgencyDocument | None = None

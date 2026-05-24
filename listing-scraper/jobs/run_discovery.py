@@ -2,6 +2,9 @@ import sys
 import os
 import json
 import uuid
+"""
+This script is responsible for runnning discovery of the listing chunks
+"""
 
 # Add the parent directory to the path so it can import your modules
 #sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -12,7 +15,6 @@ scraper_dir = os.path.dirname(current_dir)                # path/to/otodomscrape
 # Add scraper_dir to path so it can import your modules
 sys.path.append(scraper_dir)
 
-# --- ADD THIS LINE ---
 # Change the working directory so Python finds settings.json exactly where it expects it!
 os.chdir(scraper_dir)
 
@@ -21,6 +23,9 @@ from services.discovery import RangeDiscoverer
 
 
 def export_to_github_actions(ranges: list):
+    """
+    :param ranges: The list of ranges to safely export to github actions
+    """
     # Convert [{"min": 0, "max": 10000}, ...] into ["0-10000", ...]
     # This completely bypasses the GitHub Actions JSON secret scanner
     range = RangeDiscoverer(max_listings_per_chunk=2800)
@@ -37,7 +42,10 @@ def export_to_github_actions(ranges: list):
             f.write(f"{delimiter}\n")
 
 
-def main():
+def discover():
+    """
+    The main function of the discovery script that acts as a orchestrator of this module.
+    """
     crawler = Crawler()
 
     # 1. Read limits and chunk configurations directly from settings
@@ -61,4 +69,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    discover()

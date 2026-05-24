@@ -7,6 +7,9 @@ from common import flatten_dict
 logger = logging.getLogger(__name__)
 
 class ExportService:
+    """
+    This class is responsible for exporting the results of the crawler to csv and xlsx files
+    """
     @staticmethod
     def to_csv_file(listings: list, filename: str) -> None:
         """

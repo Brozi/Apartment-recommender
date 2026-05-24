@@ -10,7 +10,11 @@ class OtodomParser:
 
     @staticmethod
     def parse_page_count(html: str) -> tuple[int, int]:
-        """Extracts the total pages and total listings from search results HTML."""
+        """
+        Extracts the total pages and total listings from search results HTML.
+        :param html: the html string to parse the page count from
+        :return: tuple[int, int] containing the total pages and total listings ammount
+        """
         match = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL)
         if not match:
             logger.warning("Could not find __NEXT_DATA__ script tag.")
@@ -37,7 +41,11 @@ class OtodomParser:
 
     @staticmethod
     def parse_listings(html: str) -> list[dict]:
-        """Extracts the list of apartment dictionaries from search results HTML."""
+        """
+        Extracts the list of apartment dictionaries from search results HTML.
+        :param html: the html string to parse the listings from
+        :return: list[dict] containing the apartment dictionaries
+        """
         marker = 'id="__NEXT_DATA__"'
         if marker not in html:
             return []

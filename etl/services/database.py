@@ -14,6 +14,7 @@ def connect_to_database(host: str = None) -> MongoClient:
     with the url defined in settings.json.
 
     :param host: The host of the database
+    :return: MongoClient object with the database
     """
     logger.info("Connecting to the database")
     if host is None:

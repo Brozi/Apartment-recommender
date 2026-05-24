@@ -45,7 +45,14 @@ logging.basicConfig(
 
 
 def scrape_dynamic_chunk(crawler, current_min, current_max, master_list):
-    """Recursively splits chunks if they have more than 100 pages."""
+    """
+    Recursively splits chunks if they have more than 100 pages.
+    :param crawler: the crawler object
+    :param current_min: the current minimum listing price
+    :param current_max: the current maximum listing price
+    :param master_list: the master list of listings from crawler
+
+    """
     import copy
     if current_min > current_max:
         return

@@ -4,11 +4,22 @@ import pandas as pd
 
 
 class DataMerger:
+    """
+    This is a class that's responsible for merging data from
+    different csv files from scraper instances into one csv file
+    Attributes:
+        input_dir (str): the directory of the input csv files
+        output_dir (str): the directory of the output csv file
+    """
     def __init__(self, input_dir: str, output_dir: str):
         self.input_dir = input_dir
         self.output_dir = output_dir
 
     def merge(self):
+        """
+        This function merges the multiple csv files from each matrix job into
+        one csv file
+        """
         print(f"Looking for CSV files in '{self.input_dir}'...")
         # Recursively find all .csv files in the input directory
         search_pattern = os.path.join(self.input_dir, '**', '*.csv')

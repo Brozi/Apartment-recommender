@@ -18,9 +18,15 @@ class InvestmentMapper:
     This class is pure and does not make network requests or maintain state.
     """
     @staticmethod
-    def map_investment_unit(unit_dict: dict, investment_url: str, main_location: dict = None, developer_id: int = None,
-                            default_city: str = "", default_province: str = "",
-                            default_district: str = "", description: str = " ") -> PropertyDocument | None:
+    def map_investment_unit(unit_dict: dict,
+                            investment_url: str,
+                            main_location: dict = None,
+                            developer_id: int = None,
+                            default_city: str = "",
+                            default_province: str = "",
+                            default_district: str = "",
+                            description: str = " "
+                            ) -> PropertyDocument | None:
         """
         Maps a single unit's JSON dictionary to a PropertyDocument.
 
@@ -31,11 +37,11 @@ class InvestmentMapper:
             unit_dict (dict): The raw JSON dictionary representing the apartment unit.
             investment_url (str): The URL of the parent developer investment.
             main_location (dict, optional): The overarching location dict of the developer project.
-            investment_url (str): The description of the parent developer investment.
             developer_id (int, optional): The Otodom seller/developer ID.
             default_city (str, optional): Fallback city from crawler settings.
             default_province (str, optional): Fallback province from crawler settings.
             default_district (str, optional): Fallback district from crawler settings.
+            description (str, optional): The description to save into the investment
 
         Returns:
             PropertyDocument | None: The fully mapped MongoDB document, or None if mapping fails or document already exists.
@@ -145,8 +151,12 @@ class InvestmentMapper:
         return building
 
     @staticmethod
-    def _map_localization(target_data: dict, unit_dict: dict, main_location: dict, default_city: str,
-                          default_province: str, default_district: str) -> LocalizationDocument:
+    def _map_localization(target_data: dict,
+                          unit_dict: dict,
+                          main_location: dict,
+                          default_city: str,
+                          default_province: str,
+                          default_district: str) -> LocalizationDocument:
         """
         Calculates the most accurate geographical location for a unit.
 

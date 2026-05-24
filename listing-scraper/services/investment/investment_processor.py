@@ -17,6 +17,10 @@ class InvestmentProcessor:
     This includes fetching the initial Next.js HTML payloads, extracting hidden JSON,
     and paginating through the Apollo Persisted Query (APQ) GraphQL API while
     navigating stealth blocks.
+    Attributes:
+        network: an instance of the Network class. Responsible for handling all the connections to the website
+        settings: an instance of the settings class. Used for the search parameters
+        listings: the main list of crawler's listings
     """
     def __init__(self, network, settings, listings_list):
         self.network = network
@@ -191,17 +195,23 @@ class InvestmentProcessor:
 
         Args:
             unit_dict (dict): Raw JSON unit dictionary.
-            investment_url (str): The parent project URL.
             main_location (dict): The parent project's location.
             developer_id (int): The Otodom seller ID.
+            description (str): The description to add to the listing.
 
         Returns:
             bool: True if the unit was successfully mapped and saved, False otherwise.
         """
         property_ = InvestmentMapper.map_investment_unit(
-            unit_dict, investment_url, main_location, developer_id,
-            self.settings.city, self.settings.province, self.settings.district,
-        description)
+            unit_dict,
+            investment_url,
+            main_location,
+            developer_id,
+            self.settings.city,
+            self.settings.province,
+            self.settings.district,
+            description
+        )
         if property_:
             listing = Listing()
             listing.property_ = property_

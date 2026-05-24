@@ -313,7 +313,11 @@ class PropertyDocument(Document):
 
     @staticmethod
     def extract_description(properties: dict) -> str | None:
-        """Extracts the property description and cleans HTML tags/newlines."""
+        """
+        Extracts the property description and cleans HTML tags/newlines.
+        :param properties: The dict containing the property to pull out the description from
+        :return: The property description
+        """
         ad_data = properties.get("props", {}).get("pageProps", {}).get("ad", {})
         desc = ad_data.get("description")
 
@@ -329,7 +333,10 @@ class PropertyDocument(Document):
 
     @staticmethod
     def extract_photos(listing_information: dict) -> str | None:
-        """Extracts the highest resolution image URLs and joins them into a string."""
+        """Extracts the highest resolution image URLs and joins them into a string.
+        :param listing_information: The listing to extract the photos from
+        :return: The highest resolution image URLs or None in case there are no images
+        """
         try:
             images = listing_information.get("props", {}).get("pageProps", {}).get("ad", {}).get("images", [])
             photo_urls = []

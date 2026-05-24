@@ -30,6 +30,10 @@ class AgencyService:
 
     @staticmethod
     def put(agency):
+        """
+        This function uploads the agency to the database
+        :param agency: The agency document to upload
+        """
         try:
             agency = agency.save()
             return agency

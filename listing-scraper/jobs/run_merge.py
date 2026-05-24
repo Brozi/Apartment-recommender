@@ -6,6 +6,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from services.merge import DataMerger
 
+"""
+This script is used to orchestrate merging of the artifacts from different matrix jobs of the scraper
+"""
+
 
 def main():
     # Calculate absolute paths to ensure it works regardless of where it's executed from

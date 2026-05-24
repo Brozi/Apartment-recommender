@@ -7,6 +7,15 @@ from etl.common import NOW
 logger = logging.getLogger(__name__)
 
 class OtodomDashAggregator(OtodomAggregator):
+    """
+    This class is responsible for aggregations for the dashboard on the website
+    Attributes:
+        listings_col: The collection containing the clean listings that the aggregations should be derived from.
+        Can be treated as an input collection
+        dashboard_col: The collection where the aggregations are stored. Can be treated as an output collection
+        period (dict): a dict containing the dateToString function thats passed to mongodb
+        mode (list: dict): a list of dicts containing mongodb pipeline to create a mode function. Currently unused
+    """
     def __init__(self, listings_col = 'listings_clean', dashboard_col = 'dashboard_aggregates'):
         super().__init__()
         self.listings_col = self.db[listings_col]
@@ -59,7 +68,12 @@ class OtodomDashAggregator(OtodomAggregator):
     ]
 
 
-    def build_dash_aggregates(self):
+    def build_dash_aggregates(self) -> int:
+        """
+        This function builds dashboard aggregates based on the metrics dictionary using the internal pipeline functions
+        and saves them using the _save_dashboard_metric function.
+        :return (int): The number of updated documents
+        """
         metrics = {
             'offer_count_by_construction_status': self._count_by_basic_field_pipeline(self.construction_status),
             'offer_count_by_rooms': self._count_by_basic_field_pipeline(self.rooms),
@@ -75,23 +89,29 @@ class OtodomDashAggregator(OtodomAggregator):
         total_updated = 0
 
         for metric_name, pipeline in metrics.items():
-            rows = list(self.listings_col.aggregate(pipeline, allowDiskUse=True))
-            total_updated += self._save_dashboard_metric(metric_name, rows)
+            docs = list(self.listings_col.aggregate(pipeline, allowDiskUse=True))
+            total_updated += self._save_dashboard_metric(metric_name, docs)
 
         logger.info(f'Total updated count: {total_updated}')
         return total_updated
 
 
-    def _save_dashboard_metric(self, metric_name, rows):
+    def _save_dashboard_metric(self, metric_name, docs) -> int:
+        """
+        This function saves the created dashboard metrics to the aggregation column
+        :param metric_name: The name of the metric to save
+        :param docs: the docs to aggregate from the input collection
+        :return: the number of saved aggregate documents
+        """
         operations = []
 
-        for row in rows:
-            group_key = row['_id']
+        for doc in docs:
+            group_key = doc['_id']
             key = '|'.join(f'{k}={v}' for k, v in sorted(group_key.items()))
 
             values = {
                 k: v
-                for k, v in row.items()
+                for k, v in doc.items()
                 if k!='_id'
             }
 
@@ -119,7 +139,13 @@ class OtodomDashAggregator(OtodomAggregator):
         return len(operations)
 
     @staticmethod
-    def _count_by_basic_field_pipeline(field:str):
+    def _count_by_basic_field_pipeline(field:str) -> list[dict]:
+        """
+        The private function responsible for creating an aggregation by a basic nominal field (a string), such as
+        the number of rooms or construction status.
+        :param field: The basic nominal field (a string) to create the aggregation by
+        :return (list[dict]): The list of dicts containing the pipeline aggregating the listings by the basic field
+        """
         output_key = field.replace('.', '_')
         return [
             {
@@ -132,7 +158,11 @@ class OtodomDashAggregator(OtodomAggregator):
             }
         ]
 
-    def _count_by_build_year_range_pipeline(self):
+    def _count_by_build_year_range_pipeline(self) -> list[dict]:
+        """
+        This private function creates an aggregation pipeline to count the listings by build_year ranges
+        return (list[dict]): Aggregation pipeline for mongodb
+        """
         ranges = [
             {'label': 'before 1945', 'min': 1000, 'max': 1944, 'sort_order': 1},
             {'label': '1945 - 1970', 'min': 1945, 'max': 1970, 'sort_order': 2},
@@ -143,7 +173,11 @@ class OtodomDashAggregator(OtodomAggregator):
             {'label': '2021+', 'min': 2021, 'max': None, 'sort_order': 7},
         ]
 
-        def build_branch(item):
+        def build_branch(item) -> dict:
+            """
+            Helper function responsible for creating a mongodb switch branch to create the build_year ranges
+            :return (dict): the switch branch
+            """
             conditions = [
                 {'$gte': ['$build_year_int', item['min']]},
                 #greater than or equal

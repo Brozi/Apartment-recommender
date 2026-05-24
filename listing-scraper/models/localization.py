@@ -1,7 +1,8 @@
+from typing import Any
+
 from mongoengine import EmbeddedDocument
 from mongoengine import FloatField
 from mongoengine import StringField
-from mongoengine import PointField
 
 
 class LocalizationDocument(EmbeddedDocument):
@@ -74,11 +75,11 @@ class LocalizationDocument(EmbeddedDocument):
         return county
 
     @staticmethod
-    def extract_coordinates(properties: dict) -> tuple[float, float]:
+    def extract_coordinates(properties: dict) -> tuple[float, float] | tuple[None, None]:
         """
         Extracts the coordinates from the properties.
 
-        :param properties: The properties containing the coordinates
+        :param properties: The property containing the coordinates
         :return: The coordinates
         """
         coordinates = properties.get("coordinates")
@@ -86,4 +87,4 @@ class LocalizationDocument(EmbeddedDocument):
             return None, None
         latitude = coordinates.get("latitude")
         longitude = coordinates.get("longitude")
-        return latitude, longitude
+        return float(latitude), float(longitude)

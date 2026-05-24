@@ -16,14 +16,45 @@ logger = logging.getLogger(__name__)
 
 
 class Crawler:
-    def __init__(self):
-        """
-        A crawler for the otodom.pl website.
+    """
+    A crawler for the otodom.pl website.
 
-        The crawler is responsible for crawling the website, extracting the data
-        and updating the database. This is achieved by the crawler being an orchestrator
-        of listing_processor and investment_processor.
-        """
+    The crawler is responsible for crawling the website, extracting the data
+    and updating the database. This is achieved by the crawler being an orchestrator
+    of listing_processor and investment_processor.
+    Attributes:
+        network (NetworkService): Shared HTTP client used by the crawler and its
+            processors. Handles request delays, retries, DataDome responses, and
+            session rotation.
+
+        settings (Settings): Runtime scraper configuration loaded from
+            settings.json, or defaults if loading fails. Used to build search
+            URLs, query parameters, and the database connection.
+
+        params (dict): Query parameters generated from the current settings.
+            Currently contains the price filters sent to Otodom. Regenerate this
+            with generate_params() after changing settings.price_min or
+            settings.price_max.
+
+        listings (list[Listing]): In-memory collection of successfully scraped
+            listings. Both listing_processor and investment_processor append
+            Listing objects to this same list before export.
+
+        investments_queue (set[str]): Unique investment URLs waiting to be
+            processed by investment_processor. Jobs/tests can add URLs directly
+            to this set before calling process_queue().
+
+        listing_processor (ListingProcessor): Processor responsible for standard
+            listing pages. It fetches individual listing pages, extracts property
+            and agency data, saves normal listings, and records hidden developer
+            investments for later processing.
+
+        investment_processor (InvestmentProcessor): Processor responsible for
+            developer investment pages. It processes queued investment URLs,
+            fetches paginated investment units, maps them into property data, and
+            appends the resulting Listing objects to listings.
+    """
+    def __init__(self) -> None:
         self.network = NetworkService()
         self.settings: Settings = Settings()
         self.params: dict = self.generate_params()
@@ -57,9 +88,9 @@ class Crawler:
 
     def generate_params(self) -> dict:
         """
-        Generate the parameters for the URL.
+        Generate the price parameters. Used by both crawler.py and discovery.py.
 
-        :return: The parameters for the URL
+        :return: The price range used by the crawler and discoverer to define price chunks
         """
         return {
             "priceMin": self.settings.price_min,
@@ -69,6 +100,8 @@ class Crawler:
     def count_pages(self, override_url: str = None) -> tuple[int, int] | None:
         """
         Count the number of pages to crawl using Regex to bypass HTML parser limits.
+        :return: A tuple containing the number of pages to crawl, as well as the total number of listings
+        on all those pages
         """
         search_url = override_url if override_url else self.generate_search_url()
         print("\n--- Initializing Search ---")
@@ -88,6 +121,7 @@ class Crawler:
     def extract_listings_from_page(self, page: int, override_url: str = None) -> list:
         """
         Crawl the given page and extract listings from the Next.js JSON.
+        :return: List of listings on the currently scraped page
         """
         params = self.params.copy()
         params["page"] = page
@@ -105,6 +139,7 @@ class Crawler:
         """
         Starts the crawler by fetching one page, reading its apartments,
         and then moving to the next page.
+        :param pages: The number of pages to crawl
         """
         existing_links = PropertyService.get_all_links()
 

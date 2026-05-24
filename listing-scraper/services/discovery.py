@@ -34,7 +34,12 @@ class RangeDiscoverer:
             print("[ANTI-BOT] Session rotated successfully. Resuming discovery...\n")
 
     def discover(self, crawler: 'Crawler', current_min: int, current_max: int):
-        """Recursively checks price ranges and splits them if they are too large."""
+        """
+        Recursively checks price ranges and splits them if they are too large.
+        :param crawler: the crawler instance
+        :param current_min: the min price for the discovery
+        :param current_max: the max price for the discovery
+        """
 
         if current_min > current_max:
             return
@@ -70,7 +75,10 @@ class RangeDiscoverer:
             self.discovered_ranges.append({self.min_range_name: current_min, self.max_range_name: current_max})
 
     def get_final_matrix(self):
-        """Sorts the ranges and adds the final infinite catch-all range."""
+        """
+        Sorts the ranges and adds the final infinite catch-all range.
+        :return: Return the sorted matrix ready to be used by github workflows matrix
+        """
         # Sort sequentially by minimum price
         sorted_ranges = sorted(self.discovered_ranges, key=lambda x: x[self.min_range_name])
         return sorted_ranges
