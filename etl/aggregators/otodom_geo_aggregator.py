@@ -63,7 +63,7 @@ class OtodomGeoAggregator(OtodomAggregator):
         return list(col.aggregate(pipeline))
 
     @staticmethod
-    def build_poi_metrics(pois, max_distance:int=1500, step:int=500):
+    def build_poi_metrics(pois, max_distance:int=1500, step:int=500) -> dict:
         ranges = tuple(range(0, max_distance+1, step))
         ranges = ranges[1:]
         metrics = {}
