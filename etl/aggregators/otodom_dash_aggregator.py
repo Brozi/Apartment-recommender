@@ -65,7 +65,7 @@ class OtodomDashAggregator(OtodomAggregator):
         metrics = {
             'offer_count_by_construction_status': self._count_by_basic_field_pipeline(self.construction_status),
             'offer_count_by_rooms': self._count_by_basic_field_pipeline(self.rooms),
-            'offer_count_by_build_year': self._count_by_build_year_range_pipeline(self.build_year),
+            'offer_count_by_build_year': self._count_by_build_year_range_pipeline(),
             'offer_count_by_market_type': self._count_by_basic_field_pipeline(self.market_type),
             'monthly_area_stats': self._monthly_area_stats_pipeline(),
             'monthly_price_stats': self._monthly_price_stats_pipeline(),
