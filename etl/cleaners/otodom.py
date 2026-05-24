@@ -26,6 +26,7 @@ class OtodomCleaner:
         self.clean_building_build_year(clean_doc)
         self.clean_building_floors(clean_doc)
         self.clean_area(clean_doc)
+        self.clean_description(clean_doc)
 
     def clean_localization(self, clean_doc: dict) -> None:
         localization = clean_doc.get('localization', {})
