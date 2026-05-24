@@ -362,7 +362,7 @@ class OtodomCleaner:
     @staticmethod
     def clean_building_type(clean_doc: dict) -> None:
         building_type = clean_doc.get('building', {}).get('type', None)
-        building = clean_doc['building']
+        building = clean_doc.get('building', {})
         if building_type is None:
             building['type'] = 'unknown'
             return
@@ -374,7 +374,7 @@ class OtodomCleaner:
     @staticmethod
     def clean_building_build_year(clean_doc: dict) -> None:
         build_year = clean_doc.get('building', {}).get('build_year', None)
-        building = clean_doc['building']
+        building = clean_doc.get('building', {})
         if build_year is None:
             building['build_year'] = 'unknown'
             return
@@ -388,7 +388,7 @@ class OtodomCleaner:
     @staticmethod
     def clean_building_floors(clean_doc: dict) -> None:
         floors = clean_doc.get('building', {}).get('floors', None)
-        building = clean_doc['building']
+        building = clean_doc.get('building', {})
         if floors is None:
             building['floors'] = 'unknown'
             return
