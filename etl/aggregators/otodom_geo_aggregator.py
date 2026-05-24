@@ -1,4 +1,9 @@
+from datetime import datetime, timezone
+
+from pymongo import UpdateOne
+
 from etl.aggregators.otodom_aggregator import OtodomAggregator
+from etl.services import MongoBulkWriter
 
 class OtodomGeoAggregator(OtodomAggregator):
     def __init__(self, poi_col='pois', listings_col='listings_clean'):
@@ -7,8 +12,8 @@ class OtodomGeoAggregator(OtodomAggregator):
         self.listings_col = self.db[listings_col]
 
     def find_pois_near(self,
-                       longitude:str=None,
-                       latitude:str=None,
+                       longitude:float=None,
+                       latitude:float=None,
                        max_distance:int=1500,
                        category_groups=(
                                'tram_stop',
@@ -70,15 +75,46 @@ class OtodomGeoAggregator(OtodomAggregator):
                     'nearest_m': int(distance),
                     'nearest':{
                         'poi_id': str(poi['_id']),
-                        'name': poi.get('tags', {}).get('name'),
+                        'name': poi.get('tags', {}).get('name', 'Unknown'),
                         'distance_m': int(distance),
                     },
-                    **{f'count{r}m': 0 for r in ranges},
+                    **{f'count_{r}m': 0 for r in ranges},
                 }
             metrics[category_group]['nearest_m'] = min(metrics[category_group]['nearest_m'], distance)
 
             for r in ranges:
                 if distance <= r:
-                    metrics[category_group][f'count{r}m'] += 1
+                    metrics[category_group][f'count_{r}m'] += 1
 
         return metrics
+
+    @staticmethod
+    def _extract_coordinates(listing_doc: dict) -> tuple[float, float]:
+        coordinates_array = listing_doc.get('geo_location', {}).get('coordinates', [])
+        lon = float(coordinates_array[0])
+        lat = float(coordinates_array[1])
+        return lon, lat
+
+    def add_poi_metrics(self):
+        writer = MongoBulkWriter(self.listings_col, batch_size=500, ordered=False)
+
+        cursor = self.listings_col.find()
+
+        for listing in cursor:
+            lon, lat = self._extract_coordinates(listing)
+            pois = self.find_pois_near(latitude=lat, longitude=lon)
+            metrics = self.build_poi_metrics(pois)
+
+            writer.queue(
+                UpdateOne(
+                    {'_id': listing['_id']},
+                    {
+                        '$set': {
+                            'geo_aggregations': metrics,
+                            'geo_aggregations_computed_at': datetime.now(timezone.utc)
+                        }
+                    },
+                    upsert=False
+                )
+            )
+            writer.flush()
