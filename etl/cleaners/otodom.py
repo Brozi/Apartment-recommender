@@ -214,7 +214,7 @@ class OtodomCleaner:
                     clean_doc['price'] = calculated_price
                     clean_doc['price_usable'] = True
                     return
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 clean_doc['price'] = None
                 clean_doc['price_usable'] = False
             return
