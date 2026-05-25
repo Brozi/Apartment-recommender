@@ -50,6 +50,9 @@ const router = createBrowserRouter([
         path: "valuation",
         element: <ValuationPage />,
       },
+      {
+        path: "admin",
+      },
     ],
   },
 ]);
