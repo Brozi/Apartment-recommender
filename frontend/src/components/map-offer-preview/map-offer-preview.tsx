@@ -7,6 +7,7 @@ import PaginationArrowRightIcon from "../icons/pagination-arrow-right-icon";
 import styles from "./map-offer-preview.module.css";
 import OfferImage from "../../assets/offer-img.webp";
 import Button from "../ui/button";
+import LeftCorner from "../../assets/left-corner-32.svg";
 
 type MapOfferPreviewProps = {
   price: number;
@@ -82,6 +83,12 @@ export default function MapOfferPreview({
           onClick={() => {}}
         />
       </section>
+
+      <img
+        className={styles.leftCorner}
+        src={LeftCorner}
+        alt="left corner decoration"
+      />
     </section>
   );
 }
