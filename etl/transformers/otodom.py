@@ -49,19 +49,19 @@ class OtodomTransformer:
         point = Point(float(longitude), float(latitude))
 
         # 1. Check City (The highest strict truth)
-        city_match = self.cities_gdf[self.cities_gdf.contains(point)]
-        if city_match.empty:
+        city_match = self._first_containing(self.cities_gdf,point)
+        if city_match is None:
             return None, None, None
 
-        true_city = city_match.iloc[0]['JPT_NAZWA_']
+        true_city = city_match['JPT_NAZWA_']
 
         # 2. Check District
-        dist_match = self.districts_gdf[self.districts_gdf.contains(point)]
-        true_district = dist_match.iloc[0]['name'] if not dist_match.empty else None
+        district_match = self._first_containing(self.districts_gdf, point)
+        true_district = district_match['name'] if district_match is not None else None
 
         # 3. Check Neighbourhood (The most fragile layer)
-        hood_match = self.neighbourhoods_gdf[self.neighbourhoods_gdf.contains(point)]
-        true_hood = hood_match.iloc[0]['name'] if not hood_match.empty else None
+        hood_match = self._first_containing(self.neighbourhoods_gdf, point)
+        true_hood = hood_match.iloc[0]['name'] if hood_match is not None else None
 
         return true_city, true_district, true_hood
 
@@ -163,6 +163,21 @@ class OtodomTransformer:
         neighbourhoods_gdf = gpd.GeoDataFrame(pd.DataFrame(valid_rows), geometry=valid_geometries, crs="EPSG:4326")
 
         return neighbourhoods_gdf
+
+    @staticmethod
+    def _first_containing(gdf: gpd.GeoDataFrame, point: Point):
+        candidate_indexes = list(gdf.sindex.query(point))
+
+        if not candidate_indexes:
+            return None
+
+        candidates = gdf.iloc[candidate_indexes]
+        matches = candidates[candidates.contains(point)]
+
+        if matches.empty:
+            return None
+
+        return matches.iloc[0]
 
 
 
