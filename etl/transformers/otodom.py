@@ -61,7 +61,7 @@ class OtodomTransformer:
 
         # 3. Check Neighbourhood (The most fragile layer)
         hood_match = self._first_containing(self.neighbourhoods_gdf, point)
-        true_hood = hood_match.iloc[0]['name'] if hood_match is not None else None
+        true_hood = hood_match['name'] if hood_match is not None else None
 
         return true_city, true_district, true_hood
 
