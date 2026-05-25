@@ -11,6 +11,12 @@
   display: none;
 }
 
+.errorState {
+  color: var(--clr-secondary-100);
+  font-size: 0.95rem;
+  padding: var(--spacing-24);
+}
+
 @media (min-width: 70rem) {
   .mapOfferContainer {
     height: 100%;

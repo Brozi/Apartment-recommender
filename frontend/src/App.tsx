@@ -11,6 +11,7 @@ import GeoPage from "./pages/geo-page";
 import SmartBuyerPage from "./pages/smart-buyer-page";
 import ValuationPage from "./pages/valuation-page";
 import ErrorPage from "./pages/error-page";
+import { mapOffersLoader } from "./services/map-offers-loader";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
       {
         path: "map",
         element: <MapPage />,
+        loader: mapOffersLoader,
       },
       {
         path: "dashboard",
