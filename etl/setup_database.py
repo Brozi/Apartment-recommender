@@ -11,7 +11,7 @@ logging.basicConfig(
 
 )
 
-def initialize_input_database(raw_col='listings'):
+def initialize_input_collection(raw_col='listings'):
 
     client = connect_to_database()
     database = client.get_default_database()
@@ -26,7 +26,7 @@ def initialize_input_database(raw_col='listings'):
     )
 
     logger.info("Database initialization complete.")
-def initialize_output_database(raw_col='listings_clean'):
+def initialize_output_collection(raw_col='listings_clean'):
     client = connect_to_database()
 
     database=client.get_default_database()
@@ -48,6 +48,23 @@ def initialize_output_database(raw_col='listings_clean'):
     for index in collection.list_indexes():
         logger.info(f"Index {index} created")
 
+def initialize_poi_collection(raw_col='pois'):
+
+    client = connect_to_database()
+    database = client.get_default_database()
+
+    raw_collection = database[raw_col]
+
+    logger.info("Building POI indexes...")
+
+    raw_collection.create_index([('location', GEOSPHERE)], name='location_2dsphere')
+    raw_collection.create_index([('category_group', ASCENDING)], name='category_group_idx')
+    raw_collection.create_index(
+        [('location', GEOSPHERE), ('category_group', ASCENDING)],
+        name='location_category_group_idx',
+    )
+
 if __name__ == "__main__":
-    initialize_input_database()
-    initialize_output_database()
+    # initialize_input_collection()
+    # initialize_output_collection()
+    initialize_poi_collection()
