@@ -1,4 +1,7 @@
 from pymongo import UpdateOne
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .otodom_aggregator import OtodomAggregator
 from etl.common import NOW
@@ -103,31 +106,79 @@ class OtodomGeoAggregator(OtodomAggregator):
         lat = float(coordinates_array[1])
         return lon, lat
 
-    def add_poi_metrics(self, category_groups:tuple, max_distance:int=1500):
+    def add_poi_metrics(
+            self,
+            category_groups:tuple,
+            max_distance:int=1500,
+            cursor_size: int=500,
+            recompute: bool=False,
+    ):
         writer = MongoBulkWriter(self.listings_col, batch_size=500, ordered=False)
 
-        cursor = self.listings_col.find()
+        base_query = {
+            'geo_location.coordinates.1': {'$exists': True},
+        }
 
-        for listing in cursor:
-            lon, lat = self._extract_coordinates(listing)
-            pois = self.find_pois_near(
-                latitude=lat,
-                longitude=lon,
-                max_distance=max_distance,
-                category_groups=category_groups
+        if not recompute:
+            base_query['geo_aggregations'] = {'$exists': False}
+
+        projection = {
+            '_id': 1,
+            'geo_location': 1,
+        }
+
+        last_id = None
+        updated_count = 0
+
+        while True:
+            query = dict(base_query)
+
+            if last_id is not None:
+                query['_id'] = {'$gt': last_id}
+
+            listings = list(
+                self.listings_col
+                .find(query, projection)
+                .sort('_id', 1)
+                .limit(cursor_size)
             )
-            metrics = self.build_poi_metrics(pois)
 
-            writer.queue(
-                UpdateOne(
-                    {'_id': listing['_id']},
-                    {
-                        '$set': {
-                            'geo_aggregations': metrics,
-                            'geo_aggregations_computed_at': NOW
-                        }
-                    },
-                    upsert=False
+            if not listings:
+                break
+
+            for listing in listings:
+                last_id = listing['_id']
+
+                try:
+                    lon, lat = self._extract_coordinates(listing)
+                except (IndexError, ValueError, TypeError):
+                    logger.warning("Skipping listing %s because it has invalid geo_location", listing['_id'])
+                    continue
+
+
+                pois = self.find_pois_near(
+                    latitude=lat,
+                    longitude=lon,
+                    max_distance=max_distance,
+                    category_groups=category_groups
                 )
-            )
-        writer.flush()
+                metrics = self.build_poi_metrics(pois)
+
+                writer.queue(
+                    UpdateOne(
+                        {'_id': listing['_id']},
+                        {
+                            '$set': {
+                                'geo_aggregations': metrics,
+                                'geo_aggregations_computed_at': NOW
+                            }
+                        },
+                        upsert=False
+                    )
+                )
+
+                updated_count += 1
+
+            writer.flush()
+
+        logger.info("GeoAggregation complete. Updated %s listings.", updated_count)
