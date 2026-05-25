@@ -64,7 +64,7 @@
   font-weight: 600;
 }
 
-.select-info {
+.font-select-info {
   color: var(--clr-text);
   font-family: var(--font-primary);
   font-size: 1rem;
@@ -129,6 +129,13 @@
   font-weight: 500;
 }
 
+.font-indicator {
+  color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
 @media (min-width: 37.5rem) {
   .font-logo {
     font-size: 1.25em;
@@ -160,7 +167,7 @@
     font-size: 1.25em;
   }
 
-  .select-info {
+  .font-select-info {
     font-size: 1.25em;
   }
 

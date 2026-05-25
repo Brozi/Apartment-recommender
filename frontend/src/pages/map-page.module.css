@@ -23,11 +23,12 @@
 }
 
 .mapSection {
-  margin: 0 auto;
-}
-
-.mapAddon {
-  display: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(2, auto);
+  justify-items: flex-start;
+  gap: var(--spacing-32);
 }
 
 @media (min-width: 70rem) {
@@ -51,18 +52,11 @@
   .select {
     width: auto;
   }
-}
 
-@media (min-width: 111rem) {
   .mapSection {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-  }
-
-  .mapAddon {
-    display: block;
+    grid-template-columns: 1fr 26.25em;
+    grid-template-rows: auto;
+    justify-items: flex-start;
+    gap: var(--spacing-48);
   }
 }

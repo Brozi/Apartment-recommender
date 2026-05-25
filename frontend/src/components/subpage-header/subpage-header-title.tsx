@@ -3,5 +3,5 @@ type SubpageHeaderTitleProps = {
 };
 
 export default function SubpageHeaderTitle({ label }: SubpageHeaderTitleProps) {
-  return <h2 className="font-subpage-title">{label}</h2>;
+  return <h1 className="font-h1">{label}</h1>;
 }

@@ -1,0 +1,40 @@
+.mapOfferBlank {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  width: 100%;
+  height: 100%;
+}
+
+.mapOfferBlank p {
+  max-width: 10.5rem;
+  width: 100%;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.cornerLeft {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.cornerRight {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.topAddon {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.bottomAddon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}

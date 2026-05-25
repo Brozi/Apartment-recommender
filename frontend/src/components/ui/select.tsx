@@ -20,7 +20,7 @@ export default function Select({
     <button className={cn(styles.select, className)} onClick={onClick}>
       <div className={styles.textGroup}>
         <span className="font-select-info">{info}</span>
-        <span className="font-primary-button-light">{label}</span>
+        <span className="font-secondary-button">{label}</span>
       </div>
       {icon && <span className={styles.icon}>{icon}</span>}
       <span className={styles.cornerAccent} aria-hidden="true" />

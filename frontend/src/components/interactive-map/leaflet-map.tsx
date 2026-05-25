@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { MapContainer, Marker, TileLayer, useMapEvent } from "react-leaflet";
 import { renderToStaticMarkup } from "react-dom/server";
 import L from "leaflet";
@@ -6,9 +5,9 @@ import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import ApartmentIcon from "../icons/apartment-icon";
-import MapOfferPreview from "../map-offer-preview/map-offer-preview";
 import { MAP_OFFER_LOCATIONS } from "../../lib/map-data";
 import styles from "./interactive-map.module.css";
+import { useMapContext } from "../../hooks/use-map-context";
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
@@ -59,7 +58,7 @@ function MarkerLayer({
 }
 
 export default function LeafletMap() {
-  const [selected, setSelected] = useState<SelectedOffer | null>(null);
+  const { selectOffer, clearSelection } = useMapContext();
 
   return (
     <div className={styles.mapWrapper}>
@@ -73,21 +72,9 @@ export default function LeafletMap() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
-        <MarkerLayer onSelect={setSelected} />
-        <MapClickHandler onClear={() => setSelected(null)} />
+        <MarkerLayer onSelect={selectOffer} />
+        <MapClickHandler onClear={clearSelection} />
       </MapContainer>
-
-      {selected && (
-        <MapOfferPreview
-          className={styles.offerPreview}
-          price={selected.price}
-          location={selected.location}
-          rooms={selected.rooms}
-          area={selected.area}
-          pricePerM2={selected.pricePerM2}
-          onClose={() => setSelected(null)}
-        />
-      )}
     </div>
   );
 }
