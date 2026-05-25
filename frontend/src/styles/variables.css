@@ -18,6 +18,7 @@
   --clr-acc-green-50: hsla(120, 66%, 86%, 0.5);
   --clr-acc-green-10: hsla(120, 66%, 86%, 0.1);
   --clr-acc-green-0: hsla(120, 66%, 86%, 0);
+  --clr-acc-dark-green-100: #7ec87e;
   --clr-acc-red: #eec3b4;
   --clr-acc-orange: #ff832c;
   --clr-acc-beige-dark: #bba98c;
@@ -66,4 +67,9 @@
     0 12px 3px 0 rgba(187, 169, 140, 0), 0 7px 3px 0 rgba(187, 169, 140, 0.01),
     0 4px 3px 0 rgba(187, 169, 140, 0.03),
     0 2px 2px 0 rgba(187, 169, 140, 0.04), 0 0 1px 0 rgba(187, 169, 140, 0.05);
+
+  --shadow-map:
+    0 58px 16px 0 rgba(187, 169, 140, 0), 0 37px 15px 0 rgba(187, 169, 140, 0),
+    0 21px 13px 0 rgba(187, 169, 140, 0.02),
+    0 9px 9px 0 rgba(187, 169, 140, 0.03), 0 2px 5px 0 rgba(187, 169, 140, 0.03);
 }

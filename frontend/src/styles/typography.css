@@ -5,22 +5,42 @@
 @import "@fontsource/plus-jakarta-sans/800.css";
 
 :root {
-  --font-primary: "Inter", sans-serif;
-  --font-heading: "Plus Jakarta Sans", sans-serif;
+  --font-primary: "Plus Jakarta Sans", sans-serif;
 }
 
 .font-logo {
   color: var(--clr-light-90);
-  font-family: var(--font-heading);
+  font-family: var(--font-primary);
   font-size: 1.125rem;
   font-weight: 800;
   letter-spacing: 0.01125rem;
   transition: color 0.2s ease;
 }
 
+.font-h1 {
+  color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.font-h2 {
+  color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.font-h3 {
+  color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
 .font-nav-button {
   color: var(--clr-light-100);
-  font-family: var(--font-heading);
+  font-family: var(--font-primary);
   font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: 0.0225rem;
@@ -30,37 +50,47 @@
   color: var(--clr-light-90);
 }
 
-.font-nav-button:active {
-  color: var(--clr-primary-100);
-}
-
-.font-pagination-number {
-  color: var(--clr-secondary-100);
+.font-primary-button {
+  color: var(--clr-light-80);
   font-family: var(--font-primary);
   font-size: 1rem;
-  font-weight: 500;
-}
-
-.font-pagination-text {
-  color: var(--clr-primary-100);
-  font-family: var(--font-primary);
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.font-secondary-button {
-  color: var(--clr-primary-90);
-  font-family: var(--font-heading);
-  font-size: 0.875rem;
   font-weight: 600;
 }
 
-.font-secondary-button:hover {
+.font-secondary-button {
   color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.font-secondary-button:active {
+.select-info {
+  color: var(--clr-text);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.font-input {
   color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.font-input-title {
+  color: var(--clr-primary-100);
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.015rem;
+}
+
+.font-base {
+  color: var(--clr-text);
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .font-paragraph {
@@ -74,33 +104,22 @@
 .font-paragraph-dark {
   color: var(--clr-primary-100);
   font-family: var(--font-primary);
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 500;
   line-height: 1.6;
 }
 
-.font-chart-heading {
-  color: var(--clr-primary-100);
+.font-highlight {
   font-family: var(--font-primary);
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: 0.05rem;
-}
-
-.font-chart-heading-info {
-  color: var(--clr-text);
-  font-family: var(--font-primary);
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.font-chart-highlight {
-  color: var(--clr-acc-orange);
-  font-family: var(--font-heading);
   font-size: 1.375rem;
   font-weight: 800;
+}
+
+.font-addon-main {
+  color: var(--clr-text);
+  font-family: var(--font-primary);
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
 .font-chart-info {
@@ -116,22 +135,45 @@
     letter-spacing: 0.0125em;
   }
 
+  .font-h1 {
+    font-size: 2em;
+  }
+
+  .font-h2 {
+    font-size: 1.6875em;
+  }
+
+  .font-h3 {
+    font-size: 1.25em;
+  }
+
   .font-nav-button {
     font-size: 1.25em;
     letter-spacing: 0.025em;
   }
 
-  .font-pagination-number {
-    font-size: 1.125em;
-    letter-spacing: 0.01125em;
-  }
-
-  .font-pagination-text {
-    font-size: 1.125em;
-    letter-spacing: 0.01125em;
+  .font-primary-button {
+    font-size: 1.25em;
   }
 
   .font-secondary-button {
+    font-size: 1.25em;
+  }
+
+  .select-info {
+    font-size: 1.25em;
+  }
+
+  .font-input {
+    font-size: 1em;
+  }
+
+  .font-input-title {
+    font-size: 0.875em;
+    letter-spacing: 0.0175em;
+  }
+
+  .font-base {
     font-size: 1em;
   }
 
@@ -144,22 +186,17 @@
     letter-spacing: 0.01125em;
   }
 
-  .font-chart-heading {
-    font-size: 1.25em;
-    letter-spacing: 0.0625em;
-  }
-
-  .font-chart-heading-info {
-    font-size: 1.25em;
-  }
-
   .font-chart-info {
     font-size: 0.8125em;
   }
 }
 
 @media (min-width: 64rem) {
-  .font-chart-highlight {
-    font-size: 1.625rem;
+  .font-highlight {
+    font-size: 1.625em;
+  }
+
+  .font-addon-main {
+    font-size: 1.25em;
   }
 }
