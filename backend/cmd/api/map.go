@@ -5,28 +5,24 @@ import (
 	"net/http"
 	"time"
 
-	"aprtsapp.nicksanchez.pl/internal/data"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
-
-type mongoData []data.MapOfferMongo
-type apiResponse data.MapOfferDTO
 
 func (app *application) getMapDataHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
 
-	data, err := app.createMapOffer(ctx)
+	data, err := app.createMapOffers(ctx)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 		return
 	}
 
-	response := make([]apiResponse, 0, len(data))
+	response := make([]apiMapOfferResponse, 0, len(data))
 	for _, offer := range data {
-		response = append(response, apiResponse{
+		response = append(response, apiMapOfferResponse{
 			ID:    offer.ID.Hex(),
 			Lat:   offer.Localization.Latitude,
 			Lng:   offer.Localization.Longitude,
@@ -42,7 +38,7 @@ func (app *application) getMapDataHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func (app *application) createMapOffer(ctx context.Context) (mongoData, error) {
+func (app *application) createMapOffers(ctx context.Context) ([]mongoMapOfferData, error) {
 	filter := bson.D{}
 	projection := bson.M{
 		"_id":                 1,
@@ -69,7 +65,7 @@ func (app *application) createMapOffer(ctx context.Context) (mongoData, error) {
 	}
 	defer cursor.Close(ctx)
 
-	var results mongoData
+	var results []mongoMapOfferData
 	if err := cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
