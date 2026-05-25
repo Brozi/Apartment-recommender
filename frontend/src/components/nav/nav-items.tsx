@@ -1,4 +1,6 @@
 import styles from "./nav.module.css";
+import navAddonLeft from "../../assets/nav-addon-left.svg";
+import navAddonRight from "../../assets/nav-addon-right.svg";
 
 type NavItemsProps = {
   isOpen: boolean;
@@ -7,8 +9,20 @@ type NavItemsProps = {
 
 export default function NavItems({ children, isOpen }: NavItemsProps) {
   return (
-    <ul className={`${styles.navItems} ${isOpen ? styles.open : ""}`}>
-      {children}
-    </ul>
+    <section className={styles.navItemsContainer}>
+      <img
+        className={styles.navAddon}
+        src={navAddonLeft}
+        alt="nav addon left"
+      />
+      <ul className={`${styles.navItems} ${isOpen ? styles.open : ""}`}>
+        {children}
+      </ul>
+      <img
+        className={styles.navAddon}
+        src={navAddonRight}
+        alt="nav addon right"
+      />
+    </section>
   );
 }

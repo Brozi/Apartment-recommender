@@ -4,6 +4,12 @@
   min-height: 100vh;
 }
 
+@media (min-width: 37.5rem) {
+  .main {
+    margin: 0 var(--spacing-24);
+  }
+}
+
 @media (min-width: 112.8rem) {
   .main {
     margin: 0 auto;

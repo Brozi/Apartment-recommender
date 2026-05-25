@@ -1,0 +1,13 @@
+.mapOfferContainer {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 26.25rem;
+  height: 32.8125rem;
+}
+
+@media (min-width: 70rem) {
+  .mapOfferContainer {
+    height: 100%;
+  }
+}

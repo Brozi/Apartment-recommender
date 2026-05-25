@@ -6,12 +6,18 @@ import (
 
 type Offer struct {
 	ID				ID		`json:"_id" bson:"_id"`
-	Link 			string 	`json:"link"`
-	Promoted		bool	`json:"promoted"`
 	OtodomID		int		`json:"otodom_id"`
-	CreatedAt		Date	`json:"created_at"`
-	Title			string	`json:"title"`
 	Area			float64	`json:"area"`
+	Link 			string 	`json:"link"`
+	AuctionType    	string  `json:"auction_type"`
+	Building           Building 	`json:"building"`
+	ConstructionStatus string   	`json:"construction_status"`
+	CreatedAt		Date	`json:"created_at"`
+	Description    	string  `json:"description"`
+	DeveloperID        int      	`json:"developer_id"`
+	EtlProcessed bool	`json:"etl_processed"`
+	Promoted		bool	`json:"promoted"`
+	Title			string	`json:"title"`
 	Floor			string	`json:"floor"` //docelowo zamienić na inta
 	Price			float64 `json:"price"`
 	PricePerMeter	float64 `json:"price_per_meter"`
@@ -19,16 +25,11 @@ type Offer struct {
 	Heating        	string  `json:"heating"`
 	Extras         	string  `json:"extras"`
 	SecurityTypes  	string  `json:"security_types"`
-	Description    	string  `json:"description"`
 	PhotoUrls      	string  `json:"photo_urls"`
 	PropertyType   	string  `json:"property_type"`
 	MarketType     	string  `json:"market_type"`
-	AuctionType    	string  `json:"auction_type"`
 	Localization   	Localization	`json:"localization"`
-	ConstructionStatus string   	`json:"construction_status"`
-	Building           Building 	`json:"building"`
 	OfferedBy          string   	`json:"offered_by"`
-	DeveloperID        int      	`json:"developer_id"`
 }
 
 type ID struct {
@@ -55,7 +56,7 @@ type GeoPoint struct {
 }
 
 type Building struct {
-	Type      string `json:"type"`
 	Floors    int    `json:"floors"`
 	BuildYear int    `json:"build_year"`
+	Type      string `json:"type"`
 }

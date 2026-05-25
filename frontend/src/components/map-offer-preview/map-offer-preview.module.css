@@ -1,0 +1,148 @@
+.MapOfferContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: flex-start;
+  background-color: var(--clr-bg-component);
+  width: 100%;
+  box-shadow: var(--shadow-chart);
+}
+
+.MapOfferImage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.618 / 1;
+  border: 0.125rem solid var(--clr-primary-100);
+  overflow: hidden;
+}
+
+.offerImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.paginationBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: var(--clr-primary-50);
+  box-shadow: inset 0 0 0 0.0625rem var(--clr-primary-100);
+  backdrop-filter: blur(0.125rem);
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.paginationBtn:hover {
+  background-color: var(--clr-primary-100);
+}
+
+.paginationBtnLeft {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.paginationBtnRight {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.imageIndicator {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  background-color: var(--clr-bg-component);
+  display: flex;
+  padding: var(--spacing-6);
+  gap: var(--spacing-4);
+  box-shadow: inset 0 0 0 0.0625rem var(--clr-primary-100);
+}
+
+.MapOfferDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-24);
+  width: 100%;
+  padding: var(--spacing-16) var(--spacing-16) var(--spacing-24)
+    var(--spacing-16);
+}
+
+.multiList {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.gapM {
+  gap: var(--spacing-16);
+}
+
+.gapS {
+  gap: var(--spacing-8);
+}
+
+.offerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+  align-items: flex-start;
+}
+
+.offerInfoItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.divider {
+  background-color: var(--clr-divider);
+}
+
+.sizeS {
+  width: 1px;
+  height: 0.75rem;
+}
+
+.sizeM {
+  width: 2px;
+  height: 1rem;
+}
+
+.sizeL {
+  height: 1px;
+  width: 75%;
+  margin-left: auto;
+}
+
+.offerActions {
+  margin-top: var(--spacing-16);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--spacing-16) var(--spacing-16) var(--spacing-16);
+  gap: var(--spacing-12);
+}
+
+@media (min-width: 37.5rem) {
+  .gapM {
+    gap: var(--spacing-24);
+  }
+
+  .MapOfferDetails {
+    padding: var(--spacing-24);
+  }
+
+  .offerActions {
+    margin-top: var(--spacing-24);
+    padding: 0 var(--spacing-24) var(--spacing-24) var(--spacing-24);
+    gap: var(--spacing-16);
+  }
+}

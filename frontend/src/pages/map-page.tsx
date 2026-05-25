@@ -1,7 +1,52 @@
+import styles from "./map-page.module.css";
+import SubpageHeader from "../components/subpage-header/subpage-header";
+import SubpageHeaderTitle from "../components/subpage-header/subpage-header-title";
+import BtnGroup from "../components/subpage-header/btn-group";
+import PrimaryButton from "../components/ui/button";
+import FormIcon from "../components/icons/form-icon";
+import Select from "../components/ui/select";
+import SelectArrowIcon from "../components/icons/select-arrow-icon";
+import FilterIcon from "../components/icons/filter-icon";
+import Map from "../components/interactive-map/map";
+import MapOfferContainer from "../components/map-offer-preview/map-offer-container";
+import MapContextProvider from "../contexts/map-context-provider";
+
 export default function MapPage() {
   return (
     <>
-      <p className="text-paragraph">Map</p>
+      <SubpageHeader className={styles.subpageHeader}>
+        <SubpageHeaderTitle label="Interactive map" />
+        <BtnGroup className={styles.btnGroup}>
+          <Select
+            className={styles.select}
+            label="Cracow"
+            info="City:"
+            icon={<SelectArrowIcon />}
+            onClick={() => {}}
+          />
+          <PrimaryButton
+            variant="secondary"
+            className={styles.primaryButton}
+            icon={<FormIcon />}
+            label="Reccommendation form"
+            onClick={() => {}}
+          />
+          <PrimaryButton
+            variant="secondary"
+            className={styles.primaryButton}
+            icon={<FilterIcon />}
+            label="Filter map"
+            onClick={() => {}}
+          />
+        </BtnGroup>
+      </SubpageHeader>
+
+      <section className={styles.mapSection}>
+        <MapContextProvider>
+          <Map />
+          <MapOfferContainer />
+        </MapContextProvider>
+      </section>
     </>
   );
 }
