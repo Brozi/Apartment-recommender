@@ -56,7 +56,7 @@ type GeoPoint struct {
 }
 
 type Building struct {
-	Floors    int    `json:"floors"`
-	BuildYear int    `json:"build_year"`
-	Type      string `json:"type"`
+	Floors    int    `json:"floors" bson:"floors"`
+	BuildYear int    `json:"buildYear" bson:"build_year"`
+	Type      string `json:"type" bson:"type"`
 }
