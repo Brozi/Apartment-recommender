@@ -1,4 +1,6 @@
 from enum import Enum
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 
 class OfferedBy(Enum):
@@ -129,3 +131,5 @@ PROPERTY_TYPE_MAP = {
     "haleimagazyny": PropertyType.MAGAZINE,
     "garaz": PropertyType.GARAGE,
 }
+
+NOW = datetime.now(ZoneInfo('Europe/Warsaw'))
