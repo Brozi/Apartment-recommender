@@ -1,15 +1,17 @@
 import { useMemo, useState, type ReactNode } from "react";
-import type { MapOfferLocation } from "../lib/map-data";
 import { MapContext } from "./map-context";
+import type { MapOffersResponse } from "../lib/types";
 
 type MapContextProviderProps = {
   children: ReactNode;
+  mapOffers: MapOffersResponse[];
 };
 
 export default function MapContextProvider({
   children,
+  mapOffers,
 }: MapContextProviderProps) {
-  const [selectedOffer, setSelectedOffer] = useState<MapOfferLocation | null>(
+  const [selectedOffer, setSelectedOffer] = useState<MapOffersResponse | null>(
     null,
   );
 
@@ -19,8 +21,9 @@ export default function MapContextProvider({
       isSelected: !!selectedOffer,
       selectOffer: setSelectedOffer,
       clearSelection: () => setSelectedOffer(null),
+      mapOffers,
     }),
-    [selectedOffer],
+    [selectedOffer, mapOffers],
   );
 
   return <MapContext.Provider value={value}>{children}</MapContext.Provider>;

@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"aprtsapp.nicksanchez.pl/internal/data"
@@ -17,7 +16,7 @@ func (app *application) getOfferByIDHandler(w http.ResponseWriter, r *http.Reque
 
 	offer := data.Offer{
 		ID: data.ID{
-			Oid: strconv.FormatInt(id, 10),
+			Oid: id,
 		},
 		Link:      "https://www.otodom.pl/pl/oferta/2-pokojowe-mieszkanie-34m2-ogrodek-bez-prowizji-ID4zKdo",
 		Promoted:  false,

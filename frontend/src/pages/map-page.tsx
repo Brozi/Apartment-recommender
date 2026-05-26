@@ -10,8 +10,15 @@ import FilterIcon from "../components/icons/filter-icon";
 import Map from "../components/interactive-map/map";
 import MapOfferContainer from "../components/map-offer-preview/map-offer-container";
 import MapContextProvider from "../contexts/map-context-provider";
+import { useLoaderData, useNavigation } from "react-router";
+import type { MapOffersResponse } from "../lib/types";
+import LoadingSpinner from "../components/ui/loading-spinner";
 
 export default function MapPage() {
+  const mapOffers = useLoaderData() as MapOffersResponse[];
+  const navigation = useNavigation();
+  const isLoading = navigation.state !== "idle";
+
   return (
     <>
       <SubpageHeader className={styles.subpageHeader}>
@@ -42,10 +49,14 @@ export default function MapPage() {
       </SubpageHeader>
 
       <section className={styles.mapSection}>
-        <MapContextProvider>
-          <Map />
-          <MapOfferContainer />
-        </MapContextProvider>
+        {isLoading ? (
+          <LoadingSpinner label="Loading map" />
+        ) : (
+          <MapContextProvider mapOffers={mapOffers}>
+            <Map />
+            <MapOfferContainer />
+          </MapContextProvider>
+        )}
       </section>
     </>
   );

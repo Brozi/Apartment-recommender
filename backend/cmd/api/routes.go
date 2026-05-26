@@ -11,8 +11,9 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/test", app.testHandler)
-	router.HandlerFunc(http.MethodGet, "/v1/offer/:id", app.getOfferByIDHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/dashboard/kpis", app.getDashboardKpisHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/map", app.getMapDataHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/offer/:id", app.getOfferByIDHandler)
 
 	return app.enableCORS(router)
 }

@@ -29,6 +29,7 @@
   grid-template-rows: repeat(2, auto);
   justify-items: flex-start;
   gap: var(--spacing-32);
+  margin-bottom: var(--spacing-192);
 }
 
 @media (min-width: 70rem) {

@@ -5,9 +5,9 @@ import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import ApartmentIcon from "../icons/apartment-icon";
-import { MAP_OFFER_LOCATIONS } from "../../lib/map-data";
 import styles from "./interactive-map.module.css";
 import { useMapContext } from "../../hooks/use-map-context";
+import type { MapOffersResponse } from "../../lib/types";
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
@@ -24,7 +24,7 @@ const apartmentMarkerIcon = L.divIcon({
   iconAnchor: [14, 28],
 });
 
-type SelectedOffer = (typeof MAP_OFFER_LOCATIONS)[number];
+type SelectedOffer = MapOffersResponse;
 
 function MapClickHandler({ onClear }: { onClear: () => void }) {
   useMapEvent("click", () => {
@@ -36,12 +36,14 @@ function MapClickHandler({ onClear }: { onClear: () => void }) {
 
 function MarkerLayer({
   onSelect,
+  mapOffers,
 }: {
   onSelect: (offer: SelectedOffer) => void;
+  mapOffers: MapOffersResponse[];
 }) {
   return (
     <>
-      {MAP_OFFER_LOCATIONS.map((offer) => (
+      {mapOffers.map((offer) => (
         <Marker
           key={offer.id}
           position={[offer.lat, offer.lng]}
@@ -58,7 +60,7 @@ function MarkerLayer({
 }
 
 export default function LeafletMap() {
-  const { selectOffer, clearSelection } = useMapContext();
+  const { selectOffer, clearSelection, mapOffers } = useMapContext();
 
   return (
     <div className={styles.mapWrapper}>
@@ -72,7 +74,7 @@ export default function LeafletMap() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
-        <MarkerLayer onSelect={selectOffer} />
+        <MarkerLayer onSelect={selectOffer} mapOffers={mapOffers} />
         <MapClickHandler onClear={clearSelection} />
       </MapContainer>
     </div>
