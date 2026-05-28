@@ -1,5 +1,5 @@
-import { cn } from "../../lib/utils";
-import styles from "./select.module.css";
+import { cn } from "#/lib/utils";
+import styles from "#/components/ui/select.module.css";
 
 type SelectProps = {
   className?: string;

@@ -6,9 +6,8 @@
   box-shadow: var(--shadow-chart);
 }
 
-.infoBoxContainer :global(.font-chart-heading) {
+.infoBoxContainer :global(.font-h3) {
   padding: var(--spacing-16) var(--spacing-16) 0.875rem var(--spacing-16);
-  text-transform: uppercase;
 }
 
 .divider {
@@ -68,8 +67,8 @@
     min-width: 18.375em;
   }
 
-  .infoBoxContainer :global(.font-info-box-heading) {
-    padding: var(--spacing-24) var(--spacing-24) 1.375em var(--spacing-24);
+  .infoBoxContainer :global(.font-h3) {
+    padding: var(--spacing-24) var(--spacing-24) 1.25em var(--spacing-24);
   }
 
   .infoBoxLineWrapper {

@@ -4,10 +4,10 @@ import L from "leaflet";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
-import ApartmentIcon from "../icons/apartment-icon";
-import styles from "./interactive-map.module.css";
-import { useMapContext } from "../../hooks/use-map-context";
-import type { MapOffersResponse } from "../../lib/types";
+import ApartmentIcon from "#/components/icons/apartment-icon";
+import styles from "#/components/interactive-map/interactive-map.module.css";
+import { useMapContext } from "#/hooks/use-map-context";
+import type { MapOffersResponse } from "#/lib/types";
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
@@ -24,8 +24,6 @@ const apartmentMarkerIcon = L.divIcon({
   iconAnchor: [14, 28],
 });
 
-type SelectedOffer = MapOffersResponse;
-
 function MapClickHandler({ onClear }: { onClear: () => void }) {
   useMapEvent("click", () => {
     onClear();
@@ -38,7 +36,7 @@ function MarkerLayer({
   onSelect,
   mapOffers,
 }: {
-  onSelect: (offer: SelectedOffer) => void;
+  onSelect: (offerId: string) => void;
   mapOffers: MapOffersResponse[];
 }) {
   return (
@@ -50,7 +48,7 @@ function MarkerLayer({
           icon={apartmentMarkerIcon}
           eventHandlers={{
             click: () => {
-              onSelect(offer);
+              onSelect(offer.id);
             },
           }}
         />

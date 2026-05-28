@@ -1,5 +1,5 @@
-import { NavLink } from "react-router";
-import styles from "./nav.module.css";
+import { Link } from "@tanstack/react-router";
+import styles from "#/components/nav/nav.module.css";
 
 type NavItemProps = {
   className?: string;
@@ -10,18 +10,19 @@ type NavItemProps = {
 };
 
 export default function NavItem({ label, path, onClick }: NavItemProps) {
+  const baseClassName = `${styles.navItem} font-nav-button`;
+
   return (
     <li>
-      <NavLink
-        className={({ isActive }) =>
-          `${styles.navItem} font-nav-button ${isActive ? styles.active : ""}`
-        }
+      <Link
+        className={baseClassName}
         to={path}
-        end={path === "/"}
+        activeOptions={{ exact: path === "/" }}
+        activeProps={{ className: styles.active }}
         onClick={onClick}
       >
         <span className={styles.navItemText}>{label}</span>
-      </NavLink>
+      </Link>
     </li>
   );
 }

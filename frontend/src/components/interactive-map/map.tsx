@@ -1,6 +1,6 @@
-import MapBox from "./map-box";
-import styles from "./interactive-map.module.css";
-import LeafletMap from "./leaflet-map.tsx";
+import MapBox from "#/components/interactive-map/map-box";
+import styles from "#/components/interactive-map/interactive-map.module.css";
+import LeafletMap from "#/components/interactive-map/leaflet-map";
 
 export default function Map() {
   return (

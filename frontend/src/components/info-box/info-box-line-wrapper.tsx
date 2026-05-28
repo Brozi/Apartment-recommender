@@ -1,4 +1,4 @@
-import styles from "./info-box.module.css";
+import styles from "#/components/info-box/info-box.module.css";
 
 export default function InfoBoxLineWrapper({
   children,

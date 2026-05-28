@@ -1,5 +1,5 @@
-import { cn } from "../../lib/utils";
-import styles from "./button.module.css";
+import { cn } from "#/lib/utils";
+import styles from "#/components/ui/button.module.css";
 
 type ButtonProps = {
   className?: string;

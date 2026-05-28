@@ -1,6 +1,6 @@
-import styles from "./nav.module.css";
-import navAddonLeft from "../../assets/nav-addon-left.svg";
-import navAddonRight from "../../assets/nav-addon-right.svg";
+import styles from "#/components/nav/nav.module.css";
+import navAddonLeft from "#/assets/nav-addon-left.svg";
+import navAddonRight from "#/assets/nav-addon-right.svg";
 
 type NavItemsProps = {
   isOpen: boolean;

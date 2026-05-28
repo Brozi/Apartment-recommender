@@ -20,7 +20,7 @@ export type DashboardInfoBox = {
   unit: string;
 };
 
-export type DashboardKpisResponse = {
+export type DashboardKPIsResponse = {
   info_boxes: DashboardInfoBox[];
   build_year: { range: string; count: number }[];
   rooms: { rooms: string; count: number }[];
