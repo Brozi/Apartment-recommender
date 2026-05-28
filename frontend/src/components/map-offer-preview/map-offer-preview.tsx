@@ -1,28 +1,43 @@
-import { cn } from "../../lib/utils";
-import ImageIcon from "../icons/image-icon";
-import LocationIcon from "../icons/location-icon";
-import MeasureIcon from "../icons/measure-icon";
-import PaginationArrowLeftIcon from "../icons/pagination-arrow-left-icon";
-import PaginationArrowRightIcon from "../icons/pagination-arrow-right-icon";
-import styles from "./map-offer-preview.module.css";
-import OfferImage from "../../assets/offer-img.webp";
-import Button from "../ui/button";
-import LeftCorner from "../../assets/left-corner-32.svg";
-import type { OfferDetailsResponse } from "../../lib/types";
+import { cn } from "#/lib/utils";
+import ImageIcon from "#/components/icons/image-icon";
+import LocationIcon from "#/components/icons/location-icon";
+import MeasureIcon from "#/components/icons/measure-icon";
+import PaginationArrowLeftIcon from "#/components/icons/pagination-arrow-left-icon";
+import PaginationArrowRightIcon from "#/components/icons/pagination-arrow-right-icon";
+import styles from "#/components/map-offer-preview/map-offer-preview.module.css";
+import OfferImage from "#/assets/offer-img.webp";
+import Button from "#/components/ui/button";
+import LeftCorner from "#/assets/left-corner-32.svg";
+import { useOfferDetails } from "#/api/useOfferDetails";
+import LoadingSpinner from "#/components/ui/loading-spinner";
 
 type MapOfferPreviewProps = {
-  offer: OfferDetailsResponse;
+  selectedOfferId: string;
   onClose?: () => void;
 };
 
 export default function MapOfferPreview({
-  offer,
+  selectedOfferId,
   onClose,
 }: MapOfferPreviewProps) {
-  const imageSrc = offer.photoUrls[0] ?? OfferImage;
-  const locationLabel = [offer.city, offer.district, offer.street]
-    .filter(Boolean)
-    .join(", ");
+  const {
+    data: offerDetails,
+    isPending,
+    error,
+  } = useOfferDetails(selectedOfferId);
+
+  if (isPending) {
+    return <LoadingSpinner label="Loading offer details" />;
+  }
+
+  if (error || !offerDetails) {
+    return (
+      <div className={styles.MapOfferContent}>Error loading offer details</div>
+    );
+  }
+
+  const imageSrc = offerDetails.photoUrls[0] ?? OfferImage;
+  const locationLabel = [offerDetails.district, offerDetails.street].join(", ");
 
   return (
     <section className={styles.MapOfferContent}>
@@ -42,10 +57,12 @@ export default function MapOfferPreview({
 
       <div className={styles.MapOfferDetails}>
         <section className={cn(styles.multiList, styles.gapM)}>
-          <h3 className="font-highlight">{offer.price.toLocaleString()} zł</h3>
+          <h3 className="font-highlight">
+            {offerDetails.price.toLocaleString()} zł
+          </h3>
           <div className={cn(styles.divider, styles.sizeM)} />
           <span className="font-addon-main">
-            {offer.pricePerM2.toLocaleString()} zł/m²
+            {offerDetails.pricePerM2.toLocaleString()} zł/m²
           </span>
         </section>
 
@@ -57,9 +74,9 @@ export default function MapOfferPreview({
           <div className={styles.offerInfoItem}>
             <MeasureIcon />
             <section className={cn(styles.multiList, styles.gapS)}>
-              <p className="font-base">{offer.area} m²</p>
+              <p className="font-base">{offerDetails.area} m²</p>
               <div className={cn(styles.divider, styles.sizeS)} />
-              <p className="font-base">{offer.rooms} rooms</p>
+              <p className="font-base">{offerDetails.rooms} rooms</p>
             </section>
           </div>
         </div>

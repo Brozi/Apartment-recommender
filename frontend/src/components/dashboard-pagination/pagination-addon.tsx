@@ -1,5 +1,5 @@
-import paginationAddonLeft from "../../assets/pagination-addon-left.svg";
-import paginationAddonRight from "../../assets/pagination-addon-right.svg";
+import paginationAddonLeft from "#/assets/pagination-addon-left.svg";
+import paginationAddonRight from "#/assets/pagination-addon-right.svg";
 
 type PaginationAddonProps = {
   className: string;

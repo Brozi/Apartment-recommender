@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import styles from "./pagination.module.css";
+import styles from "#/components/dashboard-pagination/pagination.module.css";
 
 type PaginationInfoWrapperProps = {
   currentIndex: number;
@@ -42,11 +42,11 @@ export default function PaginationInfoWrapper({
 
   return (
     <div className={styles.infoWrapper}>
-      <span className="font-pagination-number">
+      <span className="font-addon-main">
         [{currentIndex + 1} / {totalSteps}]
       </span>
 
-      <span className="font-pagination-text" ref={textRef}>
+      <span className="font-h3" ref={textRef}>
         {label}
       </span>
     </div>

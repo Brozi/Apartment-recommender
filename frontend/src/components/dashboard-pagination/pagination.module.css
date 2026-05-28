@@ -1,30 +1,12 @@
-.paginationContainer {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  margin-bottom: var(--spacing-48);
-  margin-top: var(--spacing-24);
-}
-
-.paginationAddonLeft,
-.paginationAddonRight {
-  position: absolute;
-  top: -2.5rem;
-  display: none;
-  z-index: -1;
-}
-
 .pagination {
-  max-width: 35.375rem;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
 }
 
 .infoWrapper {
+  width: 100%;
   max-width: calc(100% - 8rem);
   display: flex;
   gap: var(--spacing-12);
@@ -42,8 +24,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 3rem;
+  height: 3rem;
   background-color: var(--clr-primary-100);
   transition: all 0.2s ease;
   cursor: pointer;
@@ -53,21 +35,8 @@
   box-shadow: inset 0 0 0 0.125rem var(--clr-light-35);
 }
 
-@media (min-width: 37.5rem) {
-  .paginationContainer {
-    margin-bottom: var(--spacing-64);
-    margin-top: var(--spacing-32);
-  }
-}
-
-@media (min-width: 108rem) {
-  .paginationAddonLeft {
-    display: block;
-    left: 0;
-  }
-
-  .paginationAddonRight {
-    display: block;
-    right: 0;
+@media (min-width: 100rem) {
+  .pagination {
+    max-width: 30.25em;
   }
 }

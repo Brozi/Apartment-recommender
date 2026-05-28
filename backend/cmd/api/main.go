@@ -15,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
-const version = "1.0.0" // hard coded global constant
+const version = "1.0.0"
 
 type config struct {
 	port  int
@@ -24,6 +24,7 @@ type config struct {
 		uri        string
 		database   string
 		collection string
+		dashboardCollection string
 	}
 }
 
@@ -33,6 +34,7 @@ type application struct {
 	mongoClient     *mongo.Client
 	mongoDatabase   *mongo.Database
 	mongoCollection *mongo.Collection
+	mongoDashboardCollection *mongo.Collection
 }
 
 func main() {
@@ -46,6 +48,7 @@ func main() {
 	cfg.mongo.uri = getEnv("MONGODB_URI", "")
 	cfg.mongo.database = getEnv("MONGODB_DB", "otodom_data")
 	cfg.mongo.collection = getEnv("MONGODB_COLLECTION", "Properties")
+	cfg.mongo.dashboardCollection = getEnv("MONGODB_DASHBOARD_COLLECTION", "dashboard_aggregates")
 	if cfg.mongo.uri == "" {
 		log.Fatal("missing MONGODB_URI")
 	}
@@ -69,6 +72,7 @@ func main() {
 
 	database := client.Database(cfg.mongo.database)
 	collection := database.Collection(cfg.mongo.collection)
+	dashboardCollection := database.Collection(cfg.mongo.dashboardCollection)
 
 	app := &application{
 		config:          cfg,
@@ -76,6 +80,7 @@ func main() {
 		mongoClient:     client,
 		mongoDatabase:   database,
 		mongoCollection: collection,
+		mongoDashboardCollection: dashboardCollection,
 	}
 
 	srv := &http.Server{

@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"net/http"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -229,42 +232,17 @@ func (app *application) aggregateBuildYear(ctx context.Context, city string) ([]
 
 func (app *application) aggregateRooms(ctx context.Context, city string) ([]roomsEntry, error) {
 	pipeline := mongo.Pipeline{
-		bson.D{{Key: "$match", Value: bson.M{"localization.city": city}}},
-		bson.D{{Key: "$project", Value: bson.M{
-			"roomsValue": bson.M{
-				"$cond": bson.A{
-					bson.M{"$eq": bson.A{"$rooms", "5+"}},
-					5,
-					bson.M{"$convert": bson.M{
-						"input":   "$rooms",
-						"to":      "int",
-						"onError": 0,
-						"onNull":  0,
-					}},
-				},
-			},
+		bson.D{{Key: "$match", Value: bson.M{
+			"metric": "offer_count_by_rooms",
 		}}},
-		bson.D{{Key: "$project", Value: bson.M{
-			"rooms": bson.M{
-				"$switch": bson.M{
-					"branches": bson.A{
-						bson.M{"case": bson.M{"$eq": bson.A{"$roomsValue", 1}}, "then": "1"},
-						bson.M{"case": bson.M{"$eq": bson.A{"$roomsValue", 2}}, "then": "2"},
-						bson.M{"case": bson.M{"$eq": bson.A{"$roomsValue", 3}}, "then": "3"},
-						bson.M{"case": bson.M{"$eq": bson.A{"$roomsValue", 4}}, "then": "4"},
-						bson.M{"case": bson.M{"$gte": bson.A{"$roomsValue", 5}}, "then": "5+"},
-					},
-					"default": "unknown",
-				},
-			},
-		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "computed_at", Value: -1}}}},
 		bson.D{{Key: "$group", Value: bson.M{
-			"_id":   "$rooms",
-			"count": bson.M{"$sum": 1},
+			"_id":   "$group_key.rooms",
+			"count": bson.M{"$first": "$values.count"},
 		}}},
 	}
 
-	results, err := aggregateCounts(ctx, app.mongoCollection, pipeline)
+	results, err := aggregateCounts(ctx, app.mongoDashboardCollection, pipeline)
 	if err != nil {
 		return nil, err
 	}
@@ -274,36 +252,66 @@ func (app *application) aggregateRooms(ctx context.Context, city string) ([]room
 		counts[result.ID] = result.Count
 	}
 
-	order := []string{"1", "2", "3", "4", "5+"}
-	entries := make([]roomsEntry, 0, len(order))
-	for _, label := range order {
-		entries = append(entries, roomsEntry{Rooms: label, Count: counts[label]})
+	entries := make([]roomsEntry, 0, len(counts))
+	for label, count := range counts {
+		entries = append(entries, roomsEntry{Rooms: label, Count: count})
 	}
+
+	sort.SliceStable(entries, func(i, j int) bool {
+		left := roomsSortValue(entries[i].Rooms)
+		right := roomsSortValue(entries[j].Rooms)
+		if left == right {
+			return entries[i].Rooms < entries[j].Rooms
+		}
+		return left < right
+	})
 
 	return entries, nil
 }
 
 func (app *application) aggregateFinishingState(ctx context.Context, city string) ([]finishingStateEntry, error) {
 	pipeline := mongo.Pipeline{
-		{{Key: "$match", Value: bson.D{{Key: "localization.city", Value: city}}}},
-		{{Key: "$group", Value: bson.D{{Key: "_id", Value: "$construction_status"}, {Key: "count", Value: bson.D{{Key: "$sum", Value: 1}}}}}},
+		bson.D{{Key: "$match", Value: bson.M{
+			"metric": "offer_count_by_construction_status",
+		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "computed_at", Value: -1}}}},
+		bson.D{{Key: "$group", Value: bson.M{
+			"_id":   "$group_key.construction_status",
+			"count": bson.M{"$first": "$values.count"},
+		}}},
 	}
 
-	results, err := aggregateCounts(ctx, app.mongoCollection, pipeline)
+	cursor, err := app.mongoDashboardCollection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(ctx)
 
-	counts := map[string]int{}
+	var results []rangeCountResult
+	for cursor.Next(ctx) {
+		var result rangeCountResult
+		if err := cursor.Decode(&result); err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	entries := make([]finishingStateEntry, 0, len(results))
 	for _, result := range results {
-		counts[result.ID] = result.Count
+		entries = append(entries, finishingStateEntry{State: result.ID, Count: result.Count})
 	}
 
-	order := []string{"to_renovate", "to_completion", "ready_to_use"}
-	entries := make([]finishingStateEntry, 0, len(order))
-	for _, label := range order {
-		entries = append(entries, finishingStateEntry{State: label, Count: counts[label]})
-	}
+	sort.SliceStable(entries, func(i, j int) bool {
+		leftUnknown := strings.EqualFold(entries[i].State, "unknown")
+		rightUnknown := strings.EqualFold(entries[j].State, "unknown")
+		if leftUnknown != rightUnknown {
+			return !leftUnknown
+		}
+		return strings.ToLower(entries[i].State) < strings.ToLower(entries[j].State)
+	})
 
 	return entries, nil
 }
@@ -367,71 +375,135 @@ type kpiStats struct {
 }
 
 func (app *application) aggregateKpiStats(ctx context.Context, city string) (kpiStats, error) {
-	pipeline := mongo.Pipeline{
-		{{Key: "$match", Value: bson.D{{Key: "localization.city", Value: city}}}},
-		{{Key: "$group", Value: bson.D{
-			{Key: "_id", Value: nil},
-			{Key: "avgPricePerMeter", Value: bson.D{{Key: "$avg", Value: "$price_per_meter"}}},
-			{Key: "medPricePerMeter", Value: bson.D{{Key: "$percentile", Value: bson.D{{Key: "input", Value: "$price_per_meter"}, {Key: "p", Value: bson.A{0.5}}, {Key: "method", Value: "approximate"}}}}},
-			{Key: "avgPrice", Value: bson.D{{Key: "$avg", Value: "$price"}}},
-			{Key: "medPrice", Value: bson.D{{Key: "$percentile", Value: bson.D{{Key: "input", Value: "$price"}, {Key: "p", Value: bson.A{0.5}}, {Key: "method", Value: "approximate"}}}}},
-			{Key: "avgArea", Value: bson.D{{Key: "$avg", Value: "$area"}}},
-			{Key: "medArea", Value: bson.D{{Key: "$percentile", Value: bson.D{{Key: "input", Value: "$area"}, {Key: "p", Value: bson.A{0.5}}, {Key: "method", Value: "approximate"}}}}},
+	_ = city
+
+	period := "2026-05"
+	auctionType := "Sale"
+
+	pricePerMeterPipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{
+			"metric":           "monthly_price_per_meter_stats",
+			"group_key.period": period,
+		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "computed_at", Value: -1}}}},
+		bson.D{{Key: "$limit", Value: 1}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"avgPricePerMeter": "$values.avg_price_per_meter",
+			"medPricePerMeter": "$values.med_price_per_meter",
 		}}},
 	}
 
-	cursor, err := app.mongoCollection.Aggregate(ctx, pipeline)
+	pricePipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{
+			"metric":                "monthly_price_stats",
+			"group_key.period":      period,
+			"group_key.auction_type": auctionType,
+		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "computed_at", Value: -1}}}},
+		bson.D{{Key: "$limit", Value: 1}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"avgPrice": "$values.avg_price",
+			"medPrice": "$values.med_price",
+		}}},
+	}
+
+	areaPipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{
+			"metric":           "monthly_area_stats",
+			"group_key.period": period,
+		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "computed_at", Value: -1}}}},
+		bson.D{{Key: "$limit", Value: 1}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"avgArea": "$values.avg_area",
+			"medArea": "$values.med_area",
+		}}},
+	}
+
+	var pricePerMeterResult struct {
+		AvgPricePerMeter float64 `bson:"avgPricePerMeter"`
+		MedPricePerMeter float64 `bson:"medPricePerMeter"`
+	}
+	pricePerMeterCursor, err := app.mongoDashboardCollection.Aggregate(ctx, pricePerMeterPipeline)
 	if err != nil {
 		return kpiStats{}, err
 	}
-	defer cursor.Close(ctx)
-
-	type statsResult struct {
-		AvgPricePerMeter float64   `bson:"avgPricePerMeter"`
-		MedPricePerMeter []float64 `bson:"medPricePerMeter"`
-		AvgPrice         float64   `bson:"avgPrice"`
-		MedPrice         []float64 `bson:"medPrice"`
-		AvgArea          float64   `bson:"avgArea"`
-		MedArea          []float64 `bson:"medArea"`
-	}
-
-	if cursor.Next(ctx) {
-		var result statsResult
-		if err := cursor.Decode(&result); err != nil {
+	defer pricePerMeterCursor.Close(ctx)
+	if pricePerMeterCursor.Next(ctx) {
+		if err := pricePerMeterCursor.Decode(&pricePerMeterResult); err != nil {
 			return kpiStats{}, err
 		}
-
-		return kpiStats{
-			AvgPricePerMeter: result.AvgPricePerMeter,
-			MedPricePerMeter: firstOrZero(result.MedPricePerMeter),
-			AvgPrice:         result.AvgPrice,
-			MedPrice:         firstOrZero(result.MedPrice),
-			AvgArea:          result.AvgArea,
-			MedArea:          firstOrZero(result.MedArea),
-		}, nil
 	}
-
-	if err := cursor.Err(); err != nil {
+	if err := pricePerMeterCursor.Err(); err != nil {
 		return kpiStats{}, err
 	}
 
-	return kpiStats{}, nil
+	var priceResult struct {
+		AvgPrice float64 `bson:"avgPrice"`
+		MedPrice float64 `bson:"medPrice"`
+	}
+	priceCursor, err := app.mongoDashboardCollection.Aggregate(ctx, pricePipeline)
+	if err != nil {
+		return kpiStats{}, err
+	}
+	defer priceCursor.Close(ctx)
+	if priceCursor.Next(ctx) {
+		if err := priceCursor.Decode(&priceResult); err != nil {
+			return kpiStats{}, err
+		}
+	}
+	if err := priceCursor.Err(); err != nil {
+		return kpiStats{}, err
+	}
+
+	var areaResult struct {
+		AvgArea float64 `bson:"avgArea"`
+		MedArea float64 `bson:"medArea"`
+	}
+	areaCursor, err := app.mongoDashboardCollection.Aggregate(ctx, areaPipeline)
+	if err != nil {
+		return kpiStats{}, err
+	}
+	defer areaCursor.Close(ctx)
+	if areaCursor.Next(ctx) {
+		if err := areaCursor.Decode(&areaResult); err != nil {
+			return kpiStats{}, err
+		}
+	}
+	if err := areaCursor.Err(); err != nil {
+		return kpiStats{}, err
+	}
+
+	return kpiStats{
+		AvgPricePerMeter: pricePerMeterResult.AvgPricePerMeter,
+		MedPricePerMeter: pricePerMeterResult.MedPricePerMeter,
+		AvgPrice:         priceResult.AvgPrice,
+		MedPrice:         priceResult.MedPrice,
+		AvgArea:          areaResult.AvgArea,
+		MedArea:          areaResult.MedArea,
+	}, nil
 }
 
 func (app *application) aggregateMarketTypeCounts(ctx context.Context, city string) (map[string]int, error) {
 	pipeline := mongo.Pipeline{
-		{{Key: "$match", Value: bson.D{{Key: "localization.city", Value: city}}}},
-		{{Key: "$group", Value: bson.D{{Key: "_id", Value: "$market_type"}, {Key: "count", Value: bson.D{{Key: "$sum", Value: 1}}}}}},
+		bson.D{{Key: "$match", Value: bson.M{
+			"metric": "offer_count_by_market_type",
+		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "computed_at", Value: -1}}}},
+		bson.D{{Key: "$group", Value: bson.M{
+			"_id":   "$group_key.market_type",
+			"count": bson.M{"$first": "$values.count"},
+		}}},
 	}
 
-	results, err := aggregateCounts(ctx, app.mongoCollection, pipeline)
+	results, err := aggregateCounts(ctx, app.mongoDashboardCollection, pipeline)
 	if err != nil {
 		return nil, err
 	}
 
 	counts := map[string]int{"primary": 0, "secondary": 0}
 	for _, result := range results {
-		counts[result.ID] = result.Count
+		counts[strings.ToLower(result.ID)] = result.Count
 	}
 
 	return counts, nil
@@ -468,4 +540,22 @@ func firstOrZero(values []float64) float64 {
 	}
 
 	return values[0]
+}
+
+func roomsSortValue(value string) int {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return 1_000_000
+	}
+
+	if strings.HasSuffix(trimmed, "+") {
+		trimmed = strings.TrimSuffix(trimmed, "+")
+	}
+
+	parsed, err := strconv.Atoi(trimmed)
+	if err != nil {
+		return 1_000_000
+	}
+
+	return parsed
 }

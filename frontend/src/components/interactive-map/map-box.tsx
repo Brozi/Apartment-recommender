@@ -1,4 +1,4 @@
-import styles from "./interactive-map.module.css";
+import styles from "#/components/interactive-map/interactive-map.module.css";
 
 type MapBoxProps = {
   children?: React.ReactNode;

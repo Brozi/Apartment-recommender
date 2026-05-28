@@ -1,10 +1,10 @@
 import { createContext } from "react";
-import type { MapOffersResponse } from "../lib/types";
+import type { MapOffersResponse } from "#/lib/types";
 
 type MapContextType = {
-  selectedOffer: MapOffersResponse | null;
+  selectedOfferId: string | null;
   isSelected: boolean;
-  selectOffer: (offer: MapOffersResponse) => void;
+  selectOffer: (offerId: string) => void;
   clearSelection: () => void;
   mapOffers: MapOffersResponse[];
 };

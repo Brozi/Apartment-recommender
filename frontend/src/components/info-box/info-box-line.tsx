@@ -1,5 +1,5 @@
-import { formatNumber } from "../../lib/utils";
-import styles from "./info-box.module.css";
+import { formatNumber } from "#/lib/utils";
+import styles from "#/components/info-box/info-box.module.css";
 
 type InfoBoxLineProps = {
   title: string;
@@ -15,7 +15,10 @@ export default function InfoBoxLine({ title, value, unit }: InfoBoxLineProps) {
   return (
     <section className={styles.infoBoxLine}>
       <p className="font-paragraph">{title}</p>
-      <span className="font-chart-highlight">
+      <span
+        style={{ color: "var(--clr-acc-orange)" }}
+        className="font-highlight"
+      >
         {formatNumber(integerPart)}
         {decimalPart !== null ? `.${decimalPart}` : ""} {unit ?? ""}
       </span>

@@ -8,9 +8,9 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import type { LineConfig, ChartData } from "../../lib/types";
-import DashboardBox from "../dashboard-box/dashboard-box";
-import styles from "./chart.module.css";
+import type { LineConfig, ChartData } from "#/lib/types";
+import DashboardBox from "#/components/dashboard-box/dashboard-box";
+import styles from "#/components/charts/chart.module.css";
 
 type LineChartProps = {
   title: string;

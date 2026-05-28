@@ -1,6 +1,6 @@
-import { NavLink } from "react-router";
+import { Link } from "@tanstack/react-router";
 
-import styles from "./pagination.module.css";
+import styles from "#/components/dashboard-pagination/pagination.module.css";
 
 type PaginationButtonProps = {
   children: React.ReactNode;
@@ -12,8 +12,8 @@ export default function PaginationButton({
   path,
 }: PaginationButtonProps) {
   return (
-    <NavLink className={styles.paginationButton} to={path}>
+    <Link className={styles.paginationButton} to={path}>
       {children}
-    </NavLink>
+    </Link>
   );
 }
