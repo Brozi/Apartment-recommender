@@ -26,6 +26,9 @@ type config struct {
 		collection string
 		dashboardCollection string
 	}
+	geohash struct {
+		token string
+	}
 }
 
 type application struct {
@@ -49,6 +52,7 @@ func main() {
 	cfg.mongo.database = getEnv("MONGODB_DB", "otodom_data")
 	cfg.mongo.collection = getEnv("MONGODB_COLLECTION", "Properties")
 	cfg.mongo.dashboardCollection = getEnv("MONGODB_DASHBOARD_COLLECTION", "dashboard_aggregates")
+	cfg.geohash.token = getEnv("GEOHASH_TOKEN", "")
 	if cfg.mongo.uri == "" {
 		log.Fatal("missing MONGODB_URI")
 	}

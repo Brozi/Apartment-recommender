@@ -5,6 +5,7 @@ go 1.24.1
 require (
 	github.com/joho/godotenv v1.5.1
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/mmcloughlin/geohash v0.10.0
 	go.mongodb.org/mongo-driver/v2 v2.6.0
 )
 
