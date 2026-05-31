@@ -5,10 +5,12 @@
   --clr-primary-100: #231f20;
   --clr-primary-90: hsla(345, 6%, 13%, 0.9);
   --clr-primary-80: hsla(345, 6%, 13%, 0.8);
+  --clr-primary-60: hsla(345, 6%, 13%, 0.6);
   --clr-primary-50: hsla(345, 6%, 13%, 0.5);
   --clr-primary-35: hsla(345, 6%, 13%, 0.35);
   --clr-secondary-100: #41393b;
   --clr-secondary-90: hsla(345, 7%, 24%, 0.9);
+  --clr-secondary-60: hsla(345, 7%, 24%, 0.6);
   --clr-secondary-50: hsla(345, 7%, 24%, 0.5);
   --clr-secondary-15: hsla(345, 7%, 24%, 0.15);
   --clr-text: #6c6063;
@@ -59,6 +61,7 @@
   --spacing-16: 1rem;
   --spacing-20: 1.25rem;
   --spacing-24: 1.5rem;
+  --spacing-28: 1.75rem;
   --spacing-32: 2rem;
   --spacing-40: 2.5rem;
   --spacing-48: 3rem;
@@ -78,4 +81,9 @@
     0 58px 16px 0 rgba(187, 169, 140, 0), 0 37px 15px 0 rgba(187, 169, 140, 0),
     0 21px 13px 0 rgba(187, 169, 140, 0.02),
     0 9px 9px 0 rgba(187, 169, 140, 0.03), 0 2px 5px 0 rgba(187, 169, 140, 0.03);
+
+  --shadow-text:
+    0 145px 41px rgba(35, 31, 32, 0), 0 93px 37px rgba(35, 31, 32, 0.01),
+    0 52px 31px rgba(35, 31, 32, 0.05), 0 23px 23px rgba(35, 31, 32, 0.09),
+    0 6px 13px rgba(35, 31, 32, 0.1);
 }

@@ -1,49 +1,56 @@
-import { useRouterState } from "@tanstack/react-router";
-
-import { DASHBOARD_PAGINATION_DATA } from "#/lib/constants";
 import PaginationButton from "#/components/dashboard-pagination/pagination-button";
 import arrowLeft from "#/assets/arrow-left.svg";
 import arrowRight from "#/assets/arrow-right.svg";
 import styles from "#/components/dashboard-pagination/pagination.module.css";
 import PaginationInfoWrapper from "#/components/dashboard-pagination/pagination-info-wrapper";
+import type { PaginationModel } from "#/store/paginationModels";
 
-export default function Pagination() {
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  });
+type PaginationProps = {
+  model: PaginationModel | null;
+  style?: React.CSSProperties;
+};
 
-  const dashboardBasePath = "/dashboard";
-  const currentPath = pathname.split("/").pop() || "";
-
-  const currentIndex = DASHBOARD_PAGINATION_DATA.findIndex(
-    (step) => step.path === currentPath,
-  );
-  const totalSteps = DASHBOARD_PAGINATION_DATA.length;
-
-  const prevIndex = (currentIndex - 1 + totalSteps) % totalSteps;
-  const nextIndex = (currentIndex + 1) % totalSteps;
-
-  if (currentIndex === -1) return null;
+export default function Pagination({ model, style }: PaginationProps) {
+  if (!model) return null;
 
   return (
-    <section className={styles.pagination}>
-      <PaginationButton
-        path={`${dashboardBasePath}/${DASHBOARD_PAGINATION_DATA[prevIndex].path}`}
-      >
-        <img src={arrowLeft} alt="Arrow left icon" />
-      </PaginationButton>
+    <section className={styles.pagination} style={style}>
+      {model.type === "nav" && (
+        <>
+          <PaginationButton path={model.prevPath}>
+            <img src={arrowLeft} alt="Arrow left icon" />
+          </PaginationButton>
 
-      <PaginationInfoWrapper
-        currentIndex={currentIndex}
-        totalSteps={totalSteps}
-        label={DASHBOARD_PAGINATION_DATA[currentIndex].label}
-      />
+          <PaginationInfoWrapper
+            type={model.type}
+            currentIndex={model.currentIndex}
+            totalSteps={model.totalSteps}
+            label={model.label}
+          />
 
-      <PaginationButton
-        path={`${dashboardBasePath}/${DASHBOARD_PAGINATION_DATA[nextIndex].path}`}
-      >
-        <img src={arrowRight} alt="Arrow right icon" />
-      </PaginationButton>
+          <PaginationButton path={model.nextPath}>
+            <img src={arrowRight} alt="Arrow right icon" />
+          </PaginationButton>
+        </>
+      )}
+      {model.type === "action" && model.label && (
+        <>
+          <PaginationButton type="action" onClick={model.onPrev}>
+            <img src={arrowLeft} alt="Arrow left icon" />
+          </PaginationButton>
+
+          <PaginationInfoWrapper
+            type={model.type}
+            currentIndex={model.currentIndex}
+            totalSteps={model.totalSteps}
+            label={model.label}
+          />
+
+          <PaginationButton type="action" onClick={model.onNext}>
+            <img src={arrowRight} alt="Arrow right icon" />
+          </PaginationButton>
+        </>
+      )}
     </section>
   );
 }

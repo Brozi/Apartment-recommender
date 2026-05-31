@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useOffers } from "#/api/useOffers";
+import { useDebouncedValue } from "#/hooks/use-debounced-value";
 import { createFileRoute } from "@tanstack/react-router";
 
 import styles from "#/routes/map-page.module.css";
@@ -11,22 +13,26 @@ import BtnGroup from "#/components/subpage-header/btn-group";
 import SubpageHeader from "#/components/subpage-header/subpage-header";
 import SubpageHeaderTitle from "#/components/subpage-header/subpage-header-title";
 import Button from "#/components/ui/button";
-import LoadingSpinner from "#/components/ui/loading-spinner";
 import Select from "#/components/ui/select";
 import MapContextProvider from "#/contexts/map-context-provider";
+import type { MapViewport } from "#/lib/types";
 
 export const Route = createFileRoute("/map")({ component: MapPage });
 
 function MapPage() {
-  const { data: mapOffers, isPending, error } = useOffers();
+  const [viewport, setViewport] = useState<MapViewport | null>(null);
+  const debouncedViewport = useDebouncedValue(viewport, 300);
+  const { data: mapData, isPending, error } = useOffers(debouncedViewport);
 
-  if (isPending) {
-    return <LoadingSpinner label="Loading map" />;
-  }
-
-  if (error || !mapOffers) {
+  if (error) {
     return <p className="text-paragraph">Failed to load map</p>;
   }
+
+  const safeMapData = mapData ?? {
+    offers: { items: [] },
+    offersInPoint: { items: [] },
+    clusters: { items: [] },
+  };
 
   return (
     <>
@@ -58,8 +64,8 @@ function MapPage() {
       </SubpageHeader>
 
       <section className={styles.mapSection}>
-        <MapContextProvider mapOffers={mapOffers}>
-          <Map />
+        <MapContextProvider mapData={safeMapData}>
+          <Map onViewportChange={setViewport} />
           <MapOfferContainer />
         </MapContextProvider>
       </section>
