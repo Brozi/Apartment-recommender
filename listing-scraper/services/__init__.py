@@ -1,9 +1,9 @@
 from services.agency import AgencyService  # noqa F401
 from services.database import connect_to_database  # noqa F401
 from services.property import PropertyService  # noqa F401
-from services.discovery import RangeDiscoverer
-from services.merge import DataMerger
-from services.network import NetworkService
-from services.export import ExportService
-from services.parse import OtodomParser
-from services.investment.investment_mapper import InvestmentMapper
+from services.discovery import RangeDiscoverer # noqa F401
+from services.merge import DataMerger # noqa F401
+from services.network import NetworkService # noqa F401
+from services.export import ExportService # noqa F401
+from services.parse import OtodomParser # noqa F401
+from services.investment.investment_mapper import InvestmentMapper # noqa F401
