@@ -4,10 +4,12 @@ import styles from "#/components/ui/button.module.css";
 type ButtonProps = {
   className?: string;
   onClick?: () => void;
-  label: string;
+  label?: string;
   icon?: React.ReactNode;
-  variant?: "secondary" | "primary";
+  variant?: "secondary" | "primary" | "secondary-icon" | "primary-icon";
   style?: React.CSSProperties;
+  type?: "button" | "submit" | "reset";
+  form?: string;
 };
 
 export default function Button({
@@ -17,13 +19,18 @@ export default function Button({
   label,
   icon,
   variant,
+  ...props
 }: ButtonProps) {
   const buttonStyle =
-    variant === "secondary" ? styles.secondaryButton : styles.primaryButton;
+    variant === "secondary" || variant === "secondary-icon"
+      ? styles.secondaryButton
+      : styles.primaryButton;
   const labelStyle =
-    variant === "secondary" ? "font-secondary-button" : "font-primary-button";
+    variant === "secondary" || variant === "secondary-icon"
+      ? "font-secondary-button"
+      : "font-primary-button";
   const cornerAccentStyle =
-    variant === "secondary"
+    variant === "secondary" || variant === "secondary-icon"
       ? styles.cornerAccentSecondary
       : styles.cornerAccentPrimary;
 
@@ -32,9 +39,14 @@ export default function Button({
       className={cn(buttonStyle, className)}
       onClick={onClick}
       style={style}
+      {...props}
     >
-      {icon && <span className={styles.icon}>{icon}</span>}
-      <span className={labelStyle}>{label}</span>
+      {variant === "secondary-icon" || (variant === "primary-icon" && icon) ? (
+        <>{icon}</>
+      ) : (
+        <span className={styles.icon}>{icon}</span>
+      )}
+      {label && <span className={labelStyle}>{label}</span>}
       <div className={cornerAccentStyle} aria-hidden="true" />
     </button>
   );

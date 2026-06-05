@@ -80,10 +80,10 @@
   font-weight: 500;
 }
 
-.font-input-title {
+.font-input-label {
   color: var(--clr-primary-100);
   font-family: var(--font-primary);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 800;
   letter-spacing: 0.015rem;
 }
@@ -177,7 +177,7 @@
     font-size: 1em;
   }
 
-  .font-input-title {
+  .font-input-label {
     font-size: 0.875em;
     letter-spacing: 0.0175em;
   }
