@@ -11,6 +11,7 @@ logging.basicConfig(
 
 )
 limits = OtodomFilterLimitsAggregator(
+        listings_col="listings_clean",
         filter_limits_col='filter_limits'
     )
 limits.run()

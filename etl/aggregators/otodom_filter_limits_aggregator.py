@@ -9,10 +9,12 @@ logger = logging.getLogger(__name__)
 class OtodomFilterLimitsAggregator(OtodomAggregator):
     def __init__(
             self,
+            listings_col="listings_clean",
             filter_limits_col="filter_limits",
     ):
         super().__init__(listings_col="listings_clean")
         self.filter_limits_col = self.db[filter_limits_col]
+        self.listings_col = self.db[listings_col]
 
     def run(self):
         updated_count = self.build_filter_limits()
