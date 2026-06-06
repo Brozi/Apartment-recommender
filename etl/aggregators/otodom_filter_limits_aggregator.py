@@ -9,20 +9,21 @@ logger = logging.getLogger(__name__)
 class OtodomFilterLimitsAggregator(OtodomAggregator):
     def __init__(
             self,
-            listings_col="listings_clean",
             filter_limits_col="filter_limits",
     ):
         super().__init__(listings_col="listings_clean")
         self.filter_limits_col = self.db[filter_limits_col]
-        self.listings_col = self.db[listings_col]
 
     def run(self):
         updated_count = self.build_filter_limits()
         logger.info(f"Updated {updated_count} scope(s)")
-        
+
     def build_filter_limits(self) -> int:
         docs = list(self.listings_col.aggregate(self._filter_limits_pipeline()))
+        print(f"DEBUG: Found {len(docs)} documents after aggregation")
         operations = [self._build_upsert_operation(doc) for doc in docs]
+        count = self.listings_col.count_documents({})
+        print(f"Total listings in collection: {count}")
 
         if not operations:
             return 0
@@ -35,7 +36,6 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
             {
                 "$project": {
                     "city": "$localization.city",
-                    "auction_type": f"${self.auction_type}",
                     "price": 1,
                     "price_usable": 1,
                     "price_per_meter": 1,
@@ -55,10 +55,8 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
             {
                 "$match": {
                     "city": {"$ne": None},
-                    "auction_type": {"$ne": None},
                     "price_usable": True,
                     "price_per_meter_usable": True,
-                    "area_usable": True,
                     "build_year": {"$ne": None},
                 }
             },
@@ -66,7 +64,6 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
                 "$group": {
                     "_id": {
                         "city": "$city",
-                        "auction_type": "$auction_type",
                     },
                     "lower_price": {"$min": "$price"},
                     "upper_price": {"$max": "$price"},
@@ -84,17 +81,14 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
     @staticmethod
     def _build_upsert_operation(doc: dict) -> UpdateOne:
         city = doc["_id"]["city"]
-        auction_type = doc["_id"]["auction_type"]
 
         return UpdateOne(
             {
                 "city": city,
-                "auction_type": auction_type,
             },
             {
                 "$set": {
                     "city": city,
-                    "auction_type": auction_type,
                     "limits":{
                         "price": {
                             "lower": doc["lower_price"],
