@@ -96,13 +96,9 @@ class OtodomCleaner:
 
     @staticmethod
     def clean_price_per_meter(clean_doc: dict) -> None:
-        price_per_meter = clean_doc.get('price_per_meter', 0)
+        price_per_meter = clean_doc.get('price_per_meter', None)
         area = clean_doc.get('area', 0)
         price = clean_doc.get('price', 0)
-        try:
-            expected_price_per_m = price / area
-        except ZeroDivisionError:
-            expected_price_per_m = 0
 
         if price_per_meter is None or price_per_meter == 0:
             try:
@@ -117,12 +113,7 @@ class OtodomCleaner:
                     return
             except ZeroDivisionError:
                 clean_doc['price_per_meter'] = None
-                clean_doc['price_per_meter_usable'] = True
                 return
-        elif price_per_meter <= expected_price_per_m or expected_price_per_m == 0:
-            clean_doc['price_per_meter'] = None
-            clean_doc['price_per_meter_usable'] = False
-            return
         else:
             clean_doc['price_per_meter'] = price_per_meter
             clean_doc['price_per_meter_usable'] = True
