@@ -6,11 +6,11 @@ import PaginationArrowLeftIcon from "#/components/icons/pagination-arrow-left-ic
 import PaginationArrowRightIcon from "#/components/icons/pagination-arrow-right-icon";
 import styles from "#/components/map-offer-preview/map-offer-preview.module.css";
 import OfferImage from "#/assets/offer-img.webp";
-import Button from "#/components/ui/button";
 import LeftCorner from "#/assets/left-corner-32.svg";
 import { useOfferDetails } from "#/api/useOfferDetails";
 import LoadingSpinner from "#/components/ui/loading-spinner";
 import CloseIcon from "../icons/close-icon";
+import { Button } from "../ui/button";
 
 type MapOfferPreviewProps = {
   selectedOfferId: string;
@@ -95,12 +95,9 @@ export default function MapOfferPreview({
       <div className={cn(styles.divider, styles.sizeL)} />
 
       <section className={styles.offerActions}>
-        <Button
-          style={{ justifyContent: "center" }}
-          variant="primary"
-          label="See offer"
-          onClick={() => {}}
-        />
+        <Button variant="primary" size="large" width="full" onClick={() => {}}>
+          See offer
+        </Button>
       </section>
 
       <img

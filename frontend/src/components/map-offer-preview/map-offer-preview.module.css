@@ -145,8 +145,7 @@
 .offerActions {
   width: 100%;
   display: flex;
-  padding: var(--spacing-16) var(--spacing-16) var(--spacing-20)
-    var(--spacing-16);
+  padding: var(--spacing-16);
 }
 
 .offerActions button {
@@ -169,7 +168,6 @@
   }
 
   .offerActions {
-    padding: var(--spacing-24) var(--spacing-24) var(--spacing-28)
-      var(--spacing-24);
+    padding: var(--spacing-24);
   }
 }

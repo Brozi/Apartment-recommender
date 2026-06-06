@@ -1,0 +1,4 @@
+.rangeFields {
+  display: flex;
+  gap: var(--spacing-8);
+}

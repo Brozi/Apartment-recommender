@@ -40,7 +40,7 @@ function FieldLegend({
     <legend
       data-slot="field-legend"
       data-variant={variant}
-      className={cn(styles.label, className)}
+      className={cn(styles.legend, className, "font-input-label")}
       {...props}
     />
   );

@@ -1,17 +1,40 @@
-import * as z from "zod";
-
-import styles from "#/components/map-forms/form.module.css";
-import { FieldError, FieldGroup, FieldLegend, FieldSet } from "../ui/field";
-import Button from "../ui/button";
-import { Input } from "../ui/input";
-import FormButton from "../ui/form-button";
+import { filterFormOptions } from "#/feature/filter-form/filter-form-options";
 import { useAppForm } from "../form";
+import { Button } from "../ui/button";
+import { TotalPriceRangeField } from "../form/total-price-range-field";
+import { PricePerUnitRangeField } from "../form/price-per-unit-range-field";
+import { AreaRangeField } from "../form/area-range-field";
+import { BuildYearRangeField } from "../form/build-year-range-field";
+import { PoisField } from "../form/pois-field";
+import styles from "#/components/map-forms/form.module.css";
+
+const buildingTypes = [
+  { label: "Any", value: "any" },
+  { label: "Apartment", value: "apartment" },
+  { label: "House", value: "house" },
+];
 
 const districtsCracow = [
   { label: "All", value: "all" },
   { label: "Stare Miasto", value: "stare_miasto" },
   { label: "Grzegórzki", value: "grzegorzki" },
   { label: "Prądnik Czerwony", value: "pradnik_czerwony" },
+  { label: "Prądnik Biały", value: "pradnik_bialy" },
+  { label: "Krowodrza", value: "krowodrza" },
+  { label: "Zwierzyniec", value: "zwierzyniec" },
+  { label: "Bronowice", value: "bronowice" },
+  { label: "Łobzów", value: "lobzow" },
+  { label: "Dębniki", value: "debniki" },
+  { label: "Podgórze", value: "podgorze" },
+  { label: "Bieżanów-Prokocim", value: "biezanow_prokocim" },
+  { label: "Swoszowice", value: "swoszowice" },
+  { label: "Wzgórza Krzesławickie", value: "wzgorza_krzeslawickie" },
+  { label: "Nowa Huta", value: "nowa_huta" },
+  { label: "Czyżyny", value: "czyzyny" },
+  { label: "Mistrzejowice", value: "mistrzejowice" },
+  { label: "Bieńczyce", value: "bienczyce" },
+  { label: "Łagiewniki-Borek Fałęcki", value: "lagiewniki_borek_falecki" },
+  { label: "Podgórze Duchackie", value: "podgorze_duchackie" },
 ];
 
 const rooms = [
@@ -23,6 +46,12 @@ const rooms = [
   { label: "5+", value: "5+" },
 ];
 
+const marketTypes = [
+  { label: "Any", value: "any" },
+  { label: "Primary", value: "primary" },
+  { label: "Secondary", value: "secondary" },
+];
+
 const condition = [
   { label: "Any", value: "any" },
   { label: "Ready to use", value: "ready_to_use" },
@@ -30,37 +59,9 @@ const condition = [
   { label: "To completion", value: "to_completion" },
 ];
 
-const filterFormSchema = z
-  .object({
-    districts: z.array(z.string()).min(1, "Select at least one district"),
-    priceFrom: z
-      .number()
-      .min(0)
-      .max(10000000, "Price must be between 0 and 10000000"),
-    priceTo: z
-      .number()
-      .min(0)
-      .max(10000000, "Price must be between 0 and 10000000"),
-    rooms: z.string().min(1, "Select at least one option"),
-    condition: z.string().min(1, "Select at least one option"),
-  })
-  .refine((data) => data.priceTo >= data.priceFrom, {
-    message: "Price to must be greater than or equal to price from",
-    path: ["priceTo"],
-  });
-
 export default function FilterForm() {
   const form = useAppForm({
-    defaultValues: {
-      districts: ["all"] as string[],
-      priceFrom: 0,
-      priceTo: 10000000,
-      rooms: "any",
-      condition: "any",
-    },
-    validators: {
-      onChange: filterFormSchema,
-    },
+    ...filterFormOptions,
     onSubmit: ({ value }) => {
       console.log(value);
     },
@@ -77,145 +78,72 @@ export default function FilterForm() {
     >
       <section className={styles.buildingPart}>
         <form.AppField
-          name="districts"
-          children={(field) => {
-            const { errors } = field.state.meta;
-            const isInvalid = errors.length > 0;
-            return (
-              <field.ComboboxField
-                isInvalid={isInvalid}
-                options={districtsCracow}
-                label="Districts"
-              />
-            );
-          }}
+          name="buildingType"
+          children={(field) => (
+            <field.ChoiceChipsField
+              options={buildingTypes}
+              label="Building Type"
+              type="single"
+            />
+          )}
         />
 
-        <FieldSet>
-          <FieldLegend>Total Price</FieldLegend>
-          <div
-            style={{
-              display: "flex",
-              gap: "var(--spacing-8)",
-              alignItems: "start",
-            }}
-          >
-            <form.Field
-              name="priceFrom"
-              validators={{ onChangeListenTo: ["priceTo"] }}
-              children={(field) => (
-                <Input
-                  id="price-from"
-                  unit="zł"
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => {
-                    const cleanValue = e.target.value.replace(/\D/g, "");
-                    field.handleChange(Number(cleanValue));
-                  }}
-                  placeholder="From"
-                  data-invalid={field.state.meta.errors.length > 0}
-                  style={{ flex: 1, minWidth: 0 }}
-                />
-              )}
-            />
+        <form.AppField
+          name="districts"
+          children={(field) => (
+            <field.ComboboxField options={districtsCracow} label="Districts" />
+          )}
+        />
 
-            <form.Field
-              name="priceTo"
-              children={(field) => (
-                <Input
-                  id="price-to"
-                  unit="zł"
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => {
-                    const cleanValue = e.target.value.replace(/\D/g, "");
-                    field.handleChange(Number(cleanValue));
-                  }}
-                  placeholder="To"
-                  data-invalid={field.state.meta.errors.length > 0}
-                  style={{ flex: 1, minWidth: 0 }}
-                />
-              )}
-            />
-          </div>
-          <form.Subscribe
-            selector={(state) => {
-              const fromErrors = state.fieldMeta?.priceFrom?.errors || [];
-              const toErrors = state.fieldMeta?.priceTo?.errors || [];
-              return Array.from(new Set([...fromErrors, ...toErrors]));
-            }}
-            children={(errors) => {
-              if (errors.length === 0) return null;
-              return <FieldError errors={errors} />;
-            }}
-          />
-        </FieldSet>
+        <TotalPriceRangeField form={form} />
 
-        <form.Field name="rooms">
-          {(field) => {
-            const { isTouched, errors } = field.state.meta;
-            const isInvalid = isTouched && errors.length > 0;
-            return (
-              <FieldSet>
-                <FieldLegend>Rooms</FieldLegend>
-                <FieldGroup
-                  style={{
-                    display: "grid",
-                    gap: "var(--spacing-8)",
-                    gridTemplateColumns: "repeat(6, 1fr)",
-                  }}
-                >
-                  {rooms.map((room) => {
-                    const isSelected = field.state.value === room.value;
-                    return (
-                      <FormButton
-                        isSelected={isSelected}
-                        key={room.value}
-                        dataInvalid={isInvalid}
-                        type="button"
-                        onClick={() => {
-                          if (!isSelected) {
-                            field.handleChange(room.value);
-                          } else {
-                            field.handleChange("");
-                          }
-                        }}
-                      >
-                        {room.label}
-                      </FormButton>
-                    );
-                  })}
-                </FieldGroup>
-                {isInvalid && <FieldError errors={errors} />}
-              </FieldSet>
-            );
-          }}
-        </form.Field>
+        <PricePerUnitRangeField form={form} />
+
+        <AreaRangeField form={form} />
+
+        <BuildYearRangeField form={form} />
+
+        <form.AppField
+          name="rooms"
+          children={(field) => (
+            <field.ChoiceChipsField
+              options={rooms}
+              label="Rooms"
+              type="multi"
+            />
+          )}
+        />
+
+        <form.AppField
+          name="marketType"
+          children={(field) => (
+            <field.ChoiceChipsField
+              options={marketTypes}
+              label="Market Type"
+              type="single"
+            />
+          )}
+        />
 
         <form.AppField
           name="condition"
-          children={(field) => {
-            const { isTouched, errors } = field.state.meta;
-            const isInvalid = isTouched && errors.length > 0;
-            return (
-              <field.SelectField
-                isInvalid={isInvalid}
-                options={condition}
-                label="Condition"
-              />
-            );
-          }}
+          children={(field) => (
+            <field.SelectField options={condition} label="Condition" />
+          )}
         />
+
+        <PoisField form={form} />
       </section>
 
       <Button
         style={{ marginTop: "1rem" }}
         variant="primary"
+        size="large"
         type="submit"
         form="filter-form"
-        label="Apply Filters"
-      />
+      >
+        Apply Filters
+      </Button>
     </form>
   );
 }

@@ -2,12 +2,11 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
 
 import styles from "#/routes/dashboard/layout.module.css";
 import Pagination from "#/components/dashboard-pagination/pagination";
-import SelectArrowIcon from "#/components/icons/select-arrow-icon";
 import BtnGroup from "#/components/subpage-header/btn-group";
 import SubpageHeader from "#/components/subpage-header/subpage-header";
 import SubpageHeaderTitle from "#/components/subpage-header/subpage-header-title";
-import Select from "#/components/ui/select";
 import { useDashboardPaginationModel } from "#/store/useDashboardPagination";
+import { Button } from "#/components/ui/button";
 
 export const Route = createFileRoute("/dashboard/__layout")({
   component: DashboardLayout,
@@ -25,7 +24,26 @@ function DashboardLayout() {
           <Pagination model={paginationModel} />
         </div>
         <BtnGroup className={styles.btnGroup}>
-          <Select
+          <Button
+            variant="secondary"
+            cornerColor="red"
+            size="large"
+            className={styles.select}
+            onClick={() => {}}
+          >
+            Cracow
+          </Button>
+
+          <Button
+            variant="secondary"
+            cornerColor="red"
+            size="large"
+            className={styles.select}
+            onClick={() => {}}
+          >
+            May 2026
+          </Button>
+          {/* <Select
             className={styles.select}
             label="Cracow"
             info="City:"
@@ -38,7 +56,7 @@ function DashboardLayout() {
             info="Date:"
             icon={<SelectArrowIcon />}
             onClick={() => {}}
-          />
+          /> */}
         </BtnGroup>
       </SubpageHeader>
 

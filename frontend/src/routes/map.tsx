@@ -11,10 +11,10 @@ import MapOfferContainer from "#/components/map-offer-preview/map-offer-containe
 import BtnGroup from "#/components/subpage-header/btn-group";
 import SubpageHeader from "#/components/subpage-header/subpage-header";
 import SubpageHeaderTitle from "#/components/subpage-header/subpage-header-title";
-import Button from "#/components/ui/button";
 import MapContextProvider from "#/contexts/map-context-provider";
 import type { MapViewport } from "#/lib/types";
 import MapFormBox from "#/components/map-forms/map-form-box";
+import { Button } from "#/components/ui/button";
 
 export const Route = createFileRoute("/map")({ component: MapPage });
 
@@ -61,26 +61,34 @@ function MapPage() {
         <SubpageHeaderTitle label="Interactive map" />
         <BtnGroup className={styles.btnGroup}>
           <Button
+            className={styles.secondaryButton}
             variant="secondary"
-            className={styles.primaryButton}
-            icon={<FormIcon />}
-            label="Cracow"
+            // cornerColor="red"
+            size="large"
             onClick={() => {}}
-          />
+          >
+            Cracow
+          </Button>
           <Button
+            className={styles.secondaryButton}
             variant="secondary"
-            className={styles.primaryButton}
-            icon={<FormIcon />}
-            label="Reccommendation form"
+            // cornerColor="red"
+            size="large"
             onClick={() => {}}
-          />
+          >
+            <FormIcon />
+            Recommendation form
+          </Button>
           <Button
+            className={styles.secondaryButton}
             variant="secondary"
-            className={styles.primaryButton}
-            icon={<FilterIcon />}
-            label="Filter map"
+            // cornerColor="red"
+            size="large"
             onClick={handleFilterFormOpen}
-          />
+          >
+            <FilterIcon />
+            Filter map
+          </Button>
         </BtnGroup>
       </SubpageHeader>
 

@@ -24,16 +24,17 @@ type ComboboxFieldProps = {
   label: string;
   options: ComboboxOption[];
   placeholder?: string;
-  isInvalid: boolean;
 };
 
 export const ComboboxField = ({
   label,
   options,
   placeholder,
-  isInvalid,
 }: ComboboxFieldProps) => {
   const field = useFieldContext<string[]>();
+  const { errors, isTouched } = field.state.meta;
+  const isInvalid = isTouched && errors.length > 0;
+
   const optionsByValue = useMemo(() => {
     return new Map(options.map((option) => [option.value, option]));
   }, [options]);
@@ -60,10 +61,10 @@ export const ComboboxField = ({
       return;
     }
 
-    const otherDistrictsCount = options.length - 1;
+    const otherOptionsCount = options.length - 1;
     const selectedOthersCount = values.filter((v) => v !== "all").length;
 
-    if (selectedOthersCount === otherDistrictsCount) {
+    if (selectedOthersCount === otherOptionsCount) {
       field.handleChange(["all"]);
       return;
     }

@@ -1,6 +1,6 @@
 import styles from "./map-form-box.module.css";
 import CloseIcon from "../icons/close-icon";
-import Button from "../ui/button";
+import { Button } from "../ui/button";
 import FilterForm from "./filter-form";
 import RecommendationForm from "./recommendation-form";
 import { cn } from "#/lib/utils";
@@ -52,16 +52,18 @@ export default function MapFormBox({
         <div className={styles.divider} />
 
         <section className={styles.formActions}>
-          <Button
-            variant="secondary"
-            label="Clear filters"
-            onClick={() => {}}
-          />
+          <Button variant="secondary" size="large" onClick={() => {}}>
+            Clear filters
+          </Button>
           {type === "filter" && (
-            <Button variant="primary" label="Next step" onClick={() => {}} />
+            <Button variant="primary" size="large" onClick={() => {}}>
+              Next step
+            </Button>
           )}
           {type === "recommendation" && (
-            <Button variant="primary" label="See results" onClick={() => {}} />
+            <Button variant="primary" size="large" onClick={() => {}}>
+              See results
+            </Button>
           )}
         </section>
       </section>
