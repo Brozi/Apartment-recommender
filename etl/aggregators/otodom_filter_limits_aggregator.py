@@ -35,7 +35,6 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
         return [
             {
                 "$project": {
-                    "city": "$localization.city",
                     "price": 1,
                     "price_usable": 1,
                     "price_per_meter": 1,
@@ -54,7 +53,6 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
             },
             {
                 "$match": {
-                    "city": {"$ne": None},
                     "price_usable": True,
                     "price_per_meter_usable": True,
                     "build_year": {"$ne": None},
@@ -63,7 +61,7 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
             {
                 "$group": {
                     "_id": {
-                        "city": "$city",
+                        None,
                     },
                     "lower_price": {"$min": "$price"},
                     "upper_price": {"$max": "$price"},
@@ -80,15 +78,13 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
 
     @staticmethod
     def _build_upsert_operation(doc: dict) -> UpdateOne:
-        city = doc["_id"]["city"]
 
         return UpdateOne(
             {
-                "city": city,
+                "_id": "global"
             },
             {
                 "$set": {
-                    "city": city,
                     "limits":{
                         "price": {
                             "lower": doc["lower_price"],
