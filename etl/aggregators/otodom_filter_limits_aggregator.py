@@ -60,9 +60,7 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
             },
             {
                 "$group": {
-                    "_id": {
-                        None,
-                    },
+                    "_id": None,
                     "lower_price": {"$min": "$price"},
                     "upper_price": {"$max": "$price"},
                     "lower_price_per_meter": {"$min": "$price_per_meter"},
