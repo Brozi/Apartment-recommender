@@ -54,9 +54,9 @@ const marketTypes = [
 
 const condition = [
   { label: "Any", value: "any" },
-  { label: "Ready to use", value: "ready_to_use" },
-  { label: "To renovate", value: "to_renovate" },
-  { label: "To completion", value: "to_completion" },
+  { label: "Ready to Use", value: "ready_to_use" },
+  { label: "To Renovation", value: "to_renovation" },
+  { label: "To Completion", value: "to_completion" },
 ];
 
 export default function FilterForm() {

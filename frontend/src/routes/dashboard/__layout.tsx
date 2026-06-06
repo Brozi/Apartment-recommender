@@ -26,7 +26,7 @@ function DashboardLayout() {
         <BtnGroup className={styles.btnGroup}>
           <Button
             variant="secondary"
-            cornerColor="red"
+            // cornerColor="red"
             size="large"
             className={styles.select}
             onClick={() => {}}
@@ -36,7 +36,7 @@ function DashboardLayout() {
 
           <Button
             variant="secondary"
-            cornerColor="red"
+            // cornerColor="red"
             size="large"
             className={styles.select}
             onClick={() => {}}
