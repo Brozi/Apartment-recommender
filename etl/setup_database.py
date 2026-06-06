@@ -59,10 +59,6 @@ def initialize_poi_collection(raw_col='pois'):
 
     raw_collection.create_index([('location', GEOSPHERE)], name='location_2dsphere')
     raw_collection.create_index([('category_group', ASCENDING)], name='category_group_idx')
-    raw_collection.create_index(
-        [('location', GEOSPHERE), ('category_group', ASCENDING)],
-        name='location_category_group_idx',
-    )
 
 if __name__ == "__main__":
     # initialize_input_collection()

@@ -178,7 +178,7 @@ class OtodomDashAggregator(OtodomAggregator):
             Helper function responsible for creating a mongodb switch branch to create the build_year ranges
             :return (dict): the switch branch
             """
-            conditions = []
+            conditions = [{'$ne': ['$build_year_int', None]}]
 
             if item['min'] is not None:
                 conditions.append({'$gte': ['$build_year_int', item['min']]})
@@ -199,7 +199,7 @@ class OtodomDashAggregator(OtodomAggregator):
             {
 
                 '$project': {
-                    'build_year_int': {
+                    '$build_year_int': {
                         '$convert': {
                             'input': f'${self.build_year}',
                             'to': 'int',
