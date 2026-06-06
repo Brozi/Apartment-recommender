@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from etl.aggregators import OtodomDashAggregator, OtodomGeoAggregator
+from etl.aggregators import OtodomDashAggregator, OtodomGeoAggregator, OtodomFilterLimitsAggregator
 from etl.pipeline import ETLPipeline
 
 
@@ -40,4 +40,11 @@ if __name__ == "__main__":
         'parcel_service'
     )
     geo.add_poi_metrics(category_groups=category_groups, max_distance=1500)
+
+    limits = OtodomFilterLimitsAggregator(
+        listings_col='listings_clean',
+        filter_limits_col='filter_limits'
+    )
+    limits.run()
+
 

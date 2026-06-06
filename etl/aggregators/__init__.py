@@ -1,3 +1,4 @@
 from etl.aggregators.otodom_aggregator import OtodomAggregator
 from etl.aggregators.otodom_dash_aggregator import OtodomDashAggregator
 from etl.aggregators.otodom_geo_aggregator import OtodomGeoAggregator
+from etl.aggregators.otodom_filter_limits_aggregator import OtodomFilterLimitsAggregator
