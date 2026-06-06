@@ -30,11 +30,47 @@ export type DashboardKPIsResponse = {
   new_offers_timeline: { year: number; date: string; offers: number }[];
 };
 
-export type MapOffersResponse = {
+export type MapViewport = {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+  zoom: number;
+};
+
+export type MapOfferItem = {
+  type: "offer";
   id: string;
+  totalPrice: number;
   lat: number;
   lng: number;
-  price: number;
+};
+
+export type MapOffersInPoint = {
+  type: "offersInPoint";
+  lat: number;
+  lng: number;
+  count: number;
+  firstOfferID: string;
+};
+
+export type MapClusterItem = {
+  type: "cluster";
+  lat: number;
+  lng: number;
+  count: number;
+};
+
+export type MapOffersResponse = {
+  offers: {
+    items: MapOfferItem[];
+  };
+  offersInPoint: {
+    items: MapOffersInPoint[];
+  };
+  clusters: {
+    items: MapClusterItem[];
+  };
 };
 
 export type OfferDetailsResponse = {

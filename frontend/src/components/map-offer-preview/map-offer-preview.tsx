@@ -6,10 +6,11 @@ import PaginationArrowLeftIcon from "#/components/icons/pagination-arrow-left-ic
 import PaginationArrowRightIcon from "#/components/icons/pagination-arrow-right-icon";
 import styles from "#/components/map-offer-preview/map-offer-preview.module.css";
 import OfferImage from "#/assets/offer-img.webp";
-import Button from "#/components/ui/button";
 import LeftCorner from "#/assets/left-corner-32.svg";
 import { useOfferDetails } from "#/api/useOfferDetails";
 import LoadingSpinner from "#/components/ui/loading-spinner";
+import CloseIcon from "../icons/close-icon";
+import { Button } from "../ui/button";
 
 type MapOfferPreviewProps = {
   selectedOfferId: string;
@@ -43,6 +44,9 @@ export default function MapOfferPreview({
     <section className={styles.MapOfferContent}>
       <div className={styles.MapOfferImage}>
         <img src={imageSrc} alt="Offer image" className={styles.offerImg} />
+        <button onClick={onClose} className={styles.closeBtn}>
+          <CloseIcon />
+        </button>
         <button className={cn(styles.paginationBtn, styles.paginationBtnLeft)}>
           <PaginationArrowLeftIcon />
         </button>
@@ -69,14 +73,20 @@ export default function MapOfferPreview({
         <div className={styles.offerInfo}>
           <div className={styles.offerInfoItem}>
             <LocationIcon />
-            <p className="font-base">{locationLabel}</p>
+            <p style={{ lineHeight: 1.6 }} className="font-base">
+              {locationLabel}
+            </p>
           </div>
           <div className={styles.offerInfoItem}>
             <MeasureIcon />
             <section className={cn(styles.multiList, styles.gapS)}>
-              <p className="font-base">{offerDetails.area} m²</p>
+              <p style={{ lineHeight: 1.6 }} className="font-base">
+                {offerDetails.area} m²
+              </p>
               <div className={cn(styles.divider, styles.sizeS)} />
-              <p className="font-base">{offerDetails.rooms} rooms</p>
+              <p style={{ lineHeight: 1.6 }} className="font-base">
+                {offerDetails.rooms} rooms
+              </p>
             </section>
           </div>
         </div>
@@ -85,18 +95,9 @@ export default function MapOfferPreview({
       <div className={cn(styles.divider, styles.sizeL)} />
 
       <section className={styles.offerActions}>
-        <Button
-          style={{ justifyContent: "center" }}
-          variant="secondary"
-          label="Close"
-          onClick={onClose}
-        />
-        <Button
-          style={{ justifyContent: "center" }}
-          variant="primary"
-          label="See offer"
-          onClick={() => {}}
-        />
+        <Button variant="primary" size="large" width="full" onClick={() => {}}>
+          See offer
+        </Button>
       </section>
 
       <img

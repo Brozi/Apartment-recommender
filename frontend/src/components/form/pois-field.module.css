@@ -1,0 +1,32 @@
+.poisField {
+  margin-top: var(--spacing-24);
+  display: flex;
+  flex-direction: column;
+}
+
+.poisHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-20);
+}
+
+.poisLegends {
+  display: grid;
+  grid-template-columns: 3fr 2fr 3rem;
+  gap: var(--spacing-8);
+  margin-bottom: var(--spacing-8);
+}
+
+.poisList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.poiItem {
+  display: grid;
+  grid-template-columns: 3fr 2fr 3rem;
+  gap: var(--spacing-8);
+  align-items: center;
+}

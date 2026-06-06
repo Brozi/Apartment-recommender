@@ -5,12 +5,14 @@ type PaginationInfoWrapperProps = {
   currentIndex: number;
   totalSteps: number;
   label: string;
+  type: "nav" | "action";
 };
 
 export default function PaginationInfoWrapper({
   currentIndex,
   totalSteps,
   label,
+  type = "nav",
 }: PaginationInfoWrapperProps) {
   const textRef = useRef<HTMLSpanElement>(null);
 
@@ -43,7 +45,16 @@ export default function PaginationInfoWrapper({
   return (
     <div className={styles.infoWrapper}>
       <span className="font-addon-main">
-        [{currentIndex + 1} / {totalSteps}]
+        {type === "nav" && (
+          <span>
+            [{currentIndex + 1} / {totalSteps}]
+          </span>
+        )}
+        {type === "action" && (
+          <span>
+            [{currentIndex} / {totalSteps}]
+          </span>
+        )}
       </span>
 
       <span className="font-h3" ref={textRef}>

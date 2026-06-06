@@ -52,15 +52,7 @@
   color: var(--clr-light-90);
 }
 
-.font-primary-button {
-  color: var(--clr-light-80);
-  font-family: var(--font-primary);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.font-secondary-button {
-  color: var(--clr-primary-100);
+.font-button {
   font-family: var(--font-primary);
   font-size: 1rem;
   font-weight: 600;
@@ -80,10 +72,10 @@
   font-weight: 500;
 }
 
-.font-input-title {
+.font-input-label {
   color: var(--clr-primary-100);
   font-family: var(--font-primary);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 800;
   letter-spacing: 0.015rem;
 }
@@ -161,11 +153,7 @@
     letter-spacing: 0.025em;
   }
 
-  .font-primary-button {
-    font-size: 1.25em;
-  }
-
-  .font-secondary-button {
+  .font-button {
     font-size: 1.25em;
   }
 
@@ -177,7 +165,7 @@
     font-size: 1em;
   }
 
-  .font-input-title {
+  .font-input-label {
     font-size: 0.875em;
     letter-spacing: 0.0175em;
   }

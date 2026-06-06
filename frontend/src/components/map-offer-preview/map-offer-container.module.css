@@ -2,6 +2,7 @@
   position: relative;
   display: flex;
   align-items: flex-start;
+  flex-direction: column;
   width: 100%;
   max-width: 26.25rem;
   height: 32.8125rem;
@@ -9,12 +10,6 @@
 
 .offerBgAddon {
   display: none;
-}
-
-.errorState {
-  color: var(--clr-secondary-100);
-  font-size: 0.95rem;
-  padding: var(--spacing-24);
 }
 
 @media (min-width: 70rem) {

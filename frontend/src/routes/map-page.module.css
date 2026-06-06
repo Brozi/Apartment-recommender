@@ -32,7 +32,7 @@
   margin-bottom: var(--spacing-192);
 }
 
-@media (min-width: 70rem) {
+@media (min-width: 72rem) {
   .subpageHeader {
     flex-direction: row;
     align-items: center;
@@ -46,7 +46,7 @@
     gap: var(--spacing-24);
   }
 
-  .primaryButton {
+  .secondaryButton {
     width: auto;
   }
 
