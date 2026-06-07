@@ -166,7 +166,7 @@ class OtodomCleaner:
     @staticmethod
     def clean_rooms(clean_doc: dict) -> None:
         rooms = clean_doc.get('rooms', None)
-        if rooms is None:
+        if rooms is None or "":
             clean_doc['rooms'] = 'unknown'
             return
 
