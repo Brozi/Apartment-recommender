@@ -82,7 +82,7 @@ class OtodomDashAggregator(OtodomAggregator):
             'monthly_area_stats': self._monthly_area_stats_pipeline(),
             'monthly_price_stats': self._monthly_price_stats_pipeline(),
             'monthly_price_per_meter_stats': self._monthly_price_per_meter_stats_pipeline(),
-            'monthly_market_by_district': self._monthly_market_by_district_pipeline(),
+            'monthly_market_by_district_subdistrict': self._monthly_market_by_district_subdistrict_pipeline(),
 
         }
 
@@ -346,7 +346,7 @@ class OtodomDashAggregator(OtodomAggregator):
             }
         ]
 
-    def _monthly_market_by_district_pipeline(self):
+    def _monthly_market_by_district_subdistrict_pipeline(self):
         return [
             {
                 '$match': {
