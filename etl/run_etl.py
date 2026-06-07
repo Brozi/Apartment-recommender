@@ -37,7 +37,8 @@ if __name__ == "__main__":
         'university',
         'specialized_school',
         'grocery_retail',
-        'parcel_service'
+        'parcel_service',
+        'driving_school',
     )
     geo.add_poi_metrics(category_groups=category_groups, max_distance=1500)
 
