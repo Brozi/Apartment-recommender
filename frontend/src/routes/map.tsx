@@ -5,7 +5,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import styles from "#/routes/map-page.module.css";
 import FilterIcon from "#/components/icons/filter-icon";
-import FormIcon from "#/components/icons/form-icon";
 import Map from "#/components/interactive-map/map";
 import MapOfferContainer from "#/components/map-offer-preview/map-offer-container";
 import BtnGroup from "#/components/subpage-header/btn-group";
@@ -74,16 +73,6 @@ function MapPage() {
             variant="secondary"
             // cornerColor="red"
             size="large"
-            onClick={() => {}}
-          >
-            <FormIcon />
-            Recommendation form
-          </Button>
-          <Button
-            className={styles.secondaryButton}
-            variant="secondary"
-            // cornerColor="red"
-            size="large"
             onClick={handleFilterFormOpen}
           >
             <FilterIcon />
@@ -101,7 +90,6 @@ function MapPage() {
 
       <MapFormBox
         isActive={isFilterFormActive}
-        type="filter"
         onCloseForm={handleFilterFormClose}
       />
     </>

@@ -40,6 +40,7 @@
   font-family: var(--font-primary);
   pointer-events: none;
   transition: color 0.1s ease;
+  padding-bottom: 1.5px;
 }
 
 .wrapper[data-has-unit="true"] {

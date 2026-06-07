@@ -1,25 +1,25 @@
-import { filterFormOptions } from "#/feature/filter-form/filter-form-options";
+import { mapFormOptions } from "#/feature/forms/map-form-options";
 import { withForm } from ".";
 import { FieldError, FieldLegend, FieldSet } from "../ui/field";
 import styles from "./range-field.module.css";
 
 export const AreaRangeField = withForm({
-  ...filterFormOptions,
+  ...mapFormOptions,
   render: function Render({ form }) {
     return (
       <FieldSet>
         <FieldLegend>Area (m²)</FieldLegend>
         <div className={styles.rangeFields}>
           <form.AppField
-            name="area.areaFrom"
-            validators={{ onChangeListenTo: ["area.areaTo"] }}
+            name="step1.area.areaFrom"
+            validators={{ onChangeListenTo: ["step1.area.areaTo"] }}
             children={(field) => (
               <field.NumberField unit="m²" placeholder="From" />
             )}
           />
 
           <form.AppField
-            name="area.areaTo"
+            name="step1.area.areaTo"
             children={(field) => (
               <field.NumberField unit="m²" placeholder="To" />
             )}
@@ -27,8 +27,9 @@ export const AreaRangeField = withForm({
         </div>
         <form.Subscribe
           selector={(state) => {
-            const fromErrors = state.fieldMeta["area.areaFrom"]?.errors || [];
-            const toErrors = state.fieldMeta["area.areaTo"]?.errors || [];
+            const fromErrors =
+              state.fieldMeta["step1.area.areaFrom"]?.errors || [];
+            const toErrors = state.fieldMeta["step1.area.areaTo"]?.errors || [];
 
             return Array.from(new Set([...fromErrors, ...toErrors]));
           }}

@@ -1,0 +1,43 @@
+.root {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0.125rem solid var(--clr-primary-80);
+  border-radius: 0;
+  background-color: var(--clr-light-100);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.root:disabled,
+.root[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.root:focus-visible,
+.root[data-focus-visible] {
+  outline: 0.125rem solid var(--clr-primary-100);
+  outline-offset: 0.125rem;
+}
+
+.root::after {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  bottom: -0.5rem;
+  left: -0.75rem;
+  right: -0.75rem;
+}
+
+.indicator {
+  padding: var(--spacing-4);
+  display: grid;
+  place-content: center;
+  color: var(--clr-light-100);
+  background-color: var(--clr-primary-100);
+  transition: none;
+}
