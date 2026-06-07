@@ -1,25 +1,25 @@
-import { filterFormOptions } from "#/feature/filter-form/filter-form-options";
+import { mapFormOptions } from "#/feature/forms/map-form-options";
 import { withForm } from ".";
 import { FieldError, FieldLegend, FieldSet } from "../ui/field";
 import styles from "./range-field.module.css";
 
 export const TotalPriceRangeField = withForm({
-  ...filterFormOptions,
+  ...mapFormOptions,
   render: function Render({ form }) {
     return (
       <FieldSet>
         <FieldLegend>Total Price</FieldLegend>
         <div className={styles.rangeFields}>
           <form.AppField
-            name="totalPrice.totalPriceFrom"
-            validators={{ onChangeListenTo: ["totalPrice.totalPriceTo"] }}
+            name="step1.totalPrice.totalPriceFrom"
+            validators={{ onChangeListenTo: ["step1.totalPrice.totalPriceTo"] }}
             children={(field) => (
               <field.NumberField unit="zł" placeholder="From" />
             )}
           />
 
           <form.AppField
-            name="totalPrice.totalPriceTo"
+            name="step1.totalPrice.totalPriceTo"
             children={(field) => (
               <field.NumberField unit="zł" placeholder="To" />
             )}
@@ -28,9 +28,9 @@ export const TotalPriceRangeField = withForm({
         <form.Subscribe
           selector={(state) => {
             const fromErrors =
-              state.fieldMeta["totalPrice.totalPriceFrom"]?.errors || [];
+              state.fieldMeta["step1.totalPrice.totalPriceFrom"]?.errors || [];
             const toErrors =
-              state.fieldMeta["totalPrice.totalPriceTo"]?.errors || [];
+              state.fieldMeta["step1.totalPrice.totalPriceTo"]?.errors || [];
 
             return Array.from(new Set([...fromErrors, ...toErrors]));
           }}

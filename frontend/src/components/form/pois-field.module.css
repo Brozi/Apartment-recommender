@@ -15,18 +15,21 @@
   display: grid;
   grid-template-columns: 3fr 2fr 3rem;
   gap: var(--spacing-8);
-  margin-bottom: var(--spacing-8);
 }
 
 .poisList {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-12);
+  gap: var(--spacing-16);
 }
 
 .poiItem {
   display: grid;
   grid-template-columns: 3fr 2fr 3rem;
   gap: var(--spacing-8);
-  align-items: center;
+  align-items: start;
+}
+
+.poiItem > * {
+  align-self: start;
 }

@@ -1,0 +1,86 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+}
+
+.formContent {
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-32);
+  margin-bottom: var(--spacing-16);
+}
+
+.buildingPart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.buildingPartHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin-bottom: var(--spacing-16);
+}
+
+.recommendationList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.recommendationControls {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: var(--spacing-12);
+  align-items: center;
+}
+
+.poisPart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.formActions {
+  flex-shrink: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  row-gap: var(--spacing-16);
+  column-gap: var(--spacing-12);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--clr-divider);
+  grid-column: 1 / -1;
+}
+
+.buttonLeft {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.buttonRight {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+@media (min-width: 37.5rem) {
+  .formActions {
+    row-gap: var(--spacing-24);
+    column-gap: var(--spacing-12);
+  }
+
+  .formContent {
+    margin-bottom: var(--spacing-24);
+  }
+}

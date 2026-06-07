@@ -15,9 +15,15 @@ function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
 
 const Field = React.forwardRef<
   React.ElementRef<typeof BaseField.Root>,
-  React.ComponentPropsWithoutRef<typeof BaseField.Root>
->(({ className, ...props }, ref) => (
-  <BaseField.Root ref={ref} className={cn(styles.root, className)} {...props} />
+  React.ComponentPropsWithoutRef<typeof BaseField.Root> & {
+    orientation?: "vertical" | "horizontal";
+  }
+>(({ className, orientation = "vertical", ...props }, ref) => (
+  <BaseField.Root
+    ref={ref}
+    className={cn(styles.root, className, styles[orientation])}
+    {...props}
+  />
 ));
 Field.displayName = "Field";
 
@@ -48,11 +54,13 @@ function FieldLegend({
 
 const FieldLabel = React.forwardRef<
   React.ElementRef<typeof BaseField.Label>,
-  React.ComponentPropsWithoutRef<typeof BaseField.Label>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof BaseField.Label> & {
+    fontType?: "input-label" | "paragraph";
+  }
+>(({ className, fontType = "input-label", ...props }, ref) => (
   <BaseField.Label
     ref={ref}
-    className={cn(styles.label, className, "font-input-label")}
+    className={cn(styles.label, className, `font-${fontType}`)}
     {...props}
   />
 ));

@@ -1,23 +1,36 @@
 import styles from "./map-form-box.module.css";
 import CloseIcon from "../icons/close-icon";
-import { Button } from "../ui/button";
-import FilterForm from "./filter-form";
-import RecommendationForm from "./recommendation-form";
 import { cn } from "#/lib/utils";
+import MapForm from "./map-form";
+import { useEffect, useRef, useState } from "react";
 
 type MapFormBoxProps = {
   isActive: boolean;
-  type: "filter" | "recommendation";
   onCloseForm: () => void;
 };
 
-export default function MapFormBox({
-  isActive,
-  type,
-  onCloseForm,
-}: MapFormBoxProps) {
-  const formStep = type === "filter" ? 1 : 2;
-  const formTitle = type === "filter" ? "Filter" : "Recommendation";
+export default function MapFormBox({ isActive, onCloseForm }: MapFormBoxProps) {
+  const [step, setStep] = useState(0);
+  const formContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      const scrollableContent =
+        formContainerRef.current?.querySelector<HTMLElement>(
+          '[data-map-form-scroll="true"]',
+        );
+      scrollableContent?.scrollTo({ top: 0, behavior: "auto" });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isActive]);
+
+  const formStep = step + 1;
+  const formTitle = step === 0 ? "Filter" : "Recommendation";
   return (
     <div
       className={cn(styles.formBg, isActive ? styles.active : styles.disabled)}
@@ -44,28 +57,9 @@ export default function MapFormBox({
 
         <div className={styles.divider} />
 
-        <section className={styles.formContainer}>
-          {type === "filter" && <FilterForm />}
-          {type === "recommendation" && <RecommendationForm />}
-        </section>
-
-        <div className={styles.divider} />
-
-        <section className={styles.formActions}>
-          <Button variant="secondary" size="large" onClick={() => {}}>
-            Clear filters
-          </Button>
-          {type === "filter" && (
-            <Button variant="primary" size="large" onClick={() => {}}>
-              Next step
-            </Button>
-          )}
-          {type === "recommendation" && (
-            <Button variant="primary" size="large" onClick={() => {}}>
-              See results
-            </Button>
-          )}
-        </section>
+        <div ref={formContainerRef} className={styles.formContainer}>
+          <MapForm step={step} setStep={setStep} />
+        </div>
       </section>
     </div>
   );
