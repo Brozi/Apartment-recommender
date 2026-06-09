@@ -6,6 +6,10 @@ from etl.common import NOW
 
 logger = logging.getLogger(__name__)
 
+#Replace the save dashboard metric
+#and all uploading/downloading stuff with
+#classes CollectionDownloader and CollectionUploader
+
 class OtodomDashAggregator(OtodomAggregator):
     """
     This class is responsible for aggregations for the dashboard on the website
@@ -82,7 +86,9 @@ class OtodomDashAggregator(OtodomAggregator):
             'monthly_area_stats': self._monthly_area_stats_pipeline(),
             'monthly_price_stats': self._monthly_price_stats_pipeline(),
             'monthly_price_per_meter_stats': self._monthly_price_per_meter_stats_pipeline(),
+            'monthly_market_by_district_subdistrict': self._monthly_market_by_district_subdistrict_pipeline(),
             'monthly_market_by_district': self._monthly_market_by_district_pipeline(),
+            'monthly_market_by_city': self._monthly_market_by_city_pipeline()
 
         }
 
@@ -346,7 +352,7 @@ class OtodomDashAggregator(OtodomAggregator):
             }
         ]
 
-    def _monthly_market_by_district_pipeline(self):
+    def _monthly_market_by_district_subdistrict_pipeline(self):
         return [
             {
                 '$match': {
@@ -362,6 +368,147 @@ class OtodomDashAggregator(OtodomAggregator):
                         'city': '$localization.city',
                         'district': '$localization.district',
                         'subdistrict': '$localization.neighbourhood',
+
+                    },
+                    'avg_price': {'$avg': '$price'},
+                    'med_price': {
+                        '$median': {
+                            'input': '$price',
+                            'method': 'approximate',
+                        }
+                    },
+                    'avg_price_per_meter': {'$avg': '$price_per_meter'},
+                    'med_price_per_meter': {
+                        '$median': {
+                            'input': '$price_per_meter',
+                            'method': 'approximate',
+                        }
+                    },
+                    'avg_area': {'$avg': '$area'},
+                    'med_area': {
+                        '$median': {
+                            'input': '$area',
+                            'method': 'approximate',
+                        }
+                    },
+                    'med_rooms':{
+                        '$median': {
+                        'input': {
+                            '$convert': {
+                                'input': "$rooms",
+                                'to': "double",
+                                'onError': None,
+                                'onNull': None
+                            }
+                        },
+                        'method': 'approximate'
+                        }
+
+                    },
+
+                    'count': {'$sum': 1}
+
+                }
+            },
+            {
+                '$project': {
+                    'avg_price': {'$round': ['$avg_price', 2]},
+                    'med_price': {'$round': ['$med_price', 2]},
+                    'avg_price_per_meter': {'$round': ['$avg_price_per_meter', 2]},
+                    'med_price_per_meter': {'$round': ['$med_price_per_meter', 2]},
+                    'avg_area': {'$round': ['$avg_area', 2]},
+                    'med_area': {'$round': ['$med_area', 2]},
+                    'med_rooms': 1,
+                    'count': 1,
+                }
+            }
+        ]
+
+    def _monthly_market_by_district_pipeline(self):
+        return [
+            {
+                '$match': {
+                    'price_usable': True,
+                    'price_per_meter_usable': True,
+
+                }
+            },
+            {
+                '$group': {
+                    '_id': {
+                        'period': self.period,
+                        'city': '$localization.city',
+                        'district': '$localization.district',
+
+                    },
+                    'avg_price': {'$avg': '$price'},
+                    'med_price': {
+                        '$median': {
+                            'input': '$price',
+                            'method': 'approximate',
+                        }
+                    },
+                    'avg_price_per_meter': {'$avg': '$price_per_meter'},
+                    'med_price_per_meter': {
+                        '$median': {
+                            'input': '$price_per_meter',
+                            'method': 'approximate',
+                        }
+                    },
+                    'avg_area': {'$avg': '$area'},
+                    'med_area': {
+                        '$median': {
+                            'input': '$area',
+                            'method': 'approximate',
+                        }
+                    },
+                    'med_rooms':{
+                        '$median': {
+                        'input': {
+                            '$convert': {
+                                'input': "$rooms",
+                                'to': "double",
+                                'onError': None,
+                                'onNull': None
+                            }
+                        },
+                        'method': 'approximate'
+                        }
+
+                    },
+
+                    'count': {'$sum': 1}
+
+                }
+            },
+            {
+                '$project': {
+                    'avg_price': {'$round': ['$avg_price', 2]},
+                    'med_price': {'$round': ['$med_price', 2]},
+                    'avg_price_per_meter': {'$round': ['$avg_price_per_meter', 2]},
+                    'med_price_per_meter': {'$round': ['$med_price_per_meter', 2]},
+                    'avg_area': {'$round': ['$avg_area', 2]},
+                    'med_area': {'$round': ['$med_area', 2]},
+                    'med_rooms': 1,
+                    'count': 1,
+                }
+            }
+        ]
+
+    def _monthly_market_by_city_pipeline(self):
+        return [
+            {
+                '$match': {
+                    'price_usable': True,
+                    'price_per_meter_usable': True,
+
+                }
+            },
+            {
+                '$group': {
+                    '_id': {
+                        'period': self.period,
+                        'city': '$localization.city',
 
                     },
                     'avg_price': {'$avg': '$price'},
