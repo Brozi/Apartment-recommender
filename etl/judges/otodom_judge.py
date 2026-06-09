@@ -49,7 +49,7 @@ class OtodomScoreJudge(OtodomAggregator):
         local_stats = self.get_best_market_stats(info, aggregates, min_listings=5)
 
         score_area = self.score_area(info['area'])
-        score_rooms = self.score_room(info['room'])
+        score_rooms = self.score_room(info['rooms'])
         score_build_year = self.score_build_year(info['build_year'])
 
         median_price = local_stats.get("median_price", -1)
