@@ -11,6 +11,7 @@ class OtodomScoreJudge(OtodomAggregator):
         self.output_col = self.db[output_col]
         self.listings_col = self.db[listings_col]
         self.agg_col = self.db[agg_col]
+        self.steepness_coef = 10
 
     def download_aggregates(self, target_period) -> dict:
         metrics = [
@@ -52,17 +53,17 @@ class OtodomScoreJudge(OtodomAggregator):
         score_rooms = self.score_room(info['rooms'])
         score_build_year = self.score_build_year(info['build_year'])
 
-        median_price = local_stats.get("median_price", -1)
+        median_price = local_stats.get('values',{}).get("med_price", -1)
 
         if info["price"] > 0 and median_price > 0:
             score_price = self.score_price(info['price'], median_price)
         else:
             score_price = 0.5
 
-        median_price_per_meter = local_stats.get("median_price_per_meter", -1)
+        median_price_per_meter = local_stats.get('values', {}).get("med_price_per_meter", -1)
 
         if info["price_per_meter"] > 0 and median_price_per_meter > 0:
-            score_price_per_meter = self.score_price_per_meter(info['price'], median_price_per_meter)
+            score_price_per_meter = self.score_price_per_meter(info['price_per_meter'], median_price_per_meter)
         else:
             score_price_per_meter = 0.5
 
@@ -136,28 +137,30 @@ class OtodomScoreJudge(OtodomAggregator):
             min_listings: int = 5
     ) -> dict:
 
-        city = listing_info.get("localization", {}).get("city")
-        district = listing_info.get("localization", {}).get("district")
-        subdistrict = listing_info.get("localization", {}).get("neighbourhood")
+        city = listing_info.get("city")
+        district = listing_info.get("district")
+        subdistrict = listing_info.get("subdistrict")
 
         if subdistrict:
             stats = aggregates_map.get((city, district, subdistrict), {})
-            if stats and stats.get("count", 0) >= min_listings:
+            if stats and stats.get('values',{}).get("count", 0) >= min_listings:
                 return stats
 
         if district:
             stats = aggregates_map.get((city, district, None), {})
-            if stats and stats.get("count", 0) >= min_listings:
+            if stats and stats.get('values',{}).get("count", 0) >= min_listings:
                 return stats
 
         if city:
             stats = aggregates_map.get((city, None, None), {})
-            if stats and stats.get("count", 0) >= min_listings:
+            if stats and stats.get('values',{}).get("count", 0) >= min_listings:
                 return stats
 
         return {}
 
-
+    @staticmethod
+    def score_tram(tram_stops:dict) -> float:
+        pass
 
 
     @staticmethod
@@ -209,20 +212,19 @@ class OtodomScoreJudge(OtodomAggregator):
             case _:
                 return 1
 
-    @staticmethod
-    def score_price(price: float, median:float) -> float:
+
+    def score_price(self, price: float, median:float) -> float:
         if median <= 0:
             return 0.5
 
-        rating = (median - price) / median
+        rating = self.steepness_coef * ((median - price) / median)
         return 1 / (1 + exp(-rating))
 
-    @staticmethod
-    def score_price_per_meter(price_per_meter: float, median:float) -> float:
+    def score_price_per_meter(self, price_per_meter: float, median:float) -> float:
         if median <= 0:
             return 0.5
 
-        rating = (median - price_per_meter) / median
+        rating = self.steepness_coef * ((median - price_per_meter) / median)
         return 1 / (1 + exp(-rating))
 
 
