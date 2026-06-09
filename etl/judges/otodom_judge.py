@@ -86,7 +86,7 @@ class OtodomScoreJudge(OtodomAggregator):
         price_per_meter = float(listing.get("price_per_meter", 0))
         price_per_meter_usable = listing.get("price_per_meter_usable")
         area = float(listing.get("area", 0))
-        rooms = int(listing.get("rooms", 0))
+        rooms = listing.get("rooms", 0)
         build_year = listing.get("build_year", "unknown")
         city = listing.get("localization", {}).get("city", None)
         district = listing.get("localization", {}).get("district", None)
@@ -203,11 +203,11 @@ class OtodomScoreJudge(OtodomAggregator):
         match room:
             case "unknown":
                 return 0.5
-            case 1:
+            case "1":
                 return 0.3
-            case 2:
+            case "2":
                 return 0.6
-            case 3:
+            case "3":
                 return 0.85
             case _:
                 return 1
