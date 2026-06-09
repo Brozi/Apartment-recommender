@@ -38,6 +38,13 @@ class OtodomScoreJudge(OtodomAggregator):
         return aggregates_map
 
     def download_listings(self) -> dict:
+        listings = self.listings_col.find({"scores": {"$exists": False}})
+        for listing in listings:
+            city = listing.get("group_key", {}).get("city")
+            district = listing.get("group_key", {}).get("district")
+            subdistrict = listing.get("group_key", {}).get("subdistrict")
+
+            aggregates
 
 
     def calculate_metrics(self, listing: dict, market_stats: dict) -> dict:
@@ -75,8 +82,25 @@ class OtodomScoreJudge(OtodomAggregator):
     @staticmethod
     def _extract_aggregates(aggregation: dict) -> dict:
         values = aggregation.get("values", {})
+        med_rooms = values.get("med_rooms", "")
+        count = values.get("count", 0)
+        avg_price = values.get("avg_price", 0)
+        med_price = values.get("med_price", 0)
+        avg_price_per_meter = values.get("avg_price_per_meter", 0)
+        med_price_per_meter = values.get("med_price_per_meter", 0)
+        avg_area = values.get("avg_area", 0)
+        med_area = values.get("med_area", 0)
 
-        return values
+        return {
+            "med_rooms": med_rooms,
+            "count": count,
+            "avg_price": avg_price,
+            "med_price": med_price,
+            "avg_price_per_meter": avg_price_per_meter,
+            "med_price_per_meter": med_price_per_meter,
+            "avg_area": avg_area,
+            "med_area": med_area,
+        }
 
     @staticmethod
     def score_build_year(build_year: str) -> float:
