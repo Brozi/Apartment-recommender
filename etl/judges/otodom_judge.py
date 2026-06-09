@@ -1,7 +1,7 @@
 from etl.aggregators import OtodomAggregator
 
-from datetime import datetime
 from numpy import exp
+from etl.common import NOW
 
 #Take out download functions and put them in a seperate module
 
@@ -67,6 +67,7 @@ class OtodomScoreJudge(OtodomAggregator):
             score_price_per_meter = 0.5
 
         score_metrics = {
+            "computed_at": NOW,
             "price": score_price,
             "price_per_meter": score_price_per_meter,
             "area": score_area,
