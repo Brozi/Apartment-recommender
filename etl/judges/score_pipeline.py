@@ -17,7 +17,6 @@ class ScorePipeline(OtodomAggregator):
         self.target_period = datetime.now().strftime("%Y-%m")
         logger.info(f"Starting pipeline for period: {self.target_period}")
         self.listing_query = {
-            "score_metrics": {"$exists": False},
             "price_usable": True,
             "price_per_meter_usable": True,
         }
@@ -36,6 +35,7 @@ class ScorePipeline(OtodomAggregator):
                 UpdateOne(
                     {'_id': listing['_id']},
                     {'$set': {'score_metrics': scores}},
+                    upsert=True
                 )
             )
 
