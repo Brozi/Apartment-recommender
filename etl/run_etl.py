@@ -52,7 +52,7 @@ if __name__ == "__main__":
     score = ScorePipeline(
         listings_col='listings_clean',
         output_col='listings_clean',
-        agg_col='listings_clean',
+        agg_col='dashboard_aggregates',
     )
 
     score.run()
