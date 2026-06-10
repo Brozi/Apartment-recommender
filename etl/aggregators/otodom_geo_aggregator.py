@@ -85,14 +85,14 @@ class OtodomGeoAggregator(OtodomAggregator):
 
             if category_group not in metrics:
                 continue
-            distance = poi['distance_m']
+            distance = int(poi['distance_m'])
 
             location = poi.get('location', {})
 
             nearest = {
                 'poi_id': str(poi['_id']),
                 'name': poi.get('tags', {}).get('name', 'Unknown'),
-                'distance_m': int(distance),
+                'distance_m': distance,
                 'location': location,
             }
 
