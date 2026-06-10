@@ -9,7 +9,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ScorePipeline(OtodomAggregator):
-    def __init__(self, listings_col='listings_clean', output_col='listings_clean', agg_col='dashboard_aggregates'):
+    def __init__(
+            self,
+            listings_col='listings_clean',
+            output_col='listings_clean',
+            agg_col='dashboard_aggregates',
+            absolute_max_distance=15000
+    ):
         super().__init__(listings_col=listings_col)
         self.aggregate_col = self.db[agg_col]
         self.judge = OtodomScoreJudge(listings_col=listings_col, output_col=output_col, agg_col=agg_col)
@@ -20,6 +26,7 @@ class ScorePipeline(OtodomAggregator):
             "price_usable": True,
             "price_per_meter_usable": True,
         }
+        self.absolute_max_distance = absolute_max_distance
 
     def run(self):
         aggregates_map = self.judge.download_aggregates(target_period=self.target_period)
@@ -30,7 +37,7 @@ class ScorePipeline(OtodomAggregator):
         listings = self.listings_col.find(self.listing_query)
 
         for listing in listings:
-            scores = self.judge.calculate_metrics(listing, aggregates_map)
+            scores = self.judge.calculate_metrics(listing, aggregates_map, self.absolute_max_distance)
             self.writer.queue(
                 UpdateOne(
                     {'_id': listing['_id']},
