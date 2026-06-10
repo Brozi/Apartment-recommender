@@ -14,6 +14,7 @@ if __name__ == "__main__":
     scoring = ScorePipeline(
         listings_col='Properties_clean',
         output_col='Properties_clean',
-        agg_col='dashboard_aggregates'
+        agg_col='dashboard_aggregates',
+        absolute_max_distance=15000
     )
     scoring.run()
