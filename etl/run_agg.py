@@ -1,11 +1,20 @@
 from etl.aggregators import OtodomGeoAggregator, OtodomDashAggregator
 
 import json
+import logging
+import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout
+
+)
 
 if __name__ == '__main__':
     agg = OtodomGeoAggregator(poi_col='pois', output_col='Properties_clean')
     categories = ('tram_stop', 'bus_stop','kindergarten', 'school', 'university', 'specialized_school', 'grocery_retail', 'parcel_service')
-    agg.add_poi_metrics(categories)
+    agg.add_poi_metrics(category_groups=categories, recompute=True)
     # nearby_pois = agg.find_pois_near(longitude=19.90835, latitude=50.09434, category_groups=categories, max_distance=1500)
     # print(json.dumps(nearby_pois, indent=4, ensure_ascii=False))
     # metrics = agg.build_poi_metrics(nearby_pois)
