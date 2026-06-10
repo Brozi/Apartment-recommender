@@ -53,7 +53,7 @@ class OtodomScoreJudge(OtodomAggregator):
         for key, value in geo_aggregations.items():
             if not isinstance(value, dict):
                 continue
-            score_poi_metric = self.score_poi(value, 1500)
+            score_poi_metric = self.score_poi(value, 1000)
             score_poi_metrics[key] = score_poi_metric
 
         score_area = self.score_area(info['area'])
