@@ -54,3 +54,9 @@ class ETLPipeline:
                 )
         self.uploader.flush_to_db()
         logger.info(f'ETL complete. Processed {self.uploader.processed_count} listings.')
+
+class CollectionDownloader:
+    pass
+
+class CollectionUploader:
+    pass

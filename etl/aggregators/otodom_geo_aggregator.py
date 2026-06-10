@@ -163,6 +163,7 @@ class OtodomGeoAggregator(OtodomAggregator):
                     category_groups=category_groups
                 )
                 metrics = self.build_poi_metrics(pois)
+                metrics['geo_aggregations_computed_at'] = NOW
 
                 writer.queue(
                     UpdateOne(
@@ -170,7 +171,6 @@ class OtodomGeoAggregator(OtodomAggregator):
                         {
                             '$set': {
                                 'geo_aggregations': metrics,
-                                'geo_aggregations_computed_at': NOW
                             }
                         },
                         upsert=False

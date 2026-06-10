@@ -3,6 +3,7 @@ import sys
 
 from etl.aggregators import OtodomDashAggregator, OtodomGeoAggregator, OtodomFilterLimitsAggregator
 from etl.pipeline import ETLPipeline
+from etl.judges import ScorePipeline
 
 
 
@@ -37,7 +38,8 @@ if __name__ == "__main__":
         'university',
         'specialized_school',
         'grocery_retail',
-        'parcel_service'
+        'parcel_service',
+        'driving_school',
     )
     geo.add_poi_metrics(category_groups=category_groups, max_distance=1500)
 
@@ -46,5 +48,13 @@ if __name__ == "__main__":
         filter_limits_col='filter_limits'
     )
     limits.run()
+
+    score = ScorePipeline(
+        listings_col='listings_clean',
+        output_col='listings_clean',
+        agg_col='dashboard_aggregates',
+    )
+
+    score.run()
 
 
