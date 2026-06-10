@@ -53,6 +53,7 @@ if __name__ == "__main__":
         listings_col='listings_clean',
         output_col='listings_clean',
         agg_col='dashboard_aggregates',
+        absolute_max_distance=geo.absolute_max_distance,
     )
 
     score.run()
