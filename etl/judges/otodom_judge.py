@@ -166,37 +166,59 @@ class OtodomScoreJudge(OtodomAggregator):
 
     @staticmethod
     def score_poi(poi_dict: dict, max_walk_radius: int=1500) -> float:
-        min_distance = poi_dict.get("nearest_m", 0)
-        count_500m = poi_dict.get("count_500m", 0)
-        count_1000m = poi_dict.get("count_1000m", 0)
-        count_1500m = poi_dict.get("count_1500m", 0)
+        cumulative_buckets = []
 
-        if min_distance == 0 or count_1500m == 0:
+        for key, value in poi_dict.items():
+            if key.startswith('count_'):
+                try:
+                    radius = int(key.split('_')[1])
+                    if isinstance(value, (int, float)):
+                        cumulative_buckets.append({'radius': radius, 'count': value})
+                except (IndexError, ValueError):
+                    continue
+
+        min_distance = poi_dict.get("nearest_m", 0)
+
+        if min_distance is 0 or not cumulative_buckets:
             return 0.0
 
+        sorted_buckets = sorted(cumulative_buckets, key=lambda x: x['radius'])
+
         if min_distance > max_walk_radius:
-            anchor_score = 0.0
+            anchor_base = 0.0
         else:
-            anchor_score = max(0, 1 - (min_distance / max_walk_radius)**2)
+            anchor_base = max(0, 1 - (min_distance / max_walk_radius)**2)
 
-        c500 = count_500m
-        c1000 = max(0, count_1000m - count_500m)
-        c1500 = max(0, count_1500m - count_1000m)
+        isolated_rings = []
+        prev_radius, prev_count = 0, 0
 
-        if min_distance <= 500:
-            c500 = max(0, c500 - 1)
-        elif min_distance <= 1000:
-            c1000 = max(0, c1000 - 1)
-        elif min_distance <= 1500:
-            c1500 = max(0, c1500 - 1)
+        for bucket in sorted_buckets:
+            isolated_count = max(0, bucket['count'] - prev_count)
+            isolated_rings.append({
+                'inner': prev_radius,
+                'outer': bucket['radius'],
+                'count': isolated_count,
+            })
+            prev_radius, prev_count = bucket['radius'], max(prev_count, bucket['count'])
 
-        weight_500 = 0.15
-        weight_1000 = 0.05
-        weight_1500 = 0.01
+        for ring in isolated_rings:
+            if ring['inner'] < min_distance <= ring['outer']:
+                ring['count'] = max(0, ring['count'] - 1)
+                break
 
-        density_bonus = (c500 * weight_500) * (c1000 * weight_1000) * (c1500 * weight_1500)
+        density_raw = 0.0
 
-        final_score = min(1.0, anchor_score + density_bonus)
+        base_poi_weight = 0.05
+
+        for ring in isolated_rings:
+            if ring['count'] == 0: continue
+            distance_penalty = (ring['outer'] / max_walk_radius) ** 2
+            dynamic_weight = max (0.01, base_poi_weight * (1 - distance_penalty))
+            density_raw += (ring['count'] * dynamic_weight)
+
+        density_capped = min(1.0, density_raw)
+
+        final_score = (anchor_base * 0.60) + (density_capped * 0.40)
 
         return round(final_score, 4)
 
