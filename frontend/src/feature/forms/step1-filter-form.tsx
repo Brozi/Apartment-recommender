@@ -2,8 +2,9 @@ import styles from "./form.module.css";
 import { withForm } from "#/components/form";
 import {
   buildStep2FromStep1,
-  filterFormSchema,
+  createStep1Defaults,
   mapFormOptions,
+  type FilterLimits,
 } from "./map-form-options";
 import { TotalPriceRangeField } from "#/components/form/total-price-range-field";
 import { PricePerUnitRangeField } from "#/components/form/price-per-unit-range-field";
@@ -24,14 +25,15 @@ export const Step1FilterForm = withForm({
   props: {
     step: 0,
     setStep: (_step: number) => {},
+    limits: {} as FilterLimits,
   },
-  render: function Render({ form, step, setStep }) {
+  render: function Render({ form, step, setStep, limits }) {
     return (
       <form.FormGroup
         name="step1"
-        validators={{ onChange: filterFormSchema }}
         onGroupSubmit={({ value }) => {
-          const nextStep2Values = buildStep2FromStep1(value);
+          const step1Defaults = createStep1Defaults(limits);
+          const nextStep2Values = buildStep2FromStep1(value, step1Defaults);
 
           form.setFieldValue(
             "step2.buildingPartImportance",
@@ -123,6 +125,7 @@ export const Step1FilterForm = withForm({
                 variant="secondary"
                 size="large"
                 type="button"
+                onClick={() => form.reset()}
               >
                 Clear filters
               </Button>

@@ -1,6 +1,6 @@
 import styles from "./form.module.css";
 import { withForm } from "#/components/form";
-import { mapFormOptions, recommendationFormSchema } from "./map-form-options";
+import { mapFormOptions } from "./map-form-options";
 import { Button } from "#/components/ui/button";
 import { Slider } from "#/components/ui/slider";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
@@ -29,7 +29,6 @@ export const Step2RecommendationForm = withForm({
     return (
       <form.FormGroup
         name="step2"
-        validators={{ onChange: recommendationFormSchema }}
         onGroupSubmit={({ value: _value }) => {
           form.handleSubmit();
         }}

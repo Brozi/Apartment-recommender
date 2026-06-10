@@ -87,3 +87,15 @@ export type OfferDetailsResponse = {
   photoUrls: string[];
   link: string;
 };
+
+type limitRange = {
+  lower: number;
+  upper: number;
+};
+
+export type FilterLimitsResponse = {
+  price: limitRange;
+  pricePerMeter: limitRange;
+  area: limitRange;
+  buildYear: limitRange;
+};

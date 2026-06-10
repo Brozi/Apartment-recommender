@@ -25,6 +25,7 @@ type config struct {
 		database   string
 		collection string
 		dashboardCollection string
+		limitsCollection string
 	}
 	geohash struct {
 		token string
@@ -38,6 +39,7 @@ type application struct {
 	mongoDatabase   *mongo.Database
 	mongoCollection *mongo.Collection
 	mongoDashboardCollection *mongo.Collection
+	mongoLimitsCollection *mongo.Collection
 }
 
 func main() {
@@ -52,6 +54,7 @@ func main() {
 	cfg.mongo.database = getEnv("MONGODB_DB", "otodom_data")
 	cfg.mongo.collection = getEnv("MONGODB_COLLECTION", "Properties")
 	cfg.mongo.dashboardCollection = getEnv("MONGODB_DASHBOARD_COLLECTION", "dashboard_aggregates")
+	cfg.mongo.limitsCollection = getEnv("MONGODB_OFFER_LIMITS_COLLECTION", "filter_limits_v2")
 	cfg.geohash.token = getEnv("GEOHASH_TOKEN", "")
 	if cfg.mongo.uri == "" {
 		log.Fatal("missing MONGODB_URI")
@@ -77,7 +80,7 @@ func main() {
 	database := client.Database(cfg.mongo.database)
 	collection := database.Collection(cfg.mongo.collection)
 	dashboardCollection := database.Collection(cfg.mongo.dashboardCollection)
-
+	limitsCollection := database.Collection(cfg.mongo.limitsCollection)
 	app := &application{
 		config:          cfg,
 		logger:          logger,
@@ -85,6 +88,7 @@ func main() {
 		mongoDatabase:   database,
 		mongoCollection: collection,
 		mongoDashboardCollection: dashboardCollection,
+		mongoLimitsCollection: limitsCollection,
 	}
 
 	srv := &http.Server{
