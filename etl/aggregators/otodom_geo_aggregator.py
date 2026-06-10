@@ -14,6 +14,7 @@ class OtodomGeoAggregator(OtodomAggregator):
         super().__init__()
         self.poi_col = self.db[poi_col]
         self.listings_col = self.db[output_col]
+        self.absolute_max_distance = 0
 
     def find_pois_near(self,
                        longitude:float=None,
@@ -122,6 +123,7 @@ class OtodomGeoAggregator(OtodomAggregator):
             cursor_size: int=500,
             recompute: bool=False,
     ):
+        self.absolute_max_distance = max_distance * 10
         writer = MongoBulkWriter(self.listings_col, batch_size=500, ordered=False)
 
         base_query = {
@@ -179,7 +181,7 @@ class OtodomGeoAggregator(OtodomAggregator):
 
                 for category, data in metrics.items():
                     if data['nearest'] is None:
-                        fallback_poi = self.find_absolute_nearest_poi(lon, lat, category, max_distance)
+                        fallback_poi = self.find_absolute_nearest_poi(lon, lat, category, self.absolute_max_distance)
 
                         if fallback_poi:
                             distance = int(fallback_poi['distance_m'])
@@ -213,7 +215,6 @@ class OtodomGeoAggregator(OtodomAggregator):
 
 
     def find_absolute_nearest_poi(self, longitude: float, latitude: float, category: str, max_distance: int) -> dict | None:
-        max_distance = 10 * max_distance
         pipeline = [
             {
                 '$geoNear': {
