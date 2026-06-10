@@ -1,3 +1,5 @@
+from typing import Any
+
 from pymongo import UpdateOne
 import logging
 
@@ -174,6 +176,21 @@ class OtodomGeoAggregator(OtodomAggregator):
                     max_distance=max_distance,
                     step=step,
                 )
+
+                for category, data in metrics.items():
+                    if data['nearest'] is None:
+                        fallback_poi = self.find_absolute_nearest_poi(lon, lat, category, max_distance)
+
+                        if fallback_poi:
+                            distance = int(fallback_poi['distance_m'])
+                            metrics[category]['nearest_m'] = distance
+                            metrics[category]['nearest'] = {
+                                'poi_id': str(fallback_poi['_id']),
+                                'name': fallback_poi.get('tags', {}).get('name', 'Unknown'),
+                                'distance_m': distance,
+                                'location': fallback_poi.get('location', {}),
+                            }
+
                 metrics['geo_aggregations_computed_at'] = NOW
 
                 writer.queue(
@@ -193,3 +210,35 @@ class OtodomGeoAggregator(OtodomAggregator):
             writer.flush()
 
         logger.info("GeoAggregation complete. Updated %s listings.", updated_count)
+
+
+    def find_absolute_nearest_poi(self, longitude: float, latitude: float, category: str, max_distance: int) -> dict | None:
+        max_distance = 10 * max_distance
+        pipeline = [
+            {
+                '$geoNear': {
+                    'near': {
+                        'type': 'Point',
+                        'coordinates': [float(longitude), float(latitude)],
+                    },
+                    'distanceField': 'distance_m',
+                    'spherical': True,
+                    'query': {'category_group': category},
+                    'maxDistance': max_distance
+                }
+            },
+            {'$limit': 1},
+            {
+                '$project': {
+                    '_id': 1,
+                    'osm_id': 1,
+                    'category_group': 1,
+                    'tags.name': 1,
+                    'location': 1,
+                    'distance_m': 1,
+                }
+            }
+        ]
+
+        result = list(self.poi_col.aggregate(pipeline))
+        return result[0] if result else None
