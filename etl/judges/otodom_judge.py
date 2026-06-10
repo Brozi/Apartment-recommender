@@ -218,14 +218,14 @@ class OtodomScoreJudge(OtodomAggregator):
             return 0.5
 
         rating = self.steepness_coef * ((median - price) / median)
-        return 1 / (1 + exp(-rating))
+        return round(1 / (1 + exp(-rating)), 4)
 
     def score_price_per_meter(self, price_per_meter: float, median:float) -> float:
         if median <= 0:
             return 0.5
 
         rating = self.steepness_coef * ((median - price_per_meter) / median)
-        return 1 / (1 + exp(-rating))
+        return round(1 / (1 + exp(-rating)), 4)
 
 
 
