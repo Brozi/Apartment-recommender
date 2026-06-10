@@ -159,8 +159,42 @@ class OtodomScoreJudge(OtodomAggregator):
         return {}
 
     @staticmethod
-    def score_tram(tram_stops:dict) -> float:
-        pass
+    def score_poi(poi_dict: dict, max_walk_radius: int=1500) -> float:
+        min_distance = poi_dict.get("nearest_m", 0)
+        count_500m = poi_dict.get("count_500m", 0)
+        count_1000m = poi_dict.get("count_1000m", 0)
+        count_1500m = poi_dict.get("count_1500m", 0)
+
+        if min_distance == 0 or count_1500m == 0:
+            return 0.0
+
+        if min_distance > max_walk_radius:
+            anchor_score = 0.0
+        else:
+            anchor_score = max(0, 1 - (min_distance / max_walk_radius)**2)
+
+        c500 = count_500m
+        c1000 = max(0, count_1000m - count_500m)
+        c1500 = max(0, count_1500m - count_1000m)
+
+        if min_distance <= 500:
+            c500 = max(0, c500 - 1)
+        elif min_distance <= 1000:
+            c1000 = max(0, c1000 - 1)
+        elif min_distance <= 1500:
+            c1500 = max(0, c1500 - 1)
+
+        weight_500 = 0.15
+        weight_1000 = 0.05
+        weight_1500 = 0.01
+
+        density_bonus = (c500 * weight_500) * (c1000 * weight_1000) * (c1500 * weight_1500)
+
+        final_score = min(1.0, anchor_score + density_bonus)
+
+        return round(final_score, 4)
+
+
 
 
     @staticmethod
