@@ -91,10 +91,17 @@ class OtodomScoreJudge(OtodomAggregator):
 
     @staticmethod
     def _extract_listing_info(listing: dict) -> dict:
-        price = float(listing.get("price", 0))
         price_usable = listing.get("price_usable")
-        price_per_meter = float(listing.get("price_per_meter", 0))
         price_per_meter_usable = listing.get("price_per_meter_usable")
+        price = listing.get("price", 0)
+        price_per_meter = listing.get("price_per_meter", 0)
+        if not price_usable:
+            price = 0
+        if not price_per_meter_usable:
+            price_per_meter = 0
+
+        price = float(price)
+        price_per_meter = float(price_per_meter)
         area = float(listing.get("area", 0))
         rooms = listing.get("rooms", 0)
         build_year = listing.get("building", {}).get("build_year", "unknown")
