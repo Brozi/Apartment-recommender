@@ -61,15 +61,17 @@ class OtodomScoreJudge(OtodomAggregator):
         score_build_year = self.score_build_year(info['build_year'])
 
         median_price = local_stats.get('values',{}).get("med_price", -1)
-
-        if info["price"] > 0 and median_price > 0:
+        if not info["price_usable"]:
+            score_price = 0.5
+        elif info["price"] > 0 and median_price > 0:
             score_price = self.score_price(info['price'], median_price)
         else:
             score_price = 0.5
 
         median_price_per_meter = local_stats.get('values', {}).get("med_price_per_meter", -1)
-
-        if info["price_per_meter"] > 0 and median_price_per_meter > 0:
+        if not info['price_per_meter_usable']:
+            score_price_per_meter = 0.5
+        elif info["price_per_meter"] > 0 and median_price_per_meter > 0:
             score_price_per_meter = self.score_price_per_meter(info['price_per_meter'], median_price_per_meter)
         else:
             score_price_per_meter = 0.5

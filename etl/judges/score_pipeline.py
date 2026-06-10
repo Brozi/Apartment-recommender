@@ -23,8 +23,8 @@ class ScorePipeline(OtodomAggregator):
         self.target_period = datetime.now().strftime("%Y-%m")
         logger.info(f"Starting pipeline for period: {self.target_period}")
         self.listing_query = {
-            "price_usable": True,
-            "price_per_meter_usable": True,
+            # "price_usable": True,
+            # "price_per_meter_usable": True,
         }
         self.absolute_max_distance = absolute_max_distance
 
