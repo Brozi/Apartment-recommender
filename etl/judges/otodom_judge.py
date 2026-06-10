@@ -48,6 +48,11 @@ class OtodomScoreJudge(OtodomAggregator):
     def calculate_metrics(self, listing: dict, aggregates: dict) -> dict:
         info = self._extract_listing_info(listing)
         local_stats = self.get_best_market_stats(info, aggregates, min_listings=5)
+        geo_aggregations = info.get("geo_aggregations", {})
+        score_poi_metrics = {}
+        for key, value in geo_aggregations.items():
+            score_poi_metric = self.score_poi(value, 1500)
+            score_poi_metrics[key] = score_poi_metric
 
         score_area = self.score_area(info['area'])
         score_rooms = self.score_room(info['rooms'])
