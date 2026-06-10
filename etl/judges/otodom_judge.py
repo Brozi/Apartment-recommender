@@ -45,7 +45,7 @@ class OtodomScoreJudge(OtodomAggregator):
 
         return aggregates_map
 
-    def calculate_metrics(self, listing: dict, aggregates: dict) -> dict:
+    def calculate_metrics(self, listing: dict, aggregates: dict, absolute_max_distance: int = 15000) -> dict:
         info = self._extract_listing_info(listing)
         local_stats = self.get_best_market_stats(info, aggregates, min_listings=5)
         geo_aggregations = info.get("geo_aggregations", {})
@@ -53,7 +53,7 @@ class OtodomScoreJudge(OtodomAggregator):
         for key, value in geo_aggregations.items():
             if not isinstance(value, dict):
                 continue
-            score_poi_metric = self.score_poi(value, 1000)
+            score_poi_metric = self.score_poi(value, 1000, absolute_max_distance)
             score_poi_metrics[key] = score_poi_metric
 
         score_area = self.score_area(info['area'])
@@ -167,7 +167,7 @@ class OtodomScoreJudge(OtodomAggregator):
         return {}
 
     @staticmethod
-    def score_poi(poi_dict: dict, max_walk_radius: int=1500) -> float:
+    def score_poi(poi_dict: dict, max_walk_radius: int=1500, absolute_max_radius: int = 15000) -> float:
         cumulative_buckets = []
 
         for key, value in poi_dict.items():
@@ -179,17 +179,23 @@ class OtodomScoreJudge(OtodomAggregator):
                 except (IndexError, ValueError):
                     continue
 
-        min_distance = poi_dict.get("nearest_m", 0)
-
-        if min_distance == 0 or not cumulative_buckets:
-            return 0.0
-
+        min_distance = poi_dict.get("nearest_m", None)
         sorted_buckets = sorted(cumulative_buckets, key=lambda x: x['radius'])
 
         if min_distance > max_walk_radius:
             anchor_base = 0.0
-        else:
+        elif min_distance <= max_walk_radius:
             anchor_base = max(0, 1 - (min_distance / max_walk_radius)**2)
+        else:
+            residual_ceiling = 0.05
+            distance_past_prime = min_distance - max_walk_radius
+            residual_total_range = absolute_max_radius - max_walk_radius
+
+            if residual_total_range > 0:
+                residual_score = residual_ceiling * (1 - (distance_past_prime / residual_total_range))
+                anchor_base = max(0.0, residual_score)
+            else:
+                anchor_base = 0.0
 
         isolated_rings = []
         prev_radius, prev_count = 0, 0
@@ -209,7 +215,6 @@ class OtodomScoreJudge(OtodomAggregator):
                 break
 
         density_raw = 0.0
-
         base_poi_weight = 0.05
 
         for ring in isolated_rings:
