@@ -74,6 +74,7 @@ class OtodomScoreJudge(OtodomAggregator):
             "area": score_area,
             "rooms": score_rooms,
             "build_year": score_build_year,
+            "poi_metrics": score_poi_metrics
         }
 
         return score_metrics
