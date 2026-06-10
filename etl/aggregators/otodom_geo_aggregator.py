@@ -66,12 +66,23 @@ class OtodomGeoAggregator(OtodomAggregator):
         return list(col.aggregate(pipeline))
 
     @staticmethod
-    def build_poi_metrics(pois, max_distance:int=1500, step:int=500) -> dict:
+    def build_poi_metrics(pois, category_groups: tuple, max_distance:int=1500, step:int=500) -> dict:
         ranges = tuple(range(0, max_distance+1, step))
         ranges = ranges[1:]
         metrics = {}
+
+        for category_group in category_groups:
+            metrics[category_group] = {
+                'nearest_m': None,
+                'nearest': None,
+                **{f'count_{r}m': 0 for r in ranges},
+            }
+
         for poi in pois:
             category_group = poi.get('category_group', 'other')
+
+            if category_group not in metrics:
+                continue
             distance = poi['distance_m']
 
             location = poi.get('location', {})
@@ -83,14 +94,9 @@ class OtodomGeoAggregator(OtodomAggregator):
                 'location': location,
             }
 
-            if category_group not in metrics:
-                metrics[category_group] = {
-                    'nearest_m': int(distance),
-                    'nearest':nearest,
-                    **{f'count_{r}m': 0 for r in ranges},
-                }
-            elif distance < metrics[category_group]['nearest_m']:
-                metrics[category_group]['nearest_m'] = int(distance)
+            current_nearest = metrics[category_group]['nearest_m']
+            if current_nearest is None or distance < current_nearest:
+                metrics[category_group]['nearest_m'] = distance
                 metrics[category_group]['nearest'] = nearest
 
             for r in ranges:
@@ -110,6 +116,7 @@ class OtodomGeoAggregator(OtodomAggregator):
             self,
             category_groups:tuple,
             max_distance:int=1500,
+            step:int=500,
             cursor_size: int=500,
             recompute: bool=False,
     ):
@@ -155,14 +162,18 @@ class OtodomGeoAggregator(OtodomAggregator):
                     logger.warning("Skipping listing %s because it has invalid geo_location", listing['_id'])
                     continue
 
-
                 pois = self.find_pois_near(
                     latitude=lat,
                     longitude=lon,
                     max_distance=max_distance,
                     category_groups=category_groups
                 )
-                metrics = self.build_poi_metrics(pois)
+                metrics = self.build_poi_metrics(
+                    pois=pois,
+                    category_groups=category_groups,
+                    max_distance=max_distance,
+                    step=step,
+                )
                 metrics['geo_aggregations_computed_at'] = NOW
 
                 writer.queue(
