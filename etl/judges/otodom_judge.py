@@ -51,6 +51,8 @@ class OtodomScoreJudge(OtodomAggregator):
         geo_aggregations = info.get("geo_aggregations", {})
         score_poi_metrics = {}
         for key, value in geo_aggregations.items():
+            if not isinstance(value, dict):
+                continue
             score_poi_metric = self.score_poi(value, 1500)
             score_poi_metrics[key] = score_poi_metric
 
@@ -171,7 +173,7 @@ class OtodomScoreJudge(OtodomAggregator):
         for key, value in poi_dict.items():
             if key.startswith('count_'):
                 try:
-                    radius = int(key.split('_')[1])
+                    radius = int(key.split('_')[1].replace('m', ''))
                     if isinstance(value, (int, float)):
                         cumulative_buckets.append({'radius': radius, 'count': value})
                 except (IndexError, ValueError):
@@ -179,7 +181,7 @@ class OtodomScoreJudge(OtodomAggregator):
 
         min_distance = poi_dict.get("nearest_m", 0)
 
-        if min_distance is 0 or not cumulative_buckets:
+        if min_distance == 0 or not cumulative_buckets:
             return 0.0
 
         sorted_buckets = sorted(cumulative_buckets, key=lambda x: x['radius'])
