@@ -41,7 +41,7 @@ if __name__ == "__main__":
         'parcel_service',
         'driving_school',
     )
-    geo.add_poi_metrics(category_groups=category_groups, max_distance=1500)
+    geo.add_poi_metrics(category_groups=category_groups, max_distance=1500, recompute=False)
 
     limits = OtodomFilterLimitsAggregator(
         listings_col='listings_clean',
@@ -55,7 +55,4 @@ if __name__ == "__main__":
         agg_col='dashboard_aggregates',
         absolute_max_distance=geo.absolute_max_distance,
     )
-
-    score.run()
-
-
+    score.run(recompute=False)
