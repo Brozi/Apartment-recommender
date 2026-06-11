@@ -9,7 +9,8 @@ export const offerKeys = {
       west: number;
       zoom: number;
     } | null,
-  ) => [...offerKeys.all, "map", viewport] as const,
+    sessionHash?: string,
+  ) => [...offerKeys.all, "map", viewport, sessionHash] as const,
   detail: (id: string) => [...offerKeys.details(), id] as const,
   IDsByPoint: (lat: number, lng: number) =>
     [...offerKeys.all, "idsByPoint", lat, lng] as const,

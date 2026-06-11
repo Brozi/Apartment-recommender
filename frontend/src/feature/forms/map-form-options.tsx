@@ -69,19 +69,19 @@ export function buildStep2FromStep1(
 ): Pick<Step2FormValues, "buildingPartImportance" | "poisImportance"> {
   const buildingPartImportance: Step2FormValues["buildingPartImportance"] = [];
 
-  if (step1.buildingType !== defaults.buildingType) {
-    buildingPartImportance.push({
-      part: "building_type",
-      importance: DEFAULT_IMPORTANCE,
-    });
-  }
+  // if (step1.buildingType !== defaults.buildingType) {
+  //   buildingPartImportance.push({
+  //     part: "building_type",
+  //     importance: DEFAULT_IMPORTANCE,
+  //   });
+  // }
 
-  if (hasSelectedValue(step1.districts, "all")) {
-    buildingPartImportance.push({
-      part: "districts",
-      importance: DEFAULT_IMPORTANCE,
-    });
-  }
+  // if (hasSelectedValue(step1.districts, "all")) {
+  //   buildingPartImportance.push({
+  //     part: "districts",
+  //     importance: DEFAULT_IMPORTANCE,
+  //   });
+  // }
 
   if (
     step1.totalPrice.totalPriceFrom !== defaults.totalPrice.totalPriceFrom ||
@@ -130,19 +130,19 @@ export function buildStep2FromStep1(
     });
   }
 
-  if (step1.marketType !== defaults.marketType) {
-    buildingPartImportance.push({
-      part: "market_type",
-      importance: DEFAULT_IMPORTANCE,
-    });
-  }
+  // if (step1.marketType !== defaults.marketType) {
+  //   buildingPartImportance.push({
+  //     part: "market_type",
+  //     importance: DEFAULT_IMPORTANCE,
+  //   });
+  // }
 
-  if (step1.condition !== defaults.condition) {
-    buildingPartImportance.push({
-      part: "condition",
-      importance: DEFAULT_IMPORTANCE,
-    });
-  }
+  // if (step1.condition !== defaults.condition) {
+  //   buildingPartImportance.push({
+  //     part: "condition",
+  //     importance: DEFAULT_IMPORTANCE,
+  //   });
+  // }
 
   const poisImportance: Step2FormValues["poisImportance"] = Array.from(
     new Set(step1.pois.map((item) => item.poi.trim()).filter(Boolean)),

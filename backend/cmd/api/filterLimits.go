@@ -30,7 +30,7 @@ func (app *application) getFilterLimitsHandler(w http.ResponseWriter, r *http.Re
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
 
-	// TODO: Przekazywać miasto jak będziemy mieli dane z innych misat i frontend będzie śmigał
+	// TODO: Przekazywać miasto jak będziemy mieli dane z innych miast
 	city := "Kraków"
 
 	filter := bson.M{"city": city}

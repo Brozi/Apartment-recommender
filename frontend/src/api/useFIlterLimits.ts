@@ -1,6 +1,7 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import type { FilterLimitsResponse } from "#/lib/types";
 import { filterLimitsKeys } from "#/queryKeys/filterLimitsKeys";
+import { API_BASE_URL } from "#/lib/api-base-url";
 
 type FilterLimitsParams = {
   city?: string;
@@ -9,9 +10,7 @@ type FilterLimitsParams = {
 const fetchFilterLimits = async (
   city: string,
 ): Promise<FilterLimitsResponse> => {
-  const response = await fetch(
-    `http://localhost:4000/v1/filter-limits/${city}`,
-  );
+  const response = await fetch(`${API_BASE_URL}/v1/filter-limits/${city}`);
   if (!response.ok) {
     throw new Error("Failed to load filter limits");
   }

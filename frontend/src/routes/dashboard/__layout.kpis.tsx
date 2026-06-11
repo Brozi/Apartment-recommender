@@ -1,10 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useDashboardKPIs } from "#/api/useDashboardKPIs";
-import {
-  DATA_CHEAPEST_DISTRICTS,
-  DATA_EXPENSIVE_DISTRICTS,
-  DATA_NEW_OFFERS_TIMELINE,
-} from "#/lib/constants";
 import { replaceUnderscores, roundToTwo } from "#/lib/utils";
 
 import styles from "#/routes/dashboard/kpis.module.css";
@@ -34,10 +29,45 @@ function KPIsPage() {
     secondLineValue: roundToTwo(infoBox.secondLineValue),
   }));
 
-  const finishingState = kpis.finishing_state.map((entry) => ({
+  const expensiveDistricts = kpis.expensive_districts.map((entry) => ({
     ...entry,
-    state: replaceUnderscores(entry.state),
+    average: roundToTwo(entry.pricePerM),
+    median: roundToTwo(entry.medianPrice),
   }));
+
+  const cheapestDistricts = kpis.cheapest_districts.map((entry) => ({
+    ...entry,
+    average: roundToTwo(entry.pricePerM),
+    median: roundToTwo(entry.medianPrice),
+  }));
+
+  const rooms = kpis.rooms.reduce<{ rooms: string; count: number }[]>(
+    (acc, entry) => {
+      const num = parseInt(entry.rooms);
+      const isBig = (!isNaN(num) && num >= 5) || entry.rooms === "10+";
+      if (isBig) {
+        const existing = acc.find((e) => e.rooms === "5+");
+        if (existing) {
+          existing.count += entry.count;
+        } else {
+          acc.push({ rooms: "5+", count: entry.count });
+        }
+      } else {
+        acc.push({ ...entry });
+      }
+      return acc;
+    },
+    [],
+  );
+
+  const buildYear = kpis.build_year.filter((entry) => entry.range !== "");
+
+  const finishingState = kpis.finishing_state
+    .filter((entry) => entry.state !== "unknown")
+    .map((entry) => ({
+      ...entry,
+      state: replaceUnderscores(entry.state),
+    }));
 
   return (
     <>
@@ -58,13 +88,13 @@ function KPIsPage() {
       <section className={styles.chartGrid}>
         <BarChart
           title="Offers by build year range"
-          data={kpis.build_year}
+          data={buildYear}
           xAxisKey="range"
           bars={[{ dataKey: "count", color: "var(--clr-chart-red)" }]}
         />
         <BarChart
           title="Offers by number of rooms"
-          data={kpis.rooms}
+          data={rooms}
           xAxisKey="rooms"
           bars={[{ dataKey: "count", color: "var(--clr-chart-red)" }]}
         />
@@ -76,7 +106,7 @@ function KPIsPage() {
         />
         <BarChart
           title="Most expensive districts (per m²)"
-          data={DATA_EXPENSIVE_DISTRICTS}
+          data={expensiveDistricts}
           xAxisKey="district"
           bars={[
             { dataKey: "average", color: "var(--clr-chart-red)" },
@@ -85,7 +115,7 @@ function KPIsPage() {
         />
         <BarChart
           title="Cheapest districts (per m²)"
-          data={DATA_CHEAPEST_DISTRICTS}
+          data={cheapestDistricts}
           xAxisKey="district"
           bars={[
             { dataKey: "average", color: "var(--clr-chart-red)" },
@@ -94,7 +124,7 @@ function KPIsPage() {
         />
         <LineChart
           title="New offers: Last 30 days"
-          data={DATA_NEW_OFFERS_TIMELINE}
+          data={kpis.new_offers_timeline}
           xAxisKey="date"
           lines={[{ dataKey: "offers", color: "var(--clr-chart-red)" }]}
         />

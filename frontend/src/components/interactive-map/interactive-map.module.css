@@ -83,13 +83,15 @@
 
 .markerOffer {
   color: var(--clr-primary-100);
+  background: var(--clr-light-100);
   border-color: var(--clr-primary-100);
 }
 
 .markerCluster {
-  color: var(--clr-acc-beige-dark);
-  border-color: var(--clr-acc-beige-dark);
-  background: var(--clr-bg-addon-beige);
+  color: var(--clr-light-100);
+  background: var(--clr-primary-90);
+  backdrop-filter: blur(0.125rem);
+  border-color: var(--clr-light-15);
 }
 
 .markerText {

@@ -43,13 +43,19 @@ type infoBoxEntry struct {
 	Unit            string  `json:"unit"`
 }
 
+type districtEntry struct {
+	District string  `json:"district"`
+	PricePerM float64 `json:"pricePerM"`
+	MedianPrice float64 `json:"medianPrice"`
+}
+
 type dashboardKpisResponse struct {
 	InfoBoxes          []infoBoxEntry        `json:"info_boxes"`
 	BuildYear          []buildYearEntry      `json:"build_year"`
 	Rooms              []roomsEntry          `json:"rooms"`
 	FinishingState     []finishingStateEntry `json:"finishing_state"`
-	ExpensiveDistricts []interface{}         `json:"expensive_districts"`
-	CheapestDistricts  []interface{}         `json:"cheapest_districts"`
+	ExpensiveDistricts []districtEntry       `json:"expensive_districts"`
+	CheapestDistricts  []districtEntry       `json:"cheapest_districts"`
 	NewOffersTimeline  []timelineEntry       `json:"new_offers_timeline"`
 }
 
@@ -57,7 +63,7 @@ func (app *application) getDashboardKpisHandler(w http.ResponseWriter, r *http.R
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
 
-	city := "krakow"
+	city := "Kraków"
 
 	buildYear, err := app.aggregateBuildYear(ctx, city)
 	if err != nil {
@@ -95,6 +101,13 @@ func (app *application) getDashboardKpisHandler(w http.ResponseWriter, r *http.R
 	}
 
 	marketTypeCounts, err := app.aggregateMarketTypeCounts(ctx, city)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+		return
+	}
+
+	expensiveDistricts, cheapestDistricts, err := app.aggregateDistrictPrices(ctx)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
@@ -145,8 +158,8 @@ func (app *application) getDashboardKpisHandler(w http.ResponseWriter, r *http.R
 		BuildYear:          buildYear,
 		Rooms:              rooms,
 		FinishingState:     finishingState,
-		ExpensiveDistricts: []interface{}{},
-		CheapestDistricts:  []interface{}{},
+		ExpensiveDistricts: expensiveDistricts,
+		CheapestDistricts:  cheapestDistricts,
 		NewOffersTimeline:  newOffersTimeline,
 	}
 
@@ -163,74 +176,57 @@ type rangeCountResult struct {
 }
 
 func (app *application) aggregateBuildYear(ctx context.Context, city string) ([]buildYearEntry, error) {
-	ranges := []struct {
-		label string
-		min   int
-		max   int
-	}{
-		{label: "1900 - 1960", min: 1900, max: 1960},
-		{label: "1961 - 1990", min: 1961, max: 1990},
-		{label: "1991 - 2000", min: 1991, max: 2000},
-		{label: "2001 - 2010", min: 2001, max: 2010},
-		{label: "2011 - 2026", min: 2011, max: 2026},
+	_ = city
+
+	rangeLabels := map[int]string{
+		1: "<1945",
+		2: "1945-1970",
+		3: "1971-1989",
+		4: "1990-2000",
+		5: "2001-2010",
+		6: "2011-2020",
+		7: "2020>",
 	}
 
 	pipeline := mongo.Pipeline{
-		bson.D{{Key: "$match", Value: bson.M{"localization.city": city}}},
-		bson.D{{Key: "$project", Value: bson.M{
-			"range": bson.M{
-				"$switch": bson.M{
-					"branches": bson.A{
-						bson.M{"case": bson.M{"$and": bson.A{
-							bson.M{"$gte": bson.A{"$building.build_year", ranges[0].min}},
-							bson.M{"$lte": bson.A{"$building.build_year", ranges[0].max}},
-						}}, "then": ranges[0].label},
-						bson.M{"case": bson.M{"$and": bson.A{
-							bson.M{"$gte": bson.A{"$building.build_year", ranges[1].min}},
-							bson.M{"$lte": bson.A{"$building.build_year", ranges[1].max}},
-						}}, "then": ranges[1].label},
-						bson.M{"case": bson.M{"$and": bson.A{
-							bson.M{"$gte": bson.A{"$building.build_year", ranges[2].min}},
-							bson.M{"$lte": bson.A{"$building.build_year", ranges[2].max}},
-						}}, "then": ranges[2].label},
-						bson.M{"case": bson.M{"$and": bson.A{
-							bson.M{"$gte": bson.A{"$building.build_year", ranges[3].min}},
-							bson.M{"$lte": bson.A{"$building.build_year", ranges[3].max}},
-						}}, "then": ranges[3].label},
-						bson.M{"case": bson.M{"$and": bson.A{
-							bson.M{"$gte": bson.A{"$building.build_year", ranges[4].min}},
-							bson.M{"$lte": bson.A{"$building.build_year", ranges[4].max}},
-						}}, "then": ranges[4].label},
-					},
-					"default": "unknown",
-				},
-			},
+		bson.D{{Key: "$match", Value: bson.M{
+			"metric": "offer_count_by_build_year",
 		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "computed_at", Value: -1}}}},
 		bson.D{{Key: "$group", Value: bson.M{
-			"_id":   "$range",
-			"count": bson.M{"$sum": 1},
+			"_id":   "$group_key.sort_order",
+			"count": bson.M{"$first": "$values.count"},
 		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "_id", Value: 1}}}},
 	}
 
-	results, err := aggregateCounts(ctx, app.mongoCollection, pipeline)
+	cursor, err := app.mongoDashboardCollection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(ctx)
 
-	counts := map[string]int{}
-	for _, result := range results {
-		counts[result.ID] = result.Count
+	var entries []buildYearEntry
+	for cursor.Next(ctx) {
+		var result struct {
+			SortOrder int `bson:"_id"`
+			Count     int `bson:"count"`
+		}
+		if err := cursor.Decode(&result); err != nil {
+			return nil, err
+		}
+		entries = append(entries, buildYearEntry{Range: rangeLabels[result.SortOrder], Count: result.Count})
 	}
-
-	entries := make([]buildYearEntry, 0, len(ranges))
-	for _, item := range ranges {
-		entries = append(entries, buildYearEntry{Range: item.label, Count: counts[item.label]})
+	if err := cursor.Err(); err != nil {
+		return nil, err
 	}
 
 	return entries, nil
 }
 
 func (app *application) aggregateRooms(ctx context.Context, city string) ([]roomsEntry, error) {
+	_ = city
+
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: bson.M{
 			"metric": "offer_count_by_rooms",
@@ -270,6 +266,8 @@ func (app *application) aggregateRooms(ctx context.Context, city string) ([]room
 }
 
 func (app *application) aggregateFinishingState(ctx context.Context, city string) ([]finishingStateEntry, error) {
+	_ = city
+	
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: bson.M{
 			"metric": "offer_count_by_construction_status",
@@ -317,8 +315,9 @@ func (app *application) aggregateFinishingState(ctx context.Context, city string
 }
 
 func (app *application) aggregateNewOffersTimeline(ctx context.Context, city string) ([]timelineEntry, error) {
-	startDate := time.Date(2026, time.April, 5, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(2026, time.May, 6, 0, 0, 0, 0, time.UTC)
+	now := time.Now().UTC()
+	endDate := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
+	startDate := endDate.AddDate(0, 0, -30)
 
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
@@ -351,15 +350,25 @@ func (app *application) aggregateNewOffersTimeline(ctx context.Context, city str
 	}
 
 	var entries []timelineEntry
+	resultMap := map[string]timelineEntry{}
 	for cursor.Next(ctx) {
 		var result timelineResult
 		if err := cursor.Decode(&result); err != nil {
 			return nil, err
 		}
-		entries = append(entries, timelineEntry{Year: result.Year, Date: result.Date, Offers: result.Offers})
+		resultMap[result.Date] = timelineEntry{Year: result.Year, Date: result.Date, Offers: result.Offers}
 	}
 	if err := cursor.Err(); err != nil {
 		return nil, err
+	}
+
+	for d := startDate; d.Before(endDate); d = d.AddDate(0, 0, 1) {
+		key := d.Format("02.01")
+		if entry, ok := resultMap[key]; ok {
+			entries = append(entries, entry)
+		} else {
+			entries = append(entries, timelineEntry{Year: d.Year(), Date: key, Offers: 0})
+		}
 	}
 
 	return entries, nil
@@ -484,7 +493,9 @@ func (app *application) aggregateKpiStats(ctx context.Context, city string) (kpi
 	}, nil
 }
 
-func (app *application) aggregateMarketTypeCounts(ctx context.Context, city string) (map[string]int, error) {
+func (app *application) aggregateMarketTypeCounts(ctx context.Context, city string) (map[string]int, error) {	
+	_ = city
+
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: bson.M{
 			"metric": "offer_count_by_market_type",
@@ -507,6 +518,80 @@ func (app *application) aggregateMarketTypeCounts(ctx context.Context, city stri
 	}
 
 	return counts, nil
+}
+
+func (app *application) aggregateDistrictPrices(ctx context.Context) (expensive []districtEntry, cheapest []districtEntry, err error) {
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: bson.M{
+			"metric":         "monthly_market_by_district_subdistrict",
+			"group_key.city": "Kraków",
+		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "computed_at", Value: -1}}}},
+		bson.D{{Key: "$group", Value: bson.M{
+			"_id": bson.M{
+				"district":    "$group_key.district",
+				"subdistrict": "$group_key.subdistrict",
+			},
+			"avgPricePerMeter": bson.M{"$first": "$values.avg_price_per_meter"},
+			"medPricePerMeter": bson.M{"$first": "$values.med_price_per_meter"},
+			"count":            bson.M{"$first": "$values.count"},
+		}}},
+		bson.D{{Key: "$group", Value: bson.M{
+			"_id": "$_id.district",
+			"totalWeightedAvg": bson.M{"$sum": bson.M{"$multiply": bson.A{"$avgPricePerMeter", "$count"}}},
+			"totalWeightedMed": bson.M{"$sum": bson.M{"$multiply": bson.A{"$medPricePerMeter", "$count"}}},
+			"totalCount":       bson.M{"$sum": "$count"},
+		}}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"avgPricePerMeter": bson.M{"$divide": bson.A{"$totalWeightedAvg", "$totalCount"}},
+			"medPricePerMeter": bson.M{"$divide": bson.A{"$totalWeightedMed", "$totalCount"}},
+		}}},
+		bson.D{{Key: "$sort", Value: bson.D{{Key: "avgPricePerMeter", Value: -1}}}},
+	}
+
+	cursor, err := app.mongoDashboardCollection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer cursor.Close(ctx)
+
+	type districtResult struct {
+		District        string  `bson:"_id"`
+		AvgPricePerMeter float64 `bson:"avgPricePerMeter"`
+		MedPricePerMeter float64 `bson:"medPricePerMeter"`
+	}
+
+	var all []districtEntry
+	for cursor.Next(ctx) {
+		var result districtResult
+		if err := cursor.Decode(&result); err != nil {
+			return nil, nil, err
+		}
+		if result.District == "" {
+			continue
+		}
+		all = append(all, districtEntry{
+			District:    result.District,
+			PricePerM:   result.AvgPricePerMeter,
+			MedianPrice: result.MedPricePerMeter,
+		})
+	}
+	if err := cursor.Err(); err != nil {
+		return nil, nil, err
+	}
+
+	const top = 3
+	if len(all) <= top*2 {
+		return all, nil, nil
+	}
+
+	expensive = all[:top]
+	cheapest = all[len(all)-top:]
+	for i, j := 0, len(cheapest)-1; i < j; i, j = i+1, j-1 {
+		cheapest[i], cheapest[j] = cheapest[j], cheapest[i]
+	}
+
+	return expensive, cheapest, nil
 }
 
 func aggregateCounts(ctx context.Context, collection *mongo.Collection, pipeline mongo.Pipeline) ([]rangeCountResult, error) {
@@ -532,14 +617,6 @@ func aggregateCounts(ctx context.Context, collection *mongo.Collection, pipeline
 	}
 
 	return results, nil
-}
-
-func firstOrZero(values []float64) float64 {
-	if len(values) == 0 {
-		return 0
-	}
-
-	return values[0]
 }
 
 func roomsSortValue(value string) int {

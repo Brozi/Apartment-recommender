@@ -24,6 +24,28 @@
   object-fit: cover;
 }
 
+.offerImgSkeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    var(--clr-light-100) 25%,
+    var(--clr-acc-beige-light) 50%,
+    var(--clr-light-100) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .paginationBtn {
   display: flex;
   align-items: center;
