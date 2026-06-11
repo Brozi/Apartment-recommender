@@ -1,12 +1,12 @@
 .formBg {
   z-index: 100;
-  position: absolute;
+  position: fixed;
   top: 5.25rem;
+  bottom: 0;
   left: 0;
   right: 0;
   background-color: var(--clr-primary-0);
   backdrop-filter: blur(0);
-  height: calc(100vh - 5.25rem);
   display: flex;
   justify-content: flex-end;
   overflow: hidden;
@@ -52,6 +52,7 @@
   transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1);
   transition-delay: 0ms;
   will-change: transform;
+  margin-top: auto;
 }
 
 .active .formBox {

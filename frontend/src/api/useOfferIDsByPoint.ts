@@ -1,6 +1,5 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { offerKeys } from "#/queryKeys/offerKeys";
-import { API_BASE_URL } from "#/lib/api-base-url";
 
 type OfferIDsByPointResponse = {
   offerIDs: string[];
@@ -10,9 +9,7 @@ const fetchOfferIDsByPoint = async (
   lat: number,
   lng: number,
 ): Promise<OfferIDsByPointResponse> => {
-  const response = await fetch(
-    `${API_BASE_URL}/v1/offers/by-point?lat=${lat}&lng=${lng}`,
-  );
+  const response = await fetch(`/v1/offers/by-point?lat=${lat}&lng=${lng}`);
   if (!response.ok) {
     throw new Error("Failed to load offer IDs");
   }

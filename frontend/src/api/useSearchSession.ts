@@ -1,6 +1,5 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import type { CleanedFilterFormValues } from "#/lib/filter-url-utils";
-import { API_BASE_URL } from "#/lib/api-base-url";
 
 type SearchSessionResponse = {
   sessionHash: string;
@@ -9,14 +8,11 @@ type SearchSessionResponse = {
 const postFiltersSession = async (
   filters: CleanedFilterFormValues,
 ): Promise<SearchSessionResponse> => {
-  const response = await fetch(
-    `${API_BASE_URL}/v1/filters-and-recommendation`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(filters),
-    },
-  );
+  const response = await fetch("/v1/filters-and-recommendation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(filters),
+  });
   if (!response.ok) {
     throw new Error("Failed to create filter session");
   }

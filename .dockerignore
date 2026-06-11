@@ -1,0 +1,17 @@
+.git
+.gitignore
+**/.git
+**/.DS_Store
+
+backend/bin
+backend/api.exe
+frontend/node_modules
+frontend/dist
+
+etl
+data
+listing-scraper
+
+*.geojson
+*.csv
+*.jsonl
