@@ -22,10 +22,7 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
 
     def build_filter_limits(self) -> int:
         docs = list(self.listings_col.aggregate(self._filter_limits_pipeline()))
-        print(f"DEBUG: Found {len(docs)} documents after aggregation")
         operations = [self._build_upsert_operation(doc) for doc in docs]
-        count = self.listings_col.count_documents({})
-        print(f"Total listings in collection: {count}")
 
         if not operations:
             return 0

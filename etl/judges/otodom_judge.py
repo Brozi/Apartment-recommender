@@ -45,24 +45,33 @@ class OtodomScoreJudge(OtodomAggregator):
 
         return aggregates_map
 
-    def calculate_metrics(self, listing: dict, aggregates: dict) -> dict:
+    def calculate_metrics(self, listing: dict, aggregates: dict, absolute_max_distance: int = 15000) -> dict:
         info = self._extract_listing_info(listing)
         local_stats = self.get_best_market_stats(info, aggregates, min_listings=5)
+        geo_aggregations = info.get("geo_aggregations", {})
+        score_poi_metrics = {}
+        for key, value in geo_aggregations.items():
+            if not isinstance(value, dict):
+                continue
+            score_poi_metric = self.score_poi(value, 1000, absolute_max_distance)
+            score_poi_metrics[key] = score_poi_metric
 
         score_area = self.score_area(info['area'])
         score_rooms = self.score_room(info['rooms'])
         score_build_year = self.score_build_year(info['build_year'])
 
         median_price = local_stats.get('values',{}).get("med_price", -1)
-
-        if info["price"] > 0 and median_price > 0:
+        if not info["price_usable"]:
+            score_price = 0.5
+        elif info["price"] > 0 and median_price > 0:
             score_price = self.score_price(info['price'], median_price)
         else:
             score_price = 0.5
 
         median_price_per_meter = local_stats.get('values', {}).get("med_price_per_meter", -1)
-
-        if info["price_per_meter"] > 0 and median_price_per_meter > 0:
+        if not info['price_per_meter_usable']:
+            score_price_per_meter = 0.5
+        elif info["price_per_meter"] > 0 and median_price_per_meter > 0:
             score_price_per_meter = self.score_price_per_meter(info['price_per_meter'], median_price_per_meter)
         else:
             score_price_per_meter = 0.5
@@ -74,6 +83,7 @@ class OtodomScoreJudge(OtodomAggregator):
             "area": score_area,
             "rooms": score_rooms,
             "build_year": score_build_year,
+            "poi_metrics": score_poi_metrics
         }
 
         return score_metrics
@@ -81,10 +91,17 @@ class OtodomScoreJudge(OtodomAggregator):
 
     @staticmethod
     def _extract_listing_info(listing: dict) -> dict:
-        price = float(listing.get("price", 0))
         price_usable = listing.get("price_usable")
-        price_per_meter = float(listing.get("price_per_meter", 0))
         price_per_meter_usable = listing.get("price_per_meter_usable")
+        price = listing.get("price", 0)
+        price_per_meter = listing.get("price_per_meter", 0)
+        if not price_usable:
+            price = 0
+        if not price_per_meter_usable:
+            price_per_meter = 0
+
+        price = float(price)
+        price_per_meter = float(price_per_meter)
         area = float(listing.get("area", 0))
         rooms = listing.get("rooms", 0)
         build_year = listing.get("building", {}).get("build_year", "unknown")
@@ -159,8 +176,78 @@ class OtodomScoreJudge(OtodomAggregator):
         return {}
 
     @staticmethod
-    def score_tram(tram_stops:dict) -> float:
-        pass
+    def score_poi(poi_dict: dict, max_walk_radius: int=1500, absolute_max_radius: int = 15000) -> float:
+        cumulative_buckets = []
+
+        for key, value in poi_dict.items():
+            if key.startswith('count_'):
+                try:
+                    radius = int(key.split('_')[1].replace('m', ''))
+                    if isinstance(value, (int, float)):
+                        cumulative_buckets.append({'radius': radius, 'count': value})
+                except (IndexError, ValueError):
+                    continue
+
+        raw_min = poi_dict.get("nearest_m", None)
+
+        if raw_min is None or not cumulative_buckets:
+            return 0.0
+
+        try:
+            min_distance = float(raw_min)
+        except (ValueError, TypeError):
+            return 0.0
+
+        sorted_buckets = sorted(cumulative_buckets, key=lambda x: x['radius'])
+
+        if min_distance >= absolute_max_radius:
+            anchor_base = 0.0
+        elif min_distance <= max_walk_radius:
+            anchor_base = max(0.0, 1 - (min_distance / max_walk_radius)**2)
+        else:
+            residual_ceiling = 0.05
+            distance_past_prime = min_distance - max_walk_radius
+            residual_total_range = absolute_max_radius - max_walk_radius
+
+            if residual_total_range > 0:
+                residual_score = residual_ceiling * (1 - (distance_past_prime / residual_total_range))
+                anchor_base = max(0.0, residual_score)
+            else:
+                anchor_base = 0.0
+
+        isolated_rings = []
+        prev_radius, prev_count = 0, 0
+
+        for bucket in sorted_buckets:
+            isolated_count = max(0, bucket['count'] - prev_count)
+            isolated_rings.append({
+                'inner': prev_radius,
+                'outer': bucket['radius'],
+                'count': isolated_count,
+            })
+            prev_radius, prev_count = bucket['radius'], max(prev_count, bucket['count'])
+
+        for ring in isolated_rings:
+            if ring['inner'] < min_distance <= ring['outer']:
+                ring['count'] = max(0, ring['count'] - 1)
+                break
+
+        density_raw = 0.0
+        base_poi_weight = 0.05
+
+        for ring in isolated_rings:
+            if ring['count'] == 0: continue
+            distance_penalty = (ring['outer'] / max_walk_radius) ** 2
+            dynamic_weight = max (0.01, base_poi_weight * (1 - distance_penalty))
+            density_raw += (ring['count'] * dynamic_weight)
+
+        density_capped = min(1.0, density_raw)
+
+        final_score = (anchor_base * 0.60) + (density_capped * 0.40)
+
+        return round(final_score, 4)
+
+
 
 
     @staticmethod
@@ -218,14 +305,14 @@ class OtodomScoreJudge(OtodomAggregator):
             return 0.5
 
         rating = self.steepness_coef * ((median - price) / median)
-        return 1 / (1 + exp(-rating))
+        return round(1 / (1 + exp(-rating)), 4)
 
     def score_price_per_meter(self, price_per_meter: float, median:float) -> float:
         if median <= 0:
             return 0.5
 
         rating = self.steepness_coef * ((median - price_per_meter) / median)
-        return 1 / (1 + exp(-rating))
+        return round(1 / (1 + exp(-rating)), 4)
 
 
 
