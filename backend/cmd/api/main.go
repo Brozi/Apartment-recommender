@@ -118,6 +118,8 @@ func main() {
 		mongoPoisCollection:      poisCollection,
 	}
 
+	app.startSelfHealthcheckLoop()
+
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
 		Handler:      app.routes(),
