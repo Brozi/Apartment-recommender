@@ -293,8 +293,10 @@ class OtodomScoreJudge(OtodomAggregator):
             case "1":
                 return 0.3
             case "2":
-                return 0.6
+                return 0.4
             case "3":
+                return 0.6
+            case "4":
                 return 0.85
             case _:
                 return 1
