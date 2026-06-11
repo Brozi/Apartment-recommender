@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -19,8 +20,9 @@ import (
 const version = "1.0.0"
 
 type config struct {
-	port  int
-	env   string
+	port      int
+	env       string
+	staticDir string
 	mongo struct {
 		uri                 string
 		database            string
@@ -53,7 +55,16 @@ type application struct {
 func main() {
 	var cfg config
 
-	flag.IntVar(&cfg.port, "port", 4000, "API server port")
+	defaultPort := 4000
+	if portFromEnv := getEnv("PORT", ""); portFromEnv != "" {
+		parsedPort, err := strconv.Atoi(portFromEnv)
+		if err != nil {
+			log.Fatalf("invalid PORT value %q: %v", portFromEnv, err)
+		}
+		defaultPort = parsedPort
+	}
+
+	flag.IntVar(&cfg.port, "port", defaultPort, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Enviroment (development|staging|production)")
 	flag.Parse()
 
@@ -70,6 +81,7 @@ func main() {
 	}
 	cfg.redis.addr = getEnv("REDIS_ADDR", "localhost:6379")
 	cfg.redis.password = getEnv("REDIS_PASSWORD", "")
+	cfg.staticDir = getEnv("STATIC_DIR", "./static")
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 

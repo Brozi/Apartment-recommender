@@ -83,5 +83,23 @@ docker compose down
 
 ### Notes
 
-- Frontend API base URL is configurable via `VITE_API_URL` during image build.
-- `docker-compose.yml` sets it to `http://localhost:4000` by default.
+- Frontend uses same-origin API calls (`/v1/...`) by default.
+
+## Render: single service (frontend + backend)
+
+This repo supports running frontend and backend in one container using root `Dockerfile`.
+
+### How it works
+
+- Frontend is built in Docker and copied to `/app/static`.
+- Backend serves API under `/v1/*` and serves SPA/static files from `STATIC_DIR`.
+- Frontend uses same-origin API by default (`/v1/...`).
+
+### Render setup
+
+1. Create a new **Web Service** from this repository.
+2. Environment: **Docker**.
+3. Root Directory: repository root.
+4. Dockerfile Path: `./Dockerfile`.
+5. Add backend environment variables (`MONGODB_URI`, `REDIS_ADDR`, `REDIS_PASSWORD`, etc.).
+6. Deploy.
