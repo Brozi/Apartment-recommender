@@ -1,12 +1,12 @@
 .formBg {
   z-index: 100;
-  position: absolute;
-  top: 0;
+  position: fixed;
+  top: 5.25rem;
+  bottom: 0;
   left: 0;
   right: 0;
   background-color: var(--clr-primary-0);
   backdrop-filter: blur(0);
-  height: 100dvh;
   display: flex;
   justify-content: flex-end;
   overflow: hidden;
@@ -42,7 +42,7 @@
 .formBox {
   max-width: 36.125rem;
   width: 100%;
-  height: calc(100dvh - 5.25rem);
+  height: 100%;
   background-color: var(--clr-bg-component);
   padding: 1.625rem var(--spacing-16) var(--spacing-32) var(--spacing-16);
   display: flex;
