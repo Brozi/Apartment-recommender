@@ -11,3 +11,5 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+Dockerfile
+src/lib/api-base-url.ts
