@@ -1,9 +1,11 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { offerKeys } from "#/queryKeys/offerKeys";
 import type { MapOffersResponse, MapViewport } from "#/lib/types";
+import { API_BASE_URL } from "#/lib/api-base-url";
 
 const fetchOffers = async (
   viewport: MapViewport,
+  sessionHash?: string,
 ): Promise<MapOffersResponse> => {
   const params = new URLSearchParams({
     north: viewport.north.toString(),
@@ -12,9 +14,11 @@ const fetchOffers = async (
     west: viewport.west.toString(),
     zoom: viewport.zoom.toString(),
   });
-  console.log(`http://localhost:4000/v1/map?${params}`);
+  if (sessionHash) {
+    params.append("sessionHash", sessionHash);
+  }
 
-  const response = await fetch(`http://localhost:4000/v1/map?${params}`);
+  const response = await fetch(`${API_BASE_URL}/v1/map?${params}`);
   if (!response.ok) {
     throw new Error("Failed to load offers");
   }
@@ -23,11 +27,13 @@ const fetchOffers = async (
 
 export const useOffers = (
   viewport: MapViewport | null,
+  sessionHash?: string,
+  filtersExist: boolean = false,
 ): UseQueryResult<MapOffersResponse, Error> => {
   return useQuery({
-    queryKey: offerKeys.map(viewport),
-    queryFn: () => fetchOffers(viewport as MapViewport),
+    queryKey: offerKeys.map(viewport, sessionHash),
+    queryFn: () => fetchOffers(viewport as MapViewport, sessionHash),
     staleTime: 10 * 60 * 1000,
-    enabled: Boolean(viewport),
+    enabled: Boolean(viewport) && (!filtersExist || !!sessionHash),
   });
 };

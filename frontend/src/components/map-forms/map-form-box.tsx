@@ -58,7 +58,7 @@ export default function MapFormBox({ isActive, onCloseForm }: MapFormBoxProps) {
         <div className={styles.divider} />
 
         <div ref={formContainerRef} className={styles.formContainer}>
-          <MapForm step={step} setStep={setStep} />
+          <MapForm onCloseForm={onCloseForm} step={step} setStep={setStep} />
         </div>
       </section>
     </div>

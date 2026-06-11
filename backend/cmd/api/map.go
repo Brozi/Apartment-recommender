@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -22,9 +24,10 @@ func (app *application) getMapDataHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	sessionHash := r.URL.Query().Get("sessionHash")
 	geohashPrefix := geohashPrefixLength(viewport.Zoom)
 
-	data, err := app.createMapOffers(ctx, viewport, geohashPrefix)
+	data, err := app.createMapOffers(ctx, viewport, geohashPrefix, sessionHash)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
@@ -153,7 +156,7 @@ type mapAggregationResult struct {
 	MaxLng   float64         `bson:"maxLng"`
 }
 
-func (app *application) createMapOffers(ctx context.Context, viewport mapViewportQuery, geohashPrefix int) ([]mapAggregationResult, error) {
+func (app *application) createMapOffers(ctx context.Context, viewport mapViewportQuery, geohashPrefix int, sessionHash string) ([]mapAggregationResult, error) {
 	match := bson.M{
 		"localization.latitude": bson.M{
 			"$gte": viewport.South,
@@ -164,6 +167,29 @@ func (app *application) createMapOffers(ctx context.Context, viewport mapViewpor
 			"$lte": viewport.East,
 		},
 		"localization.geohash": bson.M{"$type": "string"},
+	}
+
+	if sessionHash != "" {
+		idsJSON, err := app.redisClient.Get(ctx, sessionHash).Result()
+		if err != nil && err != redis.Nil {
+			return nil, fmt.Errorf("redis get session: %w", err)
+		}
+		if err == nil {
+			var stringIDs []string
+			if jsonErr := json.Unmarshal([]byte(idsJSON), &stringIDs); jsonErr != nil {
+				return nil, fmt.Errorf("unmarshal session ids: %w", jsonErr)
+			}
+			validObjectIDs := make([]bson.ObjectID, 0, len(stringIDs))
+			for _, sid := range stringIDs {
+				oid, parseErr := bson.ObjectIDFromHex(sid)
+				if parseErr == nil {
+					validObjectIDs = append(validObjectIDs, oid)
+				}
+			}
+			if len(validObjectIDs) > 0 {
+				match["_id"] = bson.M{"$in": validObjectIDs}
+			}
+		}
 	}
 
 	groupID := bson.M{
@@ -340,16 +366,14 @@ func parseIntQuery(raw string, name string) (int, error) {
 
 func geohashPrefixLength(zoom int) int {
 	switch {
-	case zoom >= 19:
-		return 12
 	case zoom == 18:
 		return 10
 	case zoom == 17:
 		return 9
 	case zoom == 16:
-		return 8
-	case zoom == 15:
 		return 7
+	case zoom == 15:
+		return 6
 	case zoom == 14:
 		return 6
 	case zoom == 13:

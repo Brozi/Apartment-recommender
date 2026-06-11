@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useOffers } from "#/api/useOffers";
 import { useDebouncedValue } from "#/hooks/use-debounced-value";
 import { createFileRoute } from "@tanstack/react-router";
+import { decodeFiltersFromURL } from "#/lib/filter-url-utils";
 
 import styles from "#/routes/map-page.module.css";
 import FilterIcon from "#/components/icons/filter-icon";
@@ -14,14 +15,33 @@ import MapContextProvider from "#/contexts/map-context-provider";
 import type { MapViewport } from "#/lib/types";
 import MapFormBox from "#/components/map-forms/map-form-box";
 import { Button } from "#/components/ui/button";
+import { useSearchSession } from "#/api/useSearchSession";
+import ChevronDownIcon from "#/components/icons/chevron-down-icon";
 
-export const Route = createFileRoute("/map")({ component: MapPage });
+export const Route = createFileRoute("/map")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    f: (search.f as string | undefined) ?? undefined,
+  }),
+  component: MapPage,
+});
 
 function MapPage() {
+  const { f } = Route.useSearch();
+  const decodedFilters = f ? decodeFiltersFromURL(f) : null;
+  // console.log(decodedFilters);
+  const filtersExist = !!f;
+
+  const { data: session } = useSearchSession(decodedFilters);
+  const sessionHash = session?.sessionHash;
+
   const [isFilterFormActive, setIsFilterFormActive] = useState(false);
   const [viewport, setViewport] = useState<MapViewport | null>(null);
   const debouncedViewport = useDebouncedValue(viewport, 300);
-  const { data: mapData, isPending, error } = useOffers(debouncedViewport);
+  const { data: mapData, error } = useOffers(
+    debouncedViewport,
+    sessionHash,
+    filtersExist,
+  );
 
   useEffect(() => {
     if (!isFilterFormActive) {
@@ -65,8 +85,14 @@ function MapPage() {
             // cornerColor="red"
             size="large"
             onClick={() => {}}
+            style={{
+              padding: "0 var(--spacing-16)",
+              gap: "var(--spacing-24)",
+              justifyContent: "space-between",
+            }}
           >
             Cracow
+            <ChevronDownIcon size={20} />
           </Button>
           <Button
             className={styles.secondaryButton}
@@ -81,17 +107,17 @@ function MapPage() {
         </BtnGroup>
       </SubpageHeader>
 
-      <section className={styles.mapSection}>
-        <MapContextProvider mapData={safeMapData}>
+      <MapContextProvider mapData={safeMapData}>
+        <section className={styles.mapSection}>
           <Map onViewportChange={setViewport} />
           <MapOfferContainer />
-        </MapContextProvider>
-      </section>
+        </section>
 
-      <MapFormBox
-        isActive={isFilterFormActive}
-        onCloseForm={handleFilterFormClose}
-      />
+        <MapFormBox
+          isActive={isFilterFormActive}
+          onCloseForm={handleFilterFormClose}
+        />
+      </MapContextProvider>
     </>
   );
 }

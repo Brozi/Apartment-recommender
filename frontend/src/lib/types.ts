@@ -25,8 +25,16 @@ export type DashboardKPIsResponse = {
   build_year: { range: string; count: number }[];
   rooms: { rooms: string; count: number }[];
   finishing_state: { state: string; count: number }[];
-  expensive_districts: { district: string; average: number; median: number }[];
-  cheapest_districts: { district: string; average: number; median: number }[];
+  expensive_districts: {
+    district: string;
+    pricePerM: number;
+    medianPrice: number;
+  }[];
+  cheapest_districts: {
+    district: string;
+    pricePerM: number;
+    medianPrice: number;
+  }[];
   new_offers_timeline: { year: number; date: string; offers: number }[];
 };
 
@@ -86,4 +94,16 @@ export type OfferDetailsResponse = {
   pricePerM2: number;
   photoUrls: string[];
   link: string;
+};
+
+type limitRange = {
+  lower: number;
+  upper: number;
+};
+
+export type FilterLimitsResponse = {
+  price: limitRange;
+  pricePerMeter: limitRange;
+  area: limitRange;
+  buildYear: limitRange;
 };

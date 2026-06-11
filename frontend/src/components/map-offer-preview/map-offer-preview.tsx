@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { cn } from "#/lib/utils";
 import ImageIcon from "#/components/icons/image-icon";
 import LocationIcon from "#/components/icons/location-icon";
@@ -21,6 +22,22 @@ export default function MapOfferPreview({
   selectedOfferId,
   onClose,
 }: MapOfferPreviewProps) {
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  useEffect(() => {
+    setPhotoIndex(0);
+    setIsImageLoaded(false);
+  }, [selectedOfferId]);
+
+  const handleCloseOffer = () => {
+    setPhotoIndex(0);
+    setIsImageLoaded(false);
+    if (onClose) {
+      onClose();
+    }
+  };
+
   const {
     data: offerDetails,
     isPending,
@@ -37,25 +54,57 @@ export default function MapOfferPreview({
     );
   }
 
-  const imageSrc = offerDetails.photoUrls[0] ?? OfferImage;
+  const photoCount = offerDetails.photoUrls.length;
+  const imageSrc =
+    photoCount > 0 ? offerDetails.photoUrls[photoIndex] : OfferImage;
   const locationLabel = [offerDetails.district, offerDetails.street].join(", ");
+
+  const handlePrev = () => {
+    setIsImageLoaded(false);
+    setPhotoIndex((i) => (i - 1 + photoCount) % photoCount);
+  };
+
+  const handleNext = () => {
+    setIsImageLoaded(false);
+    setPhotoIndex((i) => (i + 1) % photoCount);
+  };
 
   return (
     <section className={styles.MapOfferContent}>
       <div className={styles.MapOfferImage}>
-        <img src={imageSrc} alt="Offer image" className={styles.offerImg} />
-        <button onClick={onClose} className={styles.closeBtn}>
+        <img
+          src={imageSrc}
+          alt="Offer image"
+          className={styles.offerImg}
+          style={{
+            opacity: isImageLoaded ? 1 : 0,
+            transition: "opacity 0.2s ease",
+          }}
+          onLoad={() => setIsImageLoaded(true)}
+        />
+        {!isImageLoaded && <div className={styles.offerImgSkeleton} />}
+        <button onClick={handleCloseOffer} className={styles.closeBtn}>
           <CloseIcon />
         </button>
-        <button className={cn(styles.paginationBtn, styles.paginationBtnLeft)}>
+        <button
+          className={cn(styles.paginationBtn, styles.paginationBtnLeft)}
+          onClick={handlePrev}
+          disabled={photoCount <= 1}
+        >
           <PaginationArrowLeftIcon />
         </button>
-        <button className={cn(styles.paginationBtn, styles.paginationBtnRight)}>
+        <button
+          className={cn(styles.paginationBtn, styles.paginationBtnRight)}
+          onClick={handleNext}
+          disabled={photoCount <= 1}
+        >
           <PaginationArrowRightIcon />
         </button>
         <div className={styles.imageIndicator}>
           <ImageIcon />
-          <p className="font-indicator">1 / 18</p>
+          <p className="font-indicator">
+            {photoIndex + 1} / {photoCount}
+          </p>
         </div>
       </div>
 
@@ -95,7 +144,13 @@ export default function MapOfferPreview({
       <div className={cn(styles.divider, styles.sizeL)} />
 
       <section className={styles.offerActions}>
-        <Button variant="primary" size="large" width="full" onClick={() => {}}>
+        <Button
+          variant="primary"
+          size="large"
+          onClick={() =>
+            window.open(offerDetails.link, "_blank", "noopener,noreferrer")
+          }
+        >
           See offer
         </Button>
       </section>
