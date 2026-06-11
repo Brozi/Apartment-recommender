@@ -22,17 +22,17 @@ class ScorePipeline(OtodomAggregator):
         self.writer = MongoBulkWriter(collection=self.db[output_col], batch_size=1000, ordered=False)
         self.target_period = datetime.now().strftime("%Y-%m")
         logger.info(f"Starting pipeline for period: {self.target_period}")
-        self.listing_query = {
-            # "price_usable": True,
-            # "price_per_meter_usable": True,
-        }
+        self.listing_query = {'score_metrics': {'$exists': True}}
         self.absolute_max_distance = absolute_max_distance
 
-    def run(self):
+    def run(self, recompute: bool=False):
         aggregates_map = self.judge.download_aggregates(target_period=self.target_period)
         if not aggregates_map:
             logger.error("Fatal: No aggregate data found for this period. Aborting.")
             return
+
+        if not recompute:
+            self.listing_query['score_metrics'] = {'$exists': False}
 
         listings = self.listings_col.find(self.listing_query)
 
