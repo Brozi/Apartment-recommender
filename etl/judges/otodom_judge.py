@@ -188,13 +188,22 @@ class OtodomScoreJudge(OtodomAggregator):
                 except (IndexError, ValueError):
                     continue
 
-        min_distance = poi_dict.get("nearest_m", None)
+        raw_min = poi_dict.get("nearest_m", None)
+
+        if raw_min is None or not cumulative_buckets:
+            return 0.0
+
+        try:
+            min_distance = float(raw_min)
+        except (ValueError, TypeError):
+            return 0.0
+
         sorted_buckets = sorted(cumulative_buckets, key=lambda x: x['radius'])
 
         if min_distance >= absolute_max_radius:
             anchor_base = 0.0
         elif min_distance <= max_walk_radius:
-            anchor_base = max(0, 1 - (min_distance / max_walk_radius)**2)
+            anchor_base = max(0.0, 1 - (min_distance / max_walk_radius)**2)
         else:
             residual_ceiling = 0.05
             distance_past_prime = min_distance - max_walk_radius
