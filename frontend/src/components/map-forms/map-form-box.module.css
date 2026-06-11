@@ -6,7 +6,7 @@
   right: 0;
   background-color: var(--clr-primary-0);
   backdrop-filter: blur(0);
-  height: calc(100vh - 5.25rem);
+  height: calc(100dvh - 5.25rem);
   display: flex;
   justify-content: flex-end;
   overflow: hidden;
