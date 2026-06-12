@@ -265,8 +265,10 @@ class OtodomDashAggregator(OtodomAggregator):
                         '$median': {
                             'input': '$area',
                             'method': 'approximate',
-                        }
+                        },
                     },
+                    'min_area': {'$min': '$area'},
+                    'max_area': {'$max': '$area'},
                     'count': {'$sum': 1},
                 }
 
@@ -275,6 +277,8 @@ class OtodomDashAggregator(OtodomAggregator):
                 '$project': {
                     'avg_area': {'$round': ['$avg_area', 2]},
                     'med_area': {'$round': ['$med_area', 2]},
+                    'min_area': {'$round': ['$min_area', 2]},
+                    'max_area': {'$round': ['$max_area', 2]},
                     'count': 1,
                 }
             }
@@ -305,6 +309,8 @@ class OtodomDashAggregator(OtodomAggregator):
 
                         }
                     },
+                    'min_price': {'$min': '$price'},
+                    'max_price': {'$max': '$price'},
                     'count': {'$sum': 1},
 
                 }
@@ -313,6 +319,8 @@ class OtodomDashAggregator(OtodomAggregator):
                 '$project': {
                     'avg_price': {'$round': ['$avg_price', 2]},
                     'med_price': {'$round': ['$med_price', 2]},
+                    'min_price': {'$round': ['$min_price', 2]},
+                    'max_price': {'$round': ['$max_price', 2]},
                     'count': 1,
                 }
             }
@@ -339,6 +347,8 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
+                    'min_price_per_meter': {'$min': '$price_per_meter'},
+                    'max_price_per_meter': {'$max': '$price_per_meter'},
                     'count': {'$sum': 1},
 
                 }
@@ -347,6 +357,8 @@ class OtodomDashAggregator(OtodomAggregator):
                 '$project': {
                     'avg_price_per_meter': {'$round': ['$avg_price_per_meter', 2]},
                     'med_price_per_meter': {'$round': ['$med_price_per_meter', 2]},
+                    'min_price_per_meter': {'$round': ['$min_price_per_meter', 2]},
+                    'max_price_per_meter': {'$round': ['$max_price_per_meter', 2]},
                     'count': 1,
                 }
             }
@@ -377,6 +389,8 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
+                    'min_price': {'$min': '$price'},
+                    'max_price': {'$max': '$price'},
                     'avg_price_per_meter': {'$avg': '$price_per_meter'},
                     'med_price_per_meter': {
                         '$median': {
@@ -384,6 +398,8 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
+                    'min_price_per_meter': {'$min': '$price_per_meter'},
+                    'max_price_per_meter': {'$max': '$price_per_meter'},
                     'avg_area': {'$avg': '$area'},
                     'med_area': {
                         '$median': {
@@ -391,6 +407,8 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
+                    'min_area': {'$min': '$area'},
+                    'max_area': {'$max': '$area'},
                     'med_rooms':{
                         '$median': {
                         'input': {
@@ -405,7 +423,36 @@ class OtodomDashAggregator(OtodomAggregator):
                         }
 
                     },
-
+                    'min_rooms': {
+                        '$min': {
+                                '$convert': {
+                                    'input': {
+                                        '$rtrim': {
+                                            'input': "$rooms",
+                                            'chars': "+"
+                                        }
+                                    },
+                                    'to': "double",
+                                    'onError': None,
+                                    'onNull': None
+                                }
+                        }
+                    },
+                    'max_rooms': {
+                        '$max': {
+                            '$convert': {
+                                'input': {
+                                    '$rtrim': {
+                                        'input': "$rooms",
+                                        'chars': "+"
+                                    }
+                                },
+                                'to': "double",
+                                'onError': None,
+                                'onNull': None
+                            }
+                        }
+                    },
                     'count': {'$sum': 1}
 
                 }
@@ -414,11 +461,19 @@ class OtodomDashAggregator(OtodomAggregator):
                 '$project': {
                     'avg_price': {'$round': ['$avg_price', 2]},
                     'med_price': {'$round': ['$med_price', 2]},
+                    'min_price': {'$round': ['$min_price', 2]},
+                    'max_price': {'$round': ['$max_price', 2]},
                     'avg_price_per_meter': {'$round': ['$avg_price_per_meter', 2]},
                     'med_price_per_meter': {'$round': ['$med_price_per_meter', 2]},
+                    'min_price_per_meter': {'$round': ['$min_price_per_meter', 2]},
+                    'max_price_per_meter': {'$round': ['$max_price_per_meter', 2]},
                     'avg_area': {'$round': ['$avg_area', 2]},
                     'med_area': {'$round': ['$med_area', 2]},
+                    'min_area': {'$round': ['$min_area', 2]},
+                    'max_area': {'$round': ['$max_area', 2]},
                     'med_rooms': 1,
+                    'min_rooms': 1,
+                    'max_rooms': 1,
                     'count': 1,
                 }
             }
@@ -448,6 +503,8 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
+                    'min_price': {'$min': '$price'},
+                    'max_price': {'$max': '$price'},
                     'avg_price_per_meter': {'$avg': '$price_per_meter'},
                     'med_price_per_meter': {
                         '$median': {
@@ -455,6 +512,8 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
+                    'min_price_per_meter': {'$min': '$price_per_meter'},
+                    'max_price_per_meter': {'$max': '$price_per_meter'},
                     'avg_area': {'$avg': '$area'},
                     'med_area': {
                         '$median': {
@@ -462,21 +521,52 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
-                    'med_rooms':{
+                    'min_area': {'$min': '$area'},
+                    'max_area': {'$max': '$area'},
+                    'med_rooms': {
                         '$median': {
-                        'input': {
+                            'input': {
+                                '$convert': {
+                                    'input': "$rooms",
+                                    'to': "double",
+                                    'onError': None,
+                                    'onNull': None
+                                }
+                            },
+                            'method': 'approximate'
+                        }
+
+                    },
+                    'min_rooms': {
+                        '$min': {
                             '$convert': {
-                                'input': "$rooms",
+                                'input': {
+                                    '$rtrim': {
+                                        'input': "$rooms",
+                                        'chars': "+"
+                                    }
+                                },
                                 'to': "double",
                                 'onError': None,
                                 'onNull': None
                             }
-                        },
-                        'method': 'approximate'
                         }
-
                     },
-
+                    'max_rooms': {
+                        '$max': {
+                            '$convert': {
+                                'input': {
+                                    '$rtrim': {
+                                        'input': "$rooms",
+                                        'chars': "+"
+                                    }
+                                },
+                                'to': "double",
+                                'onError': None,
+                                'onNull': None
+                            }
+                        }
+                    },
                     'count': {'$sum': 1}
 
                 }
@@ -485,11 +575,19 @@ class OtodomDashAggregator(OtodomAggregator):
                 '$project': {
                     'avg_price': {'$round': ['$avg_price', 2]},
                     'med_price': {'$round': ['$med_price', 2]},
+                    'min_price': {'$round': ['$min_price', 2]},
+                    'max_price': {'$round': ['$max_price', 2]},
                     'avg_price_per_meter': {'$round': ['$avg_price_per_meter', 2]},
                     'med_price_per_meter': {'$round': ['$med_price_per_meter', 2]},
+                    'min_price_per_meter': {'$round': ['$min_price_per_meter', 2]},
+                    'max_price_per_meter': {'$round': ['$max_price_per_meter', 2]},
                     'avg_area': {'$round': ['$avg_area', 2]},
                     'med_area': {'$round': ['$med_area', 2]},
+                    'min_area': {'$round': ['$min_area', 2]},
+                    'max_area': {'$round': ['$max_area', 2]},
                     'med_rooms': 1,
+                    'min_rooms': 1,
+                    'max_rooms': 1,
                     'count': 1,
                 }
             }
@@ -518,6 +616,8 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
+                    'min_price': {'$min': '$price'},
+                    'max_price': {'$max': '$price'},
                     'avg_price_per_meter': {'$avg': '$price_per_meter'},
                     'med_price_per_meter': {
                         '$median': {
@@ -525,6 +625,8 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
+                    'min_price_per_meter': {'$min': '$price_per_meter'},
+                    'max_price_per_meter': {'$max': '$price_per_meter'},
                     'avg_area': {'$avg': '$area'},
                     'med_area': {
                         '$median': {
@@ -532,21 +634,52 @@ class OtodomDashAggregator(OtodomAggregator):
                             'method': 'approximate',
                         }
                     },
-                    'med_rooms':{
+                    'min_area': {'$min': '$area'},
+                    'max_area': {'$max': '$area'},
+                    'med_rooms': {
                         '$median': {
-                        'input': {
+                            'input': {
+                                '$convert': {
+                                    'input': "$rooms",
+                                    'to': "double",
+                                    'onError': None,
+                                    'onNull': None
+                                }
+                            },
+                            'method': 'approximate'
+                        }
+
+                    },
+                    'min_rooms': {
+                        '$min': {
                             '$convert': {
-                                'input': "$rooms",
+                                'input': {
+                                    '$rtrim': {
+                                        'input': "$rooms",
+                                        'chars': "+"
+                                    }
+                                },
                                 'to': "double",
                                 'onError': None,
                                 'onNull': None
                             }
-                        },
-                        'method': 'approximate'
                         }
-
                     },
-
+                    'max_rooms': {
+                        '$max': {
+                            '$convert': {
+                                'input': {
+                                    '$rtrim': {
+                                        'input': "$rooms",
+                                        'chars': "+"
+                                    }
+                                },
+                                'to': "double",
+                                'onError': None,
+                                'onNull': None
+                            }
+                        }
+                    },
                     'count': {'$sum': 1}
 
                 }
@@ -555,11 +688,19 @@ class OtodomDashAggregator(OtodomAggregator):
                 '$project': {
                     'avg_price': {'$round': ['$avg_price', 2]},
                     'med_price': {'$round': ['$med_price', 2]},
+                    'min_price': {'$round': ['$min_price', 2]},
+                    'max_price': {'$round': ['$max_price', 2]},
                     'avg_price_per_meter': {'$round': ['$avg_price_per_meter', 2]},
                     'med_price_per_meter': {'$round': ['$med_price_per_meter', 2]},
+                    'min_price_per_meter': {'$round': ['$min_price_per_meter', 2]},
+                    'max_price_per_meter': {'$round': ['$max_price_per_meter', 2]},
                     'avg_area': {'$round': ['$avg_area', 2]},
                     'med_area': {'$round': ['$med_area', 2]},
+                    'min_area': {'$round': ['$min_area', 2]},
+                    'max_area': {'$round': ['$max_area', 2]},
                     'med_rooms': 1,
+                    'min_rooms': 1,
+                    'max_rooms': 1,
                     'count': 1,
                 }
             }
