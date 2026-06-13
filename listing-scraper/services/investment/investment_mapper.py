@@ -1,7 +1,7 @@
 from models.property import PropertyDocument
 from models.building import BuildingDocument
 from models.localization import LocalizationDocument
-from common.constans import Constans, OfferedBy, PropertyType, MarketType, AuctionType, ConstructionStatus
+from common.constans import Constans, OfferedBy, PropertyType, MarketType, AuctionType, ConstructionStatus, NOW
 from services.property import PropertyService
 import logging
 import re
@@ -119,7 +119,7 @@ class InvestmentMapper:
                 target_data, unit_dict, main_location, default_city, default_province, default_district
             )
             property_.etl_processed = False
-            property_.scraped_at = datetime.now()
+            property_.scraped_at = NOW.isoformat()
 
             logger.info(f" Saved Unit directly from JSON: {property_.link}")
             PropertyService.put(property_)
