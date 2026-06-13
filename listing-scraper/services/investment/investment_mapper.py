@@ -5,7 +5,6 @@ from common.constans import Constans, OfferedBy, PropertyType, MarketType, Aucti
 from services.property import PropertyService
 import logging
 import re
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -18,15 +17,7 @@ class InvestmentMapper:
     This class is pure and does not make network requests or maintain state.
     """
     @staticmethod
-    def map_investment_unit(unit_dict: dict,
-                            investment_url: str,
-                            main_location: dict = None,
-                            developer_id: int = None,
-                            default_city: str = "",
-                            default_province: str = "",
-                            default_district: str = "",
-                            description: str = " "
-                            ) -> PropertyDocument | None:
+    def map_investment_unit(unit_dict: dict, investment_dict: dict) -> PropertyDocument | None:
         """
         Maps a single unit's JSON dictionary to a PropertyDocument.
 
@@ -35,17 +26,12 @@ class InvestmentMapper:
 
         Args:
             unit_dict (dict): The raw JSON dictionary representing the apartment unit.
-            investment_url (str): The URL of the parent developer investment.
-            main_location (dict, optional): The overarching location dict of the developer project.
-            developer_id (int, optional): The Otodom seller/developer ID.
-            default_city (str, optional): Fallback city from crawler settings.
-            default_province (str, optional): Fallback province from crawler settings.
-            default_district (str, optional): Fallback district from crawler settings.
-            description (str, optional): The description to save into the investment
+            investment_dict (dict): The raw JSON dictionary representing the main investment page
 
         Returns:
             PropertyDocument | None: The fully mapped MongoDB document, or None if mapping fails or document already exists.
         """
+        investment_url = investment_dict.get("url", "")
         path = unit_dict.get("url", "")
         full_url = f"{Constans.DEFAULT_URL}{path}" if path.startswith("/") else path
 
@@ -69,34 +55,37 @@ class InvestmentMapper:
             property_ = PropertyDocument()
             property_.link = full_url
             property_.otodom_id = otodom_id
-            property_.created_at = datetime.strptime(unit_dict.get('createdAt'), "%Y-%m-%dT%H:%M:%S%z")
-            property_.title = unit_dict.get('title', 'Developer Unit')
-            property_.description = description
+            property_.created_at = investment_dict.get("createdAt")
+            property_.description = investment_dict.get("description")
+            property_.title = InvestmentMapper._convert_url_to_title(investment_url, full_url)
+            property_.developer_id = int(investment_dict.get("owner", {}).get("id", 0))
 
-            if developer_id:
-                property_.developer_id = int(developer_id)
+            characteristics = unit_dict.get('characteristics', [])
+            target_data = {item['key']: item['value'] for item in characteristics}
 
-            target_data = unit_dict.get("target", {})
-            area_val = target_data.get('Area', 0.0)
-            property_.area = float(area_val) if area_val else 0.0
+            area_val = target_data.get('m', 0.0)
+            property_.area = float(area_val)
 
-            rooms_list = target_data.get('Rooms_num', [])
-            property_.rooms = str(rooms_list[0]) if rooms_list else ''
+            rooms = target_data.get('rooms_num', '')
+            property_.rooms = rooms
 
-            property_.price = target_data.get('Price')
-            property_.price_per_meter = target_data.get('Price_per_m')
+            property_.price = target_data.get('price')
+            property_.price_per_meter = target_data.get('price_per_m')
 
-            extras_list = target_data.get("Extras_types", [])
-            if extras_list: property_.extras = ", ".join(extras_list)
+            investment_ad = investment_dict.get('props', {}).get('pageProps', {}).get('ad', {})
+            additional_info_list = investment_ad.get('additionalInformation', [])
+            additional_info = {item['label']: item['values'] for item in additional_info_list}
 
-            security_list = target_data.get("Security_types", [])
-            if security_list: property_.security_types = ", ".join(security_list)
+            extras_list = additional_info.get("project_amenities", [])
+            property_.extras = ", ".join(extras_list)
 
-            heating_list = target_data.get("Heating_types", [])
-            if heating_list: property_.heating = ", ".join(heating_list)
+            security_list = additional_info.get("security", [])
+            property_.security_types = ", ".join(security_list)
 
-            floor_list = target_data.get("Floor_no", [])
-            if floor_list: property_.floor = str(floor_list[0]).replace("floor_", "").replace("ground_floor", "0")
+            property_.heating = target_data.get("heating", '')
+
+            floor_no = target_data.get("floor_no", '')
+            property_.floor = str(floor_no).replace("floor_", "").replace("ground_floor", "0")
 
             property_.building = InvestmentMapper._map_building(target_data)
 
@@ -105,19 +94,16 @@ class InvestmentMapper:
             property_.auction_type = AuctionType.SALE
             property_.property_type = PropertyType.FLAT
 
-            status_list = target_data.get("Construction_status")
-            if status_list and isinstance(status_list, list) and len(status_list) > 0:
-                try:
-                    property_.construction_status = ConstructionStatus(status_list[0])
-                except ValueError:
-                    pass
+            status = target_data.get("construction_status", '')
+            try:
+                property_.construction_status = ConstructionStatus(status)
+            except ValueError:
+                pass
 
-            images = unit_dict.get("images", [])
-            photo_urls = [img.get("large") or img.get("medium") or img.get("small") for img in images]
+            images = unit_dict.get("floorPlans", [])
+            photo_urls = images
             property_.photos = ", ".join(filter(None, photo_urls))
-            property_.localization = InvestmentMapper._map_localization(
-                target_data, unit_dict, main_location, default_city, default_province, default_district
-            )
+            property_.localization = InvestmentMapper._map_localization(target_data)
             property_.etl_processed = False
             property_.scraped_at = NOW.isoformat()
 
@@ -130,80 +116,65 @@ class InvestmentMapper:
             return None
 
     @staticmethod
-    def _map_building(target_data: dict) -> BuildingDocument:
+    def _map_building(characteristics: dict) -> BuildingDocument:
         """
         Extracts building-specific metadata from the target dictionary.
 
         Args:
-            target_data (dict): The 'target' dictionary from the Otodom unit JSON.
+            characteristics (dict): The 'characteristics' dictionary from the investment units page.
 
         Returns:
             BuildingDocument: A populated document containing building year, type, floors, etc.
         """
         building = BuildingDocument()
-        building.build_year = target_data.get("Build_year")
-        b_types = target_data.get("Building_type", [])
-        building.type = b_types[0] if b_types else None
-        b_floors = target_data.get("Building_floors_num")
+        building.build_year = characteristics.get("build_year", "")
+        b_types = characteristics.get("building_type", "")
+        building.type = b_types if b_types else None
+        b_floors = characteristics.get("building_floors_num", "")
         building.floors = int(b_floors) if b_floors else None
-        b_ownership = target_data.get("Building_ownership", [])
-        building.ownership = b_ownership[0] if b_ownership else None
+        b_ownership = characteristics.get("building_ownership", "")
+        building.ownership = b_ownership if b_ownership else None
         return building
 
     @staticmethod
-    def _map_localization(target_data: dict,
-                          unit_dict: dict,
-                          main_location: dict,
-                          default_city: str,
-                          default_province: str,
-                          default_district: str) -> LocalizationDocument:
+    def _map_localization(investment_ad_data: dict) -> LocalizationDocument:
         """
-        Calculates the most accurate geographical location for a unit.
-
-        Prioritizes exact unit coordinates, falls back to the main investment project's
-        coordinates, and lastly falls back to the crawler's default search settings.
+        Extracts the units geolocation. Due to changes in Otodom structure,
+        the function needs to rely on the main investment's location
 
         Args:
-            target_data (dict): The 'target' dictionary from the Otodom unit JSON.
-            unit_dict (dict): The root unit JSON dictionary containing coordinates.
-            main_location (dict): The main investment's location dictionary.
-            default_city (str): Fallback city from crawler settings.
-            default_province (str): Fallback province from crawler settings.
-            default_district (str): Fallback district from crawler settings.
+            investment_ad_data (dict): The 'ad' nested dictionary from the Otodom unit JSON.
 
         Returns:
             LocalizationDocument: The fully resolved location with GPS coordinates.
         """
 
         loc = LocalizationDocument()
-        if main_location and isinstance(main_location, dict):
-            address = main_location.get("address") or {}
-            loc.street = (address.get("street") or {}).get("name")
-            loc.district = (address.get("district") or {}).get("name")
-            loc.city = (address.get("city") or {}).get("name")
-            loc.county = (address.get("county") or {}).get("name")
-            loc.province = (address.get("province") or {}).get("name")
-        else:
-            loc.city = default_city
-            loc.province = default_province
-            loc.district = default_district
+        location = investment_ad_data.get("location", {})
+        reverse_geocoding_raw = investment_ad_data.get("reverseGeocoding", {}).get("locations", [])
+        reverse_geocoding = {item['locationLevel']: item['fullName'] for item in reverse_geocoding_raw}
+        if location and isinstance(location, dict):
+            county_raw = investment_ad_data.get("Subregion", "")
+            address = location.get("address", {})
+            loc.street = (address.get("street",{})).get("name")
+            loc.district = reverse_geocoding.get('district', '')
+            loc.city = reverse_geocoding.get('city_or_village', '')
+            loc.county = county_raw.replace("powiat-", "").capitalize()
+            loc.province = reverse_geocoding.get('voivodeship', '')
 
-        loc.province = target_data.get('Province', loc.province)
-        loc.city = target_data.get('City', loc.city)
-
-        county_raw = target_data.get("Subregion")
-        if county_raw: loc.county = county_raw.replace("powiat-", "").capitalize()
-
-        unit_loc = unit_dict.get('location', {})
+        unit_loc = location
         coordinates = unit_loc.get('coordinates', {})
         if coordinates:
             loc.latitude = float(coordinates.get('latitude', coordinates.get('lat', 0.0)))
             loc.longitude = float(coordinates.get('longitude', coordinates.get('lon', 0.0)))
-        elif main_location and main_location.get("coordinates"):
-            loc.latitude = float(main_location["coordinates"].get("latitude", 0.0))
-            loc.longitude = float(main_location["coordinates"].get("longitude", 0.0))
 
         if loc.longitude and loc.latitude:
             loc.location = [loc.longitude, loc.latitude]
 
         return loc
+
+    @staticmethod
+    def _convert_url_to_title(investment_url: str, unit_url: str)-> str:
+        investment_code = investment_url.rsplit("-", 1)[0]
+        title = unit_url.split(f"{Constans.DEFAULT_URL}/pl/oferta", 1)[0].rsplit(f"{investment_code}", 1)[0]
+        return title
