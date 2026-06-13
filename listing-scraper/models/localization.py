@@ -26,23 +26,24 @@ class LocalizationDocument(EmbeddedDocument):
 
         :param properties: The dict containing the localization information
         """
-        self.province = properties["address"]["province"]["code"]
-        self.city = properties["address"]["city"]["code"]
-        self.district = self.extract_district(properties["address"])
+        locations = properties.get('reverseGeocoding', {}).get('locations', [])
+        self.province = locations[0].get('name', '')
+        self.city = locations[1].get('name', '')
+        self.district = self.extract_district(locations)
         self.street = self.extract_street(properties["address"])
         self.county = self.extract_county(properties["address"])
         self.latitude, self.longitude = self.extract_coordinates(properties)
     @staticmethod
-    def extract_district(properties: dict) -> str:
+    def extract_district(locations: list) -> str:
         """
         Extracts the district from the properties.
 
-        :param properties: The properties containing the district
+        :param locations: The properties containing the district
         :return: The district
         """
-        district = properties.get("district")
+        district = locations[2]
         if isinstance(district, dict):
-            district = district["name"]
+            district = district.get('name', 'unknown')
         return district
 
     @staticmethod
@@ -69,9 +70,9 @@ class LocalizationDocument(EmbeddedDocument):
         :param properties: The properties containing the county
         :return: The county
         """
-        county = properties.get("county")
+        county = properties.get("county", {})
         if isinstance(county, dict):
-            county = county["code"]
+            county = county.get("code", "unknown")
         return county
 
     @staticmethod
