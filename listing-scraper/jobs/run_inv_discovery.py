@@ -26,7 +26,7 @@ the main discovery script
 """
 
 
-def discover():
+def discover(local_file: bool = False):
     # 1. Initialize Crawler and set to investments
     crawler = Crawler()
     crawler.settings.property_type = PropertyType.INVESTMENT
@@ -73,6 +73,10 @@ def discover():
     print(f"\n==========================================")
     print(f"Discovery Complete! Total unique investments: {len(urls)}")
     print(f"==========================================\n")
+    if local_file:
+        with open ("urls.txt", "w") as urls_file:
+            for url in urls:
+                urls_file.write(f"{url}\n")
 
     # Chunk them into arrays of 5 for the GitHub Actions Matrix
     chunk_size = 5
