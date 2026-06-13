@@ -27,10 +27,14 @@ crawler operation.
 
 
 def main():
-    if len(sys.argv) < 2:
-        return
+    try:
+        with open("urls.txt", "r") as urls:
+            urls = [url.strip() for url in urls if url.strip()]
+    except FileNotFoundError:
+        if len(sys.argv) < 2:
+            return
+        urls = json.loads(sys.argv[1])
 
-    urls = json.loads(sys.argv[1])
     if not urls: return
 
     crawler = Crawler()
