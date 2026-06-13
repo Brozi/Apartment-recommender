@@ -60,9 +60,7 @@ class LocalizationDocument(EmbeddedDocument):
         :param properties: The properties containing the county
         :return: The county
         """
-        county = properties.get("Subregion", {})
-        if isinstance(county, dict):
-            county = county.get("code", "unknown")
+        county = properties.get("Subregion", "")
         return county
 
     @staticmethod
