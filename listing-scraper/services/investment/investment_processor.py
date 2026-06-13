@@ -6,7 +6,6 @@ import logging
 from crawler.exceptions import DataExtractionError
 from services.investment import InvestmentMapper
 from crawler.listing import Listing
-
 logger = logging.getLogger(__name__)
 
 
@@ -110,7 +109,7 @@ class InvestmentProcessor:
             self._save_unit(unit_dict, investment_url, self.main_location, self.developer_id, self.description)
 
         investment_id = ad_data.get("id")
-        if total_pages > 1 and investment_id:
+        if total_pages > 0 and investment_id:
             self._fetch_api_pages(investment_url, investment_id, total_pages, dynamic_page_size, self.main_location,
                                   self.developer_id)
 
