@@ -167,6 +167,6 @@ listings.csv
 listings.json
 settings.json
 listings.xlsx
-log/*
+listing-scraper/log/*
 
 poland_neighbourhoods.geojson
