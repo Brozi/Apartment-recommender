@@ -1,24 +1,6 @@
+import { createNumericStringSchema } from "#/lib/utils";
 import { formOptions } from "@tanstack/react-form";
 import * as z from "zod";
-
-const createNumericStringSchema = (
-  requiredMsg: string,
-  minVal: number,
-  minMsg: string,
-  maxVal: number,
-  maxMsg: string,
-) => {
-  return z
-    .string()
-    .min(1, requiredMsg)
-    .transform((val) => Number(val))
-    .pipe(
-      z
-        .number({ message: "You must type a number" })
-        .min(minVal, minMsg)
-        .max(maxVal, maxMsg),
-    );
-};
 
 const baseDefaultValues = {
   district: "",

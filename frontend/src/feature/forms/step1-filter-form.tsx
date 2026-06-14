@@ -2,7 +2,6 @@ import styles from "./form.module.css";
 import { withForm } from "#/components/form";
 import {
   buildStep2FromStep1,
-  createStep1Defaults,
   mapFormOptions,
   type FilterLimits,
 } from "./map-form-options";
@@ -27,13 +26,12 @@ export const Step1FilterForm = withForm({
     setStep: (_step: number) => {},
     limits: {} as FilterLimits,
   },
-  render: function Render({ form, step, setStep, limits }) {
+  render: function Render({ form, step, setStep }) {
     return (
       <form.FormGroup
         name="step1"
         onGroupSubmit={({ value }) => {
-          const step1Defaults = createStep1Defaults(limits);
-          const nextStep2Values = buildStep2FromStep1(value, step1Defaults);
+          const nextStep2Values = buildStep2FromStep1(value);
 
           form.setFieldValue(
             "step2.buildingPartImportance",

@@ -1,7 +1,7 @@
 import {
   createFilterFormSchema,
-  createMapFormOptions,
   mapFilterLimitsResponse,
+  mapFormOptions,
   recommendationFormSchema,
   type FilterLimits,
 } from "#/feature/forms/map-form-options";
@@ -57,11 +57,10 @@ function MapFormReady({
 }: MapFormReadyProps) {
   const { clearSelection } = useMapContext();
   const navigate = useNavigate({ from: "/map" });
-  const options = createMapFormOptions(limits);
   const filterSchema = createFilterFormSchema(limits);
 
   const form = useAppForm({
-    ...options,
+    ...mapFormOptions,
     validationLogic: revalidateLogic(),
     validators: {
       onChange: z.object({
