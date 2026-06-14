@@ -274,6 +274,7 @@ class OtodomCleaner:
         extras_clean = []
         for extra in extras:
             extra_clean = extra.strip()
+            extra_clean.removeprefix('project_amenities::')
             if extra_clean:
                 extra_final = extra_clean.replace('_', ' ').title()
                 extras_clean.append(extra_final)
