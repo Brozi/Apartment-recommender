@@ -14,13 +14,15 @@ export const BuildYearRangeField = withForm({
             name="step1.buildYear.buildYearFrom"
             validators={{ onChangeListenTo: ["step1.buildYear.buildYearTo"] }}
             children={(field) => (
-              <field.NumberField unit="" placeholder="From" />
+              <field.NumberField variant="bare" unit="" placeholder="From" />
             )}
           />
 
           <form.AppField
             name="step1.buildYear.buildYearTo"
-            children={(field) => <field.NumberField unit="" placeholder="To" />}
+            children={(field) => (
+              <field.NumberField variant="bare" unit="" placeholder="To" />
+            )}
           />
         </div>
         <form.Subscribe
