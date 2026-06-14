@@ -293,7 +293,7 @@ class OtodomCleaner:
             'heat_pump': 'Heat Pump',
         }
         heating_raw = clean_doc.get('heating', None)
-        if heating_raw is None:
+        if heating_raw is None or not heating_raw:
             clean_doc['heating'] = 'unknown'
             return
 
