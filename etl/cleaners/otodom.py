@@ -274,7 +274,7 @@ class OtodomCleaner:
         extras_clean = []
         for extra in extras:
             extra_clean = extra.strip()
-            extra_clean.removeprefix('project_amenities::')
+            extra_clean = extra_clean.removeprefix('project_amenities::')
             if extra_clean:
                 extra_final = extra_clean.replace('_', ' ').title()
                 extras_clean.append(extra_final)
@@ -292,13 +292,21 @@ class OtodomCleaner:
             'boiler_rooms': 'Boiler Room',
             'heat_pump': 'Heat Pump',
         }
-        heating_raw = clean_doc.get('heating', None)
-        if heating_raw is None or not heating_raw:
-            clean_doc['heating'] = 'unknown'
-            return
+        heating_raw = clean_doc.get('heating', "")
+        heating_list = heating_raw.split(',')
+        heating_clean = []
+        for heating_t in heating_list:
+            if heating_t is None or not heating_t:
+                heating_clean.append('unknown')
 
-        if heating_raw in heating_map:
-            clean_doc['heating'] = heating_map[heating_raw]
+            if heating_t in heating_map:
+                heating_clean.append(heating_map[heating_t])
+        if len(heating_clean) == 1:
+            clean_doc['heating'] = heating_clean[0]
+        else:
+            heating_clean_list = [heating_type for heating_type in heating_clean if heating_type != 'unknown']
+            clean_doc['heating'] = heating_clean_list
+            return
 
     @staticmethod
     def clean_security(clean_doc: dict) -> None:
