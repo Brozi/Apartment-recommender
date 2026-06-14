@@ -69,11 +69,10 @@ class InvestmentMapper:
             rooms = target_data.get('rooms_num', '')
             property_.rooms = rooms
 
-            property_.price = target_data.get('price')
-            property_.price_per_meter = target_data.get('price_per_m')
+            property_.price = int(float(target_data.get('price', 0)))
+            property_.price_per_meter = int(float(target_data.get('price_per_m', 0)))
 
-            investment_ad = investment_dict.get('props', {}).get('pageProps', {}).get('ad', {})
-            additional_info_list = investment_ad.get('additionalInformation', [])
+            additional_info_list = investment_dict.get('additionalInformation', [])
             additional_info = {item['label']: item['values'] for item in additional_info_list}
 
             extras_list = additional_info.get("project_amenities", [])
@@ -101,9 +100,13 @@ class InvestmentMapper:
                 pass
 
             images = unit_dict.get("floorPlans", [])
-            photo_urls = images
+            if images:
+                photo_urls = images
+            else:
+                images = investment_dict.get('images', [])
+                photo_urls = [img.get("large") or img.get("medium") or img.get("small") for img in images]
             property_.photos = ", ".join(filter(None, photo_urls))
-            property_.localization = InvestmentMapper._map_localization(target_data)
+            property_.localization = InvestmentMapper._map_localization(investment_dict)
             property_.etl_processed = False
             property_.scraped_at = NOW.isoformat()
 
@@ -127,7 +130,8 @@ class InvestmentMapper:
             BuildingDocument: A populated document containing building year, type, floors, etc.
         """
         building = BuildingDocument()
-        building.build_year = characteristics.get("build_year", "")
+        b_year = characteristics.get("build_year", "")
+        building.build_year = b_year if b_year else None
         b_types = characteristics.get("building_type", "")
         building.type = b_types if b_types else None
         b_floors = characteristics.get("building_floors_num", "")
@@ -151,12 +155,15 @@ class InvestmentMapper:
 
         loc = LocalizationDocument()
         location = investment_ad_data.get("location", {})
-        reverse_geocoding_raw = investment_ad_data.get("reverseGeocoding", {}).get("locations", [])
-        reverse_geocoding = {item['locationLevel']: item['fullName'] for item in reverse_geocoding_raw}
+        reverse_geocoding_raw = location.get("reverseGeocoding", {}).get("locations", [])
+        reverse_geocoding = {item['locationLevel']: item['name'] for item in reverse_geocoding_raw}
         if location and isinstance(location, dict):
-            county_raw = investment_ad_data.get("Subregion", "")
+            county_raw = investment_ad_data.get("target", {}).get("Subregion", "")
             address = location.get("address", {})
-            loc.street = (address.get("street",{})).get("name")
+            if address['street'] is not None:
+                loc.street = (address.get("street",{})).get("name")
+            else:
+                loc.street = 'unknown'
             loc.district = reverse_geocoding.get('district', '')
             loc.city = reverse_geocoding.get('city_or_village', '')
             loc.county = county_raw.replace("powiat-", "").capitalize()
@@ -175,6 +182,6 @@ class InvestmentMapper:
 
     @staticmethod
     def _convert_url_to_title(investment_url: str, unit_url: str)-> str:
-        investment_code = investment_url.rsplit("-", 1)[0]
-        title = unit_url.split(f"{Constans.DEFAULT_URL}/pl/oferta", 1)[0].rsplit(f"{investment_code}", 1)[0]
-        return title
+        title = unit_url.split(f"{Constans.DEFAULT_URL}/pl/oferta/", 1)[1].rsplit("-", 1)[0]
+        title_clean = title.replace("-", " ").title()
+        return title_clean
