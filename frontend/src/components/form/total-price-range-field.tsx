@@ -14,14 +14,14 @@ export const TotalPriceRangeField = withForm({
             name="step1.totalPrice.totalPriceFrom"
             validators={{ onChangeListenTo: ["step1.totalPrice.totalPriceTo"] }}
             children={(field) => (
-              <field.NumberField unit="zł" placeholder="From" />
+              <field.NumberField variant="bare" unit="zł" placeholder="From" />
             )}
           />
 
           <form.AppField
             name="step1.totalPrice.totalPriceTo"
             children={(field) => (
-              <field.NumberField unit="zł" placeholder="To" />
+              <field.NumberField variant="bare" unit="zł" placeholder="To" />
             )}
           />
         </div>

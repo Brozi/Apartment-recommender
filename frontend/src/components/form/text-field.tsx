@@ -3,66 +3,80 @@ import { Field, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 import { FieldErrors } from "./field-errors";
 
-type NumberFieldProps = {
+type TextFieldProps = {
   placeholder?: string;
   unit?: string;
-  maxValue?: number;
   id?: string;
+  onlyNumbers?: boolean;
   variant: "bare" | "full"; // bare: only input, full: input with label and errors
   label?: string;
+  style?: React.CSSProperties;
+  invisible?: boolean;
+  className?: string;
 };
 
-export const NumberField = ({
+export const TextField = ({
   placeholder,
   unit,
-  maxValue,
   id,
+  onlyNumbers,
   variant = "bare",
   label,
-}: NumberFieldProps) => {
-  const field = useFieldContext<number>();
+  style,
+  invisible = false,
+  className,
+}: TextFieldProps) => {
+  const field = useFieldContext<string>();
   const { errors, isTouched } = field.state.meta;
   const isInvalid = isTouched && errors.length > 0;
+  const styleHide = invisible ? { display: "none" } : {};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanValue = e.target.value.replace(/\D/g, "");
-    const numericValue = Number(cleanValue);
+    let value = e.target.value;
 
-    if (maxValue !== undefined && numericValue > maxValue) {
-      field.handleChange(maxValue);
-    } else {
-      field.handleChange(numericValue);
+    if (onlyNumbers) {
+      value = value.replace(/\D/g, "");
+    }
+
+    field.handleChange(value);
+
+    if (field.state.meta.isTouched) {
+      field.validate("blur");
     }
   };
-
   if (variant === "bare") {
     return (
       <Input
+        className={className}
         id={id}
         unit={unit}
         name={field.name}
         value={field.state.value}
+        onBlur={field.handleBlur}
         onChange={handleChange}
         placeholder={placeholder}
         data-invalid={isInvalid}
-        style={{ flex: 1 }}
+        style={{ ...style, ...styleHide }}
       />
     );
   }
 
   if (variant === "full") {
     return (
-      <Field>
-        <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Field className={className}>
+        <FieldLabel style={styleHide} htmlFor={id}>
+          {label}
+        </FieldLabel>
         <Input
           id={id}
           unit={unit}
           name={field.name}
           value={field.state.value}
+          onBlur={field.handleBlur}
           onChange={handleChange}
           placeholder={placeholder}
           data-invalid={isInvalid}
-          style={{ flex: 1 }}
+          style={{ ...style, ...styleHide }}
         />
         <FieldErrors isInvalid={isInvalid} meta={field.state.meta} />
       </Field>

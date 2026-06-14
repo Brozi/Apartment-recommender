@@ -22,7 +22,7 @@
 }
 
 .input::placeholder {
-  color: var(--clr-primary-70);
+  color: var(--clr-secondary-60);
 }
 
 .input:focus-visible {
@@ -64,7 +64,7 @@
   }
 }
 
-@media (max-width: 37.5rem) {
+@media (min-width: 37.5rem) {
   .input {
     font-size: 1em;
   }

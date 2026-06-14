@@ -10,6 +10,7 @@
 .horizontal {
   flex-direction: row;
   align-items: center;
+  gap: var(--spacing-12);
 }
 
 .fieldSet {
