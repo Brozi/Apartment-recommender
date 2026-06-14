@@ -49,6 +49,8 @@ class InvestmentMapper:
 
         otodom_id = str(raw_id)
         if PropertyService.get_by_otodom_id(int(otodom_id)):
+            logger.warning(f"Otodom ID {otodom_id} is already in the database!")
+            logger.info("Skipping...")
             return None
 
         try:
