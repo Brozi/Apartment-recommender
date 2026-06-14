@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { Tabs as TabsBase } from "@base-ui/react/tabs";
 import { cva, type VariantProps } from "class-variance-authority";
