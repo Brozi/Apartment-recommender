@@ -289,7 +289,8 @@ class OtodomCleaner:
             'gas': 'Gas',
             'other': 'Other',
             'electrical': 'Electric',
-            'boiler_rooms': 'Boiler Room'
+            'boiler_rooms': 'Boiler Room',
+            'heat_pump': 'Heat Pump',
         }
         heating_raw = clean_doc.get('heating', None)
         if heating_raw is None:
