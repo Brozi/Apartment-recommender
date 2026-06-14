@@ -134,7 +134,7 @@ class InvestmentProcessor:
             main_location (dict): The fallback location dictionary to pass to the mapper.
             developer_id (int): The Otodom seller ID.
         """
-        print(f"  -> Using APQ Data API for pages 2-{total_pages}...")
+        logger.info(f"  -> Using APQ Data API for pages 2-{total_pages}...")
         page = 2
         while page <= total_pages:
             variables = {
@@ -145,8 +145,8 @@ class InvestmentProcessor:
                 }
             }
             extensions = {
-                "persistedQuery": {"sha256Hash": "ddc9f328a32057395caf18ef667d3ee4242ea57e73481cc8a56ee9618d0c2b31",
-                                   "version": 1}}
+                "persistedQuery":{"sha256Hash":"a006d8acd119f63bbadfc20dc7d1075082aee7796943ed3da635ce6b7f860afb","version":1}
+            }
             params = {
                 "operationName": "PaginatedInvestmentUnits",
                 "variables": json.dumps(variables, separators=(',', ':')),
@@ -201,7 +201,7 @@ class InvestmentProcessor:
         Returns:
             bool: True if the unit was successfully mapped and saved, False otherwise.
         """
-        property_ = InvestmentMapper.map_investment_unit(unit_dict,investment_dict)
+        property_ = InvestmentMapper.map_investment_unit(unit_dict, investment_dict)
         if property_:
             listing = Listing()
             listing.property_ = property_
