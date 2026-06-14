@@ -134,7 +134,7 @@ class InvestmentProcessor:
             main_location (dict): The fallback location dictionary to pass to the mapper.
             developer_id (int): The Otodom seller ID.
         """
-        logger.info(f"  -> Using APQ Data API for pages 2-{total_pages}...")
+        logger.info(f"-> Using APQ Data API for pages 2-{total_pages}...")
         page = 2
         while page <= total_pages:
             variables = {
@@ -183,7 +183,7 @@ class InvestmentProcessor:
                 for unit_dict in next_items:
                     if self._save_unit(unit_dict, investment_dict):
                         saved_count += 1
-                print(f" Page {page}: saved {saved_count}/{len(next_items)} units")
+                logger.info(f"Page {page}: saved {saved_count}/{len(next_items)} units")
                 page += 1
             except Exception as e:
                 logger.error(f"Error parsing API JSON on page {page}: {e}")
