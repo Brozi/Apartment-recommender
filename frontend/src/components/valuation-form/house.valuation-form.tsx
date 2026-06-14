@@ -1,13 +1,13 @@
-import { flatValuationFormOptions } from "#/feature/forms/valuation-form-options";
+import { houseValuationFormOptions } from "#/feature/forms/valuation-form-options";
 import { condition, districtsCracow } from "#/lib/formConstants";
 import { useAppForm } from "../form";
 import { Button } from "../ui/button";
 
 import styles from "./valuation-form.module.css";
 
-export default function FlatValuationForm() {
+export default function HouseValuationForm() {
   const form = useAppForm({
-    ...flatValuationFormOptions,
+    ...houseValuationFormOptions,
     onSubmit: ({ value }) => {
       console.log(value);
     },
@@ -104,24 +104,24 @@ export default function FlatValuationForm() {
             )}
           />
           <form.AppField
-            name="floor"
+            name="plotArea"
             children={(field) => (
               <field.TextField
-                label="Floor"
-                id="floor"
+                label="Plot Area (m²)"
+                id="plotArea"
                 variant="full"
                 onlyNumbers={true}
-                placeholder="E.g. 3"
+                placeholder="E.g. 3000"
                 style={{ width: "100%" }}
               />
             )}
           />
           <form.AppField
-            name="floorsInBuilding"
+            name="numberOfFloors"
             children={(field) => (
               <field.TextField
-                label="Floors in Building"
-                id="floorsInBuilding"
+                label="Number of Floors"
+                id="numberOfFloors"
                 variant="full"
                 onlyNumbers={true}
                 placeholder="E.g. 5"
@@ -160,9 +160,9 @@ export default function FlatValuationForm() {
           <h2 className="font-h2">Property additional features</h2>
           <section className={styles.checkboxGroup}>
             <form.AppField
-              name="hasElevator"
+              name="hasGarage"
               children={(field) => (
-                <field.CheckboxField label="Elevator" id="elevator" />
+                <field.CheckboxField label="Garage" id="garage" />
               )}
             />
             <form.AppField
@@ -172,18 +172,9 @@ export default function FlatValuationForm() {
               )}
             />
             <form.AppField
-              name="hasBalcony"
+              name="hasGarden"
               children={(field) => (
-                <field.CheckboxField label="Balcony/Loggia" id="balcony" />
-              )}
-            />
-            <form.AppField
-              name="hasStorage"
-              children={(field) => (
-                <field.CheckboxField
-                  label="Basement/storage room"
-                  id="storage"
-                />
+                <field.CheckboxField label="Garden" id="garden" />
               )}
             />
           </section>
@@ -196,7 +187,7 @@ export default function FlatValuationForm() {
         size="large"
         type="submit"
       >
-        Valuate the flat
+        Valuate the house
       </Button>
     </form>
   );

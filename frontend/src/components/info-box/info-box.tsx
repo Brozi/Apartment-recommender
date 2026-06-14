@@ -1,8 +1,6 @@
 import InfoBoxLine from "#/components/info-box/info-box-line";
 import InfoBoxLineWrapper from "#/components/info-box/info-box-line-wrapper";
-import styles from "#/components/info-box/info-box.module.css";
-import chartCorner from "#/assets/chart-corner.svg";
-import chartExpand from "#/assets/chart-expand.svg";
+import Box from "./box";
 
 type InfoBoxProps = {
   title: string;
@@ -22,12 +20,7 @@ export default function InfoBox({
   unit,
 }: InfoBoxProps) {
   return (
-    <section className={styles.infoBoxContainer}>
-      <h3 style={{ lineHeight: "1.35" }} className="font-h3">
-        {title}
-      </h3>
-      <div className={styles.divider} />
-
+    <Box title={title}>
       <InfoBoxLineWrapper>
         <InfoBoxLine
           title={firstLineTitle}
@@ -40,19 +33,6 @@ export default function InfoBox({
           unit={unit}
         />
       </InfoBoxLineWrapper>
-
-      <img
-        src={chartCorner}
-        alt="Chart corner icon"
-        className={styles.chartCorner}
-      />
-      <img
-        src={chartExpand}
-        alt="Chart expand icon"
-        className={styles.chartExpand}
-      />
-      <div className={styles.topBgAddon} />
-      <div className={styles.bottomBgAddon} />
-    </section>
+    </Box>
   );
 }

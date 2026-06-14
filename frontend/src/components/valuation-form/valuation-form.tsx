@@ -2,12 +2,17 @@ import ApartmentIcon from "../icons/apartment-icon";
 import HouseIcon from "../icons/house-icon";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import FlatValuationForm from "./flat-valuation-form";
+import HouseValuationForm from "./house.valuation-form";
 import ValuationFormBox from "./valuation-form-box";
 import styles from "./valuation-form.module.css";
 
-export default function ValuationForm() {
+type ValuationFormProps = {
+  className?: string;
+};
+
+export default function ValuationForm({ className }: ValuationFormProps) {
   return (
-    <ValuationFormBox>
+    <ValuationFormBox className={className}>
       <Tabs defaultValue="flat">
         <TabsList className={styles.tabsList}>
           <TabsTrigger
@@ -24,8 +29,7 @@ export default function ValuationForm() {
           <FlatValuationForm />
         </TabsContent>
         <TabsContent value="house">
-          {/* for now */}
-          <FlatValuationForm />
+          <HouseValuationForm />
         </TabsContent>
       </Tabs>
     </ValuationFormBox>

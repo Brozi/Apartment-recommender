@@ -21,7 +21,6 @@ const createNumericStringSchema = (
 };
 
 const baseDefaultValues = {
-  // city: "Cracow",
   district: "",
   street: "",
   streetNumber: "",
@@ -33,7 +32,6 @@ const baseDefaultValues = {
 };
 
 const baseValuationSchema = z.object({
-  // city: z.string().min(1, "You must select a city"),
   district: z.string().min(1, "You must select a district"),
   street: z
     .string()
@@ -73,20 +71,28 @@ const baseValuationSchema = z.object({
 });
 
 export const flatValuationFormOptionsSchema = baseValuationSchema.merge(
-  z.object({
-    buildingType: z.enum(["flat"]),
-    floor: createNumericStringSchema("Type floor", 0, "Min 0", 20, "Max 20"),
-    floorsInBuilding: createNumericStringSchema(
-      "Type floors",
-      1,
-      "Min 1",
-      20,
-      "Max 20",
+  z
+    .object({
+      buildingType: z.enum(["flat"]),
+      floor: createNumericStringSchema("Type floor", 0, "Min 0", 20, "Max 20"),
+      floorsInBuilding: createNumericStringSchema(
+        "Type floors",
+        1,
+        "Min 1",
+        20,
+        "Max 20",
+      ),
+      hasElevator: z.boolean(),
+      hasBalcony: z.boolean(),
+      hasStorage: z.boolean(),
+    })
+    .refine(
+      (data) => !data.floorsInBuilding || data.floor <= data.floorsInBuilding,
+      {
+        message: "Floor must be less than or equal to floors in building",
+        path: ["floor"],
+      },
     ),
-    hasElevator: z.boolean(),
-    hasBalcony: z.boolean(),
-    hasStorage: z.boolean(),
-  }),
 );
 
 export const houseValuationFormOptionsSchema = baseValuationSchema.merge(
@@ -122,7 +128,7 @@ export const flatValuationFormOptions = formOptions({
     hasStorage: false,
   },
   validators: {
-    onBlur: flatValuationFormOptionsSchema,
+    onChange: flatValuationFormOptionsSchema,
   },
 });
 
@@ -136,6 +142,6 @@ export const houseValuationFormOptions = formOptions({
     hasGarden: false,
   },
   validators: {
-    onBlur: houseValuationFormOptionsSchema,
+    onChange: houseValuationFormOptionsSchema,
   },
 });
