@@ -74,7 +74,7 @@ export const ComboboxField = ({
 
   return (
     <Field>
-      <FieldLabel htmlFor="select-districts">{label}</FieldLabel>
+      <FieldLabel htmlFor={label}>{label}</FieldLabel>
       <Combobox
         name={field.name}
         multiple
@@ -94,10 +94,7 @@ export const ComboboxField = ({
                     </ComboboxChip>
                   ) : null;
                 })}
-                <ComboboxChipsInput
-                  id="select-districts"
-                  placeholder={placeholder}
-                />
+                <ComboboxChipsInput id={label} placeholder={placeholder} />
               </>
             )}
           </ComboboxValue>

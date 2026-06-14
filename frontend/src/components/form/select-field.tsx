@@ -19,12 +19,14 @@ type SelectFieldProps = {
   label?: string;
   options: SelectOption[];
   placeholder?: string;
+  className?: string;
 };
 
 export const SelectField = ({
   label,
   options,
   placeholder,
+  className,
 }: SelectFieldProps) => {
   const field = useFieldContext<string>();
   const selectAnchor = useSelectAnchor();
@@ -33,16 +35,17 @@ export const SelectField = ({
   const isInvalid = isTouched && errors.length > 0;
 
   return (
-    <Field>
-      {label && <FieldLabel htmlFor="select-condition">{label}</FieldLabel>}
+    <Field className={className}>
+      {label && <FieldLabel htmlFor={label}>{label}</FieldLabel>}
       <Select
         name={field.name}
         value={field.state.value}
         onValueChange={(newValue) => field.handleChange(newValue ?? "")}
       >
-        <SelectTrigger id="select-condition" dataInvalid={isInvalid}>
-          <SelectValue placeholder={placeholder}>
+        <SelectTrigger id={label} dataInvalid={isInvalid}>
+          <SelectValue style={{ fontWeight: 500 }} placeholder={placeholder}>
             {options.find((o) => o.value === field.state.value)?.label ||
+              placeholder ||
               field.state.value}
           </SelectValue>
         </SelectTrigger>

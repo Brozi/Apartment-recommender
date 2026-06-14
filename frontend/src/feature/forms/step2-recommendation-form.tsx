@@ -104,6 +104,7 @@ export const Step2RecommendationForm = withForm({
                                     className={styles.recommendationControls}
                                   >
                                     <field.NumberField
+                                      variant="bare"
                                       id={part}
                                       maxValue={MAX_IMPORTANCE}
                                       unit="%"
@@ -148,6 +149,7 @@ export const Step2RecommendationForm = withForm({
                                       id={poi}
                                       maxValue={MAX_IMPORTANCE}
                                       unit="%"
+                                      variant="bare"
                                     />
                                     <Slider
                                       min={0}

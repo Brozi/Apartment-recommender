@@ -10,7 +10,7 @@
 }
 
 .input::placeholder {
-  color: var(--clr-primary-70);
+  color: var(--clr-secondary-60);
 }
 
 .input:focus-visible {
@@ -160,5 +160,5 @@
 }
 
 .chipsInput::placeholder {
-  color: var(--clr-primary-70);
+  color: var(--clr-secondary-60);
 }
