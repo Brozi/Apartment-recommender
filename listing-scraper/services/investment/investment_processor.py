@@ -96,6 +96,7 @@ class InvestmentProcessor:
 
         paginated_units = investment_dict["paginatedUnits"]
         total_pages = paginated_units.get("pagination", {}).get("totalPages", 1)
+        total_results = paginated_units.get("pagination", {}).get("totalResults", 0)
         items_page_1 = paginated_units.get("items", [])
 
         if items_page_1 and any(unit.get("characteristics") is None for unit in items_page_1):
@@ -104,15 +105,11 @@ class InvestmentProcessor:
             self.network.rotate_session()
             return
 
-        logger.info(f"-> Found {total_pages} pages of units.")
+        logger.info(f"-> Found {total_results} units on {total_pages} pages.")
         dynamic_page_size = len(items_page_1) if items_page_1 else 6
 
-        # Process Page 1
-        for unit_dict in items_page_1:
-            self._save_unit(unit_dict, investment_dict)
-
         investment_id = investment_dict.get("id")
-        if total_pages > 1 and investment_id:
+        if total_pages > 0 and investment_id:
             self._fetch_api_pages(investment_url, investment_id, investment_dict, total_pages, dynamic_page_size)
 
         with open("scraped_investments.txt", "a", encoding="utf-8") as f:
@@ -135,7 +132,7 @@ class InvestmentProcessor:
             developer_id (int): The Otodom seller ID.
         """
         logger.info(f"-> Using APQ Data API for pages 2-{total_pages}...")
-        page = 2
+        page = 1
         while page <= total_pages:
             variables = {
                 "id": int(investment_id),

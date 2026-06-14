@@ -49,44 +49,40 @@ class InvestmentMapper:
 
         otodom_id = str(raw_id)
         if PropertyService.get_by_otodom_id(int(otodom_id)):
-            logger.warning(f"Otodom ID {otodom_id} is already in the database!")
+            logger.warning(f"Otodom ID {otodom_id}, link {full_url} is already in the database!")
             logger.info("Skipping...")
             return None
 
         try:
+            target_data = unit_dict.get('target', {})
             property_ = PropertyDocument()
             property_.link = full_url
             property_.otodom_id = otodom_id
             property_.created_at = investment_dict.get("createdAt")
             property_.description = investment_dict.get("description")
-            property_.title = InvestmentMapper._convert_url_to_title(investment_url, full_url)
+            property_.title = unit_dict.get('title')
             property_.developer_id = int(investment_dict.get("owner", {}).get("id", 0))
-
-            characteristics = unit_dict.get('characteristics', [])
-            target_data = {item['key']: item['value'] for item in characteristics}
-
-            area_val = target_data.get('m', 0.0)
+            area_val = target_data.get('Area', 0.0)
             property_.area = float(area_val)
 
-            rooms = target_data.get('rooms_num', '')
-            property_.rooms = rooms
+            rooms = target_data.get('Rooms_num', [])
+            property_.rooms = " ".join(rooms)
 
-            property_.price = int(float(target_data.get('price', 0)))
-            property_.price_per_meter = int(float(target_data.get('price_per_m', 0)))
+            property_.price = int(float(target_data.get('Price', 0)))
+            property_.price_per_meter = int(float(target_data.get('Price_per_m', 0)))
 
-            additional_info_list = investment_dict.get('additionalInformation', [])
-            additional_info = {item['label']: item['values'] for item in additional_info_list}
-
-            extras_list = additional_info.get("project_amenities", [])
+            extras_list = target_data.get("Extras_types", [])
             property_.extras = ", ".join(extras_list)
 
-            security_list = additional_info.get("security", [])
+            security_list = target_data.get("Security_types", [])
             property_.security_types = ", ".join(security_list)
 
-            property_.heating = target_data.get("heating", '')
 
-            floor_no = target_data.get("floor_no", '')
-            property_.floor = str(floor_no).replace("floor_", "").replace("ground_floor", "0")
+            heating = target_data.get("heating")
+            property_.heating = heating
+
+            floor_no = target_data.get("Floor_no", '')
+            property_.floor = ''.join(str(floor_no).replace("floor_", "").replace("ground_floor", "0"))
 
             property_.building = InvestmentMapper._map_building(target_data)
 
@@ -95,18 +91,14 @@ class InvestmentMapper:
             property_.auction_type = AuctionType.SALE
             property_.property_type = PropertyType.FLAT
 
-            status = target_data.get("construction_status", '')
+            status = target_data.get("Construction_status", '')
             try:
                 property_.construction_status = ConstructionStatus(status)
             except ValueError:
                 pass
 
-            images = unit_dict.get("floorPlans", [])
-            if images:
-                photo_urls = images
-            else:
-                images = investment_dict.get('images', [])
-                photo_urls = [img.get("large") or img.get("medium") or img.get("small") for img in images]
+            images = investment_dict.get('images', [])
+            photo_urls = [img.get("large") or img.get("medium") or img.get("small") for img in images]
             property_.photos = ", ".join(filter(None, photo_urls))
             property_.localization = InvestmentMapper._map_localization(investment_dict)
             property_.etl_processed = False
@@ -121,24 +113,24 @@ class InvestmentMapper:
             return None
 
     @staticmethod
-    def _map_building(characteristics: dict) -> BuildingDocument:
+    def _map_building(target: dict) -> BuildingDocument:
         """
         Extracts building-specific metadata from the target dictionary.
 
         Args:
-            characteristics (dict): The 'characteristics' dictionary from the investment units page.
+            target (dict): The 'target' dictionary from the investment units page.
 
         Returns:
             BuildingDocument: A populated document containing building year, type, floors, etc.
         """
         building = BuildingDocument()
-        b_year = characteristics.get("build_year", "")
+        b_year = target.get("Build_year")
         building.build_year = b_year if b_year else None
-        b_types = characteristics.get("building_type", "")
+        b_types = ''.join(target.get("Building_type", ""))
         building.type = b_types if b_types else None
-        b_floors = characteristics.get("building_floors_num", "")
+        b_floors = target.get("Building_floors_num", "")
         building.floors = int(b_floors) if b_floors else None
-        b_ownership = characteristics.get("building_ownership", "")
+        b_ownership = ''.join(target.get("Building_ownership", ""))
         building.ownership = b_ownership if b_ownership else None
         return building
 
