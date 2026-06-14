@@ -1,11 +1,12 @@
 import json
 import logging
 from mongoengine import connect as mongo_connect
+from pymongo import MongoClient
 
 logger = logging.getLogger(__name__)
 
 
-def connect_to_database(host: str = None) -> None:
+def connect_to_database(host: str = None) -> MongoClient:
     """
     Connect to the database.
 
@@ -22,3 +23,4 @@ def connect_to_database(host: str = None) -> None:
             if not host:
                 raise ValueError("Database host is not defined in settings.json")
     mongo_connect(host=host)
+    return MongoClient(host)
