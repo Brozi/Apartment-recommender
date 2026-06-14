@@ -58,7 +58,7 @@ class PropertyDocument(Document):
     etl_processed = BooleanField(db_field="etl_processed", required=True)
     scraped_at = DateTimeField(db_field="scraped_at", required=True)
 
-    meta = {"collection": "listings_test"
+    meta = {"collection": "listings"
             }
 
     def extract_data(self, code: BeautifulSoup) -> None:
