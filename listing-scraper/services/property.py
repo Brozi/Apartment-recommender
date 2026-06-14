@@ -48,7 +48,7 @@ class PropertyService:
         try:
             property_.validate()
             property_ = property_.save()
-            property_.scraped_at = datetime.strptime(str(NOW), "%Y-%m-%dT%H:%M:%S%z")
+            property_.scraped_at = NOW.isoformat()
             return property_
         except Exception as e:
             error_msg = str(e)

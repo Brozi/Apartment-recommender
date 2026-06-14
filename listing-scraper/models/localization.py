@@ -14,6 +14,7 @@ class LocalizationDocument(EmbeddedDocument):
     province = StringField(required=True)
     city = StringField(required=True)
     district = StringField()
+    subdistrict = StringField()
     street = StringField()
     county = StringField()
     latitude = FloatField()
@@ -26,24 +27,14 @@ class LocalizationDocument(EmbeddedDocument):
 
         :param properties: The dict containing the localization information
         """
-        self.province = properties["address"]["province"]["code"]
-        self.city = properties["address"]["city"]["code"]
-        self.district = self.extract_district(properties["address"])
-        self.street = self.extract_street(properties["address"])
+        reverse_geocoding_raw = properties.get("reverseGeocoding", {}).get("locations", [])
+        reverse_geocoding = {item['locationLevel']: item['fullName'] for item in reverse_geocoding_raw}
+        self.province = reverse_geocoding.get('name', '')
+        self.city = reverse_geocoding.get('city_or_village', '')
+        self.district = reverse_geocoding.get('district', '')
+        self.street = self.extract_street(properties.get('address', {}))
         self.county = self.extract_county(properties["address"])
         self.latitude, self.longitude = self.extract_coordinates(properties)
-    @staticmethod
-    def extract_district(properties: dict) -> str:
-        """
-        Extracts the district from the properties.
-
-        :param properties: The properties containing the district
-        :return: The district
-        """
-        district = properties.get("district")
-        if isinstance(district, dict):
-            district = district["name"]
-        return district
 
     @staticmethod
     def extract_street(properties: dict) -> str:
@@ -69,9 +60,7 @@ class LocalizationDocument(EmbeddedDocument):
         :param properties: The properties containing the county
         :return: The county
         """
-        county = properties.get("county")
-        if isinstance(county, dict):
-            county = county["code"]
+        county = properties.get("Subregion", "")
         return county
 
     @staticmethod

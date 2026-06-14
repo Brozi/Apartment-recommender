@@ -58,7 +58,7 @@ class PropertyDocument(Document):
     etl_processed = BooleanField(db_field="etl_processed", required=True)
     scraped_at = DateTimeField(db_field="scraped_at", required=True)
 
-    meta = {"collection": "listings"
+    meta = {"collection": "listings_test"
             }
 
     def extract_data(self, code: BeautifulSoup) -> None:
@@ -293,7 +293,7 @@ class PropertyDocument(Document):
         :param properties: The properties containing the heating of the property
         :return: The heating of the property
         """
-        heating = properties.get("Heating")
+        heating = properties.get("Heating_types")
         if heating is None:
             return None
         return ",".join(heating)
