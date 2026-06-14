@@ -76,7 +76,6 @@ function MapFormReady({
       if (!cleaned) return;
       const encoded = encodeFiltersToURL(cleaned);
       void navigate({ to: "/map", search: { f: encoded } });
-      form.reset();
     },
   });
 

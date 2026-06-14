@@ -252,14 +252,17 @@ func (app *application) fetchMatchingIDsStrict(ctx context.Context, step1 step1F
 		}
 	}
 
-	// for _, p := range step1.Pois {
-	// 	countField, ok := poiRangeToCountField[p.Range]
-	// 	if !ok {
-	// 		continue
-	// 	}
-	// 	mongoField := fmt.Sprintf("geo_aggregations.%s.%s", p.Poi, countField)
-	// 	filter[mongoField] = bson.M{"$gt": 0}
-	// }
+	for _, p := range step1.Pois {
+		if p.Poi == "" {
+			continue
+		}
+		countField, ok := poiRangeToCountField[p.Range]
+		if !ok {
+			continue
+		}
+		mongoField := fmt.Sprintf("geo_aggregations.%s.%s", p.Poi, countField)
+		filter[mongoField] = bson.M{"$gt": 0}
+	}
 
 	projection := bson.M{"_id": 1}
 	cursor, err := app.mongoCollection.Find(ctx, filter, options.Find().SetProjection(projection))

@@ -58,7 +58,7 @@ export const STEP1_DEFAULT_VALUES: Step1FormValues = {
   rooms: ["any"],
   marketType: "any",
   condition: "any",
-  pois: [{ poi: "parcel_locker", range: "500_m" }],
+  pois: [{ poi: "parcel_service", range: "500_m" }],
 };
 
 const hasSelectedValue = (values: string[], sentinel: string): boolean =>

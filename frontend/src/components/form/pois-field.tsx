@@ -24,7 +24,10 @@ export const PoisField = withForm({
                   size="iconDefault"
                   type="button"
                   onClick={() =>
-                    field.pushValue({ poi: "parcel_locker", range: "500_m" })
+                    field.pushValue({
+                      poi: "parcel_service",
+                      range: "500_m",
+                    })
                   }
                 >
                   <AddIcon />
