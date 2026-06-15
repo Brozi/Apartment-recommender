@@ -17,8 +17,60 @@ import type {
   MapClusterItem,
   MapOfferItem,
   MapOffersInPoint,
+  MapPoi,
   MapViewport,
 } from "#/lib/types";
+import { createPoiDivIcon } from "#/lib/utils";
+
+type PoiCluster = {
+  center: MapPoi;
+  pois: MapPoi[];
+};
+
+function computePoiClusters(
+  pois: MapPoi[],
+  map: L.Map,
+  radiusPx: number,
+): PoiCluster[] {
+  const visited = new Set<number>();
+  const clusters: PoiCluster[] = [];
+  for (const poi of pois) {
+    if (visited.has(poi.id)) continue;
+    const point = map.latLngToLayerPoint([poi.lat, poi.lng]);
+    const cluster: PoiCluster = { center: poi, pois: [poi] };
+    visited.add(poi.id);
+    for (const other of pois) {
+      if (visited.has(other.id)) continue;
+      const otherPoint = map.latLngToLayerPoint([other.lat, other.lng]);
+      if (point.distanceTo(otherPoint) <= radiusPx) {
+        cluster.pois.push(other);
+        visited.add(other.id);
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+
+function createPoiClusterCountIcon(count: number): L.DivIcon {
+  const style = [
+    "width: 1.5rem",
+    "height: 1.5rem",
+    "background-color: var(--clr-secondary-100)",
+    "box-shadow: inset 0 0 0 1px var(--clr-primary-100)",
+    "display: flex",
+    "justify-content: center",
+    "align-items: center",
+    "aspect-ratio: 1 / 1",
+    "transform: rotate(45deg)",
+  ].join("; ");
+  return L.divIcon({
+    html: `<div style="${style}"><span class="${styles.markerText}" style="transform:rotate(-45deg);color:var(--clr-light-100);">${count}</span></div>`,
+    className: "",
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+}
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
@@ -43,6 +95,52 @@ function MapClickHandler({ onClear }: { onClear: () => void }) {
   });
 
   return null;
+}
+
+function PoiMarkerLayer({
+  pois,
+  onPoiClick,
+  onClusterClick,
+}: {
+  pois: MapPoi[];
+  onPoiClick: (poi: MapPoi) => void;
+  onClusterClick: (pois: MapPoi[]) => void;
+}) {
+  const map = useMap();
+  const [clusters, setClusters] = useState<PoiCluster[]>(() =>
+    computePoiClusters(pois, map, 40),
+  );
+
+  useMapEvents({
+    moveend: () => setClusters(computePoiClusters(pois, map, 40)),
+    zoomend: () => setClusters(computePoiClusters(pois, map, 40)),
+  });
+
+  useEffect(() => {
+    setClusters(computePoiClusters(pois, map, 40));
+  }, [pois, map]);
+
+  return (
+    <>
+      {clusters.map((cluster, i) => (
+        <Marker
+          key={i}
+          position={[cluster.center.lat, cluster.center.lng]}
+          icon={
+            cluster.pois.length === 1
+              ? createPoiDivIcon(cluster.center.categoryGroup)
+              : createPoiClusterCountIcon(cluster.pois.length)
+          }
+          eventHandlers={{
+            click: () =>
+              cluster.pois.length === 1
+                ? onPoiClick(cluster.center)
+                : onClusterClick(cluster.pois),
+          }}
+        />
+      ))}
+    </>
+  );
 }
 
 function OfferMarkerLayer({
@@ -240,8 +338,15 @@ export default function LeafletMap({
 }: {
   onViewportChange: (viewport: MapViewport) => void;
 }) {
-  const { selectOffer, selectOffersInPoint, clearSelection, mapData } =
-    useMapContext();
+  const {
+    selectOffer,
+    selectOffersInPoint,
+    selectPoiCluster,
+    selectSinglePoi,
+    clearSelection,
+    mapData,
+    poisData,
+  } = useMapContext();
   const offerItems = mapData.offers.items;
   const offersInPointsItems = mapData.offersInPoint.items;
   const clusterItems = mapData.clusters.items;
@@ -264,6 +369,11 @@ export default function LeafletMap({
           onSelect={selectOffersInPoint}
         />
         <OfferMarkerLayer onSelect={selectOffer} offers={offerItems} />
+        <PoiMarkerLayer
+          pois={poisData.pois}
+          onPoiClick={selectSinglePoi}
+          onClusterClick={selectPoiCluster}
+        />
         <MapClickHandler onClear={clearSelection} />
         <MapViewportWatcher onViewportChange={onViewportChange} />
         <ScrollZoomHandler />

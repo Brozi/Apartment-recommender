@@ -1,3 +1,5 @@
+import type { SVGProps } from "react";
+
 export type ChartData = Record<string, string | number>;
 
 export type BarConfig = {
@@ -107,3 +109,34 @@ export type FilterLimitsResponse = {
   area: limitRange;
   buildYear: limitRange;
 };
+
+export type PoiCategoryGroup =
+  | "parcel_service"
+  | "grocery_retail"
+  | "bus_stop"
+  | "tram_stop"
+  | "kindergarten"
+  | "school"
+  | "specialized_school"
+  | "university"
+  | "driving_school";
+
+export type MapPoi = {
+  id: number;
+  categoryGroup: PoiCategoryGroup;
+  lat: number;
+  lng: number;
+  name: string;
+};
+
+export type MapPoisResponse = {
+  pois: MapPoi[];
+};
+
+export type SvgIconProps = SVGProps<SVGSVGElement> & {
+  size?: number;
+  color?: string;
+  rotate?: number;
+};
+
+export type SvgIcon = (props: SvgIconProps) => React.ReactElement;
