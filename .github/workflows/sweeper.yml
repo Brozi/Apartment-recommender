@@ -1,0 +1,28 @@
+name: Otodom Sweeper
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+jobs:
+  sweeper:
+    runs-on: ubuntu-latest
+    env:
+      ACTIVE_SETTINGS_JSON: ${{ secrets.SETTINGS_JSON }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Create settings.json securely
+        run: |
+          cat << 'EOF' > settings.json 
+          ${{ env.ACTIVE_SETTINGS_JSON }}
+          EOF
+
+      - name: Run ETL pipeline
+        run: PYTHONPATH=. python -m listing-scraper.jobs.run_sweeper.py
