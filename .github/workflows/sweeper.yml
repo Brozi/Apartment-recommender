@@ -24,5 +24,5 @@ jobs:
           ${{ env.ACTIVE_SETTINGS_JSON }}
           EOF
 
-      - name: Run ETL pipeline
+      - name: Run sweeper
         run: PYTHONPATH=. python -m listing-scraper.jobs.run_sweeper.py
