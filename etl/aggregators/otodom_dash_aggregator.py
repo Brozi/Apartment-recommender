@@ -2,7 +2,8 @@ from .otodom_aggregator import OtodomAggregator
 from pymongo import UpdateOne
 import logging
 
-from etl.common import NOW
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +133,7 @@ class OtodomDashAggregator(OtodomAggregator):
                         'key': key,
                         'group_key':group_key,
                         'values': values,
-                        'computed_at': NOW
+                        'computed_at': datetime.now(ZoneInfo('Europe/Warsaw'))
                     }
                 },
                 upsert=True

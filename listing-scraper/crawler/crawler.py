@@ -59,6 +59,7 @@ class Crawler:
         self.settings: Settings = Settings()
         self.params: dict = self.generate_params()
         self.listings: list[Listing] = []
+        self.active_listings: set[str] = set()
         self.investments_queue: set[str] = set()
         from services.investment import InvestmentProcessor
         from services.listing_processor import ListingProcessor
@@ -155,9 +156,11 @@ class Crawler:
                 if not slug: continue
                 full_url = f"{Constans.DEFAULT_URL}/pl/oferta/{slug}"
 
-                if full_url not in existing_links:
-                    item["full_url"] = full_url
-                    valid_listings.append(item)
+                if full_url in existing_links:
+                    PropertyService.mark_seen_by_link(full_url)
+                    continue
+                item["full_url"] = full_url
+                valid_listings.append(item)
 
             if not valid_listings:
                 print(f"Page {page} had no new listings. Moving to next page...")

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from common import NOW
+from zoneinfo import ZoneInfo
 
 from models import PropertyDocument
 from mongoengine import QuerySet
@@ -46,9 +46,12 @@ class PropertyService:
         Inserts the property into the database.
         """
         try:
+            now = datetime.now(ZoneInfo('Europe/Warsaw'))
+            property_.scraped_at = now
+            property_.last_seen_at = now
+            property_.is_active = True
             property_.validate()
             property_ = property_.save()
-            property_.scraped_at = NOW.isoformat()
             return property_
         except Exception as e:
             error_msg = str(e)
@@ -60,3 +63,23 @@ class PropertyService:
             else:
                 logger.error(f"Failed to insert property {property_.otodom_id}. Error: {error_msg}")
                 return None
+
+    @classmethod
+    def mark_seen_by_link(cls, link:str) -> bool:
+        now = datetime.now(ZoneInfo('Europe/Warsaw'))
+        updated = PropertyDocument.objects(link=link).update_one(
+            set__last_seen_at=now,
+            set__is_active=True,
+            set__etl_processed=False,
+        )
+        return updated > 0
+
+    @classmethod
+    def mark_seen_by_otodom_id(cls, otodom_id:int) -> bool:
+        now = datetime.now(ZoneInfo('Europe/Warsaw'))
+        updated = PropertyDocument.objects(otodom_id=otodom_id).update_one(
+            set__last_seen_at=now,
+            set__is_active=True,
+            set__etl_processed=False,
+        )
+        return updated > 0

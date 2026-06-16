@@ -6,7 +6,8 @@ import sys
 import logging
 import os
 
-from common import NOW
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from services import ExportService
 
 
@@ -31,7 +32,7 @@ class TerminalLogger:
         self.log_file.flush()
 
 
-log_filename = NOW.strftime("log/scraper_log_%Y-%m-%d_%H-%M-%S.txt")
+log_filename = datetime.now(ZoneInfo('Europe/Warsaw')).strftime("log/scraper_log_%Y-%m-%d_%H-%M-%S.txt")
 sys.stdout = TerminalLogger(log_filename, sys.stdout)
 sys.stderr = TerminalLogger(log_filename, sys.stderr)
 

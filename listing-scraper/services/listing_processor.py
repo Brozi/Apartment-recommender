@@ -1,6 +1,8 @@
 import time
 import random
 import logging
+from os.path import exists
+
 from bs4 import BeautifulSoup
 from crawler.exceptions import DataExtractionError
 from models import PropertyDocument, AgencyDocument
@@ -56,11 +58,16 @@ class ListingProcessor:
                     f.write(property_.link + "\n")
                 return
 
-            if PropertyService.get_by_otodom_id(property_.otodom_id) is None:
+            existing_property = PropertyService.get_by_otodom_id(property_.otodom_id)
+
+            if existing_property is None:
                 logger.info(f" Saved to Database: {property_.link}")
                 property_ = PropertyService.put(property_)
                 listing.property_ = property_
                 self.listings.append(listing)
+            else:
+                PropertyService.mark_seen_by_otodom_id(property_.otodom_id)
+                logger.info(f"Marked existing listing as seen: {property_.link}")
 
         except DataExtractionError as e:
             logger.exception(f"Failed to extract HTML from {property_.link}, Error: {e}")

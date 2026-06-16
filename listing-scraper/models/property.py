@@ -56,6 +56,8 @@ class PropertyDocument(Document):
     estate_agency = ReferenceField("AgencyDocument", reverse_delete_rule=NULLIFY)
     developer_id = IntField(db_field="developer_id")
     etl_processed = BooleanField(db_field="etl_processed", required=True)
+    is_active = BooleanField(db_field="is_active", default=True)
+    last_seen_at = DateTimeField(db_field="last_seen_at")
     scraped_at = DateTimeField(db_field="scraped_at", required=True)
 
     meta = {"collection": "listings"
