@@ -1,7 +1,7 @@
 from etl.services import connect_to_database
 import logging, sys
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 logging.basicConfig(
@@ -37,3 +37,18 @@ class StateUpdater:
             }
         )
         logger.info(f'State sync complete. Deactivated {deactivation_result.modified_count} stale listings.')
+
+    def run_global_sweeper(self):
+        threshold_date = datetime.now(ZoneInfo('Europe/Warsaw')) - timedelta(hours=72)
+
+        results = self.col.update_many(
+            {
+                'is_active': True,
+                'last_seen_at': {'$lt': threshold_date}
+            },
+            {
+                '$set': {'is_active': False}
+            }
+        )
+        logger.info(f'Sweeper deactivated {results.modified_count} stale listings.')
+
