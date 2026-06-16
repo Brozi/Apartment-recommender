@@ -44,7 +44,11 @@ class StateUpdater:
         results = self.col.update_many(
             {
                 'is_active': True,
-                'last_seen_at': {'$lt': threshold_date}
+                '$or': [
+                {'last_seen_at': {'$lt': threshold_date}},
+                {'last_seen_at': {'$exists': False}},
+                {'last_seen_at': None} # Failsafe for null insertions
+                ]
             },
             {
                 '$set': {'is_active': False}
