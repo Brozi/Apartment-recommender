@@ -1,7 +1,7 @@
 from etl.services import connect_to_database
 import logging, sys
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 logging.basicConfig(
@@ -39,7 +39,7 @@ class StateUpdater:
         logger.info(f'State sync complete. Deactivated {deactivation_result.modified_count} stale listings.')
 
     def run_global_sweeper(self):
-        threshold_date = datetime.now(ZoneInfo('Europe/Warsaw')) - timedelta(hours=72)
+        threshold_date = datetime.now(timezone.utc) - timedelta(hours=72)
 
         results = self.col.update_many(
             {
