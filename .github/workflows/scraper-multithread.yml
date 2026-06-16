@@ -2,7 +2,7 @@ name: Multithread Otodom Scraper
 
 on:
   schedule:
-    - cron: '17 22 */2 * *' # Runs at 00:17 AM every two days
+    - cron: '17 22 * * *' # Runs at 00:17 AM everyday
   workflow_dispatch:
 
 env:
