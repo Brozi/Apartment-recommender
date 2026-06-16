@@ -12,10 +12,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 class StateUpdater:
-    def __init__(self, active_listings:set, db_name='otodom_data', listings_col='listings'):
+    def __init__(self, db_name='otodom_data', listings_col='listings'):
         self.db = connect_to_database()[db_name]
         self.col = self.db[listings_col]
-        self.listings = active_listings
+        self.listings = []
 
     def synchronize_listing_states(self):
         logger.info("Marking scraped IDs as active...")
