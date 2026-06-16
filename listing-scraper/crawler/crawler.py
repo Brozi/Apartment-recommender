@@ -59,6 +59,7 @@ class Crawler:
         self.settings: Settings = Settings()
         self.params: dict = self.generate_params()
         self.listings: list[Listing] = []
+        self.active_listings: set[str] = set()
         self.investments_queue: set[str] = set()
         from services.investment import InvestmentProcessor
         from services.listing_processor import ListingProcessor
@@ -150,6 +151,7 @@ class Crawler:
             page_items = self.extract_listings_from_page(page)
 
             valid_listings = []
+            active_listings = []
             for item in page_items:
                 slug = item.get("slug")
                 if not slug: continue
