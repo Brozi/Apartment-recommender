@@ -1,5 +1,5 @@
 from crawler import Crawler
-from etl.services import connect_to_database
+from services import connect_to_database
 from services import OtodomParser
 from common import Constans, NOW
 import logging
