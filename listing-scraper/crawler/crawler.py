@@ -151,7 +151,6 @@ class Crawler:
             page_items = self.extract_listings_from_page(page)
 
             valid_listings = []
-            active_listings = []
             for item in page_items:
                 slug = item.get("slug")
                 if not slug: continue
