@@ -1,8 +1,10 @@
 from models.property import PropertyDocument
 from models.building import BuildingDocument
 from models.localization import LocalizationDocument
-from common.constans import Constans, OfferedBy, PropertyType, MarketType, AuctionType, ConstructionStatus, NOW
+from common.constans import Constans, OfferedBy, PropertyType, MarketType, AuctionType, ConstructionStatus
 from services.property import PropertyService
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import logging
 import re
 
@@ -49,8 +51,9 @@ class InvestmentMapper:
 
         otodom_id = str(raw_id)
         if PropertyService.get_by_otodom_id(int(otodom_id)):
+            PropertyService.mark_seen_by_otodom_id(int(otodom_id))
             logger.warning(f"Otodom ID {otodom_id}, link {full_url} is already in the database!")
-            logger.info("Skipping...")
+            logger.info("Marked existing listing as seen. Skipping insert...")
             return None
 
         try:
@@ -102,7 +105,7 @@ class InvestmentMapper:
             property_.photos = ", ".join(filter(None, photo_urls))
             property_.localization = InvestmentMapper._map_localization(investment_dict)
             property_.etl_processed = False
-            property_.scraped_at = NOW.isoformat()
+            property_.scraped_at = datetime.now(ZoneInfo('Europe/Warsaw')).isoformat()
 
             logger.info(f" Saved Unit directly from JSON: {property_.link}")
             PropertyService.put(property_)

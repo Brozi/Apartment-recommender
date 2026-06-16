@@ -1,12 +1,12 @@
-from typing import Any
-
 from pymongo import UpdateOne
 import logging
 
 logger = logging.getLogger(__name__)
 
 from .otodom_aggregator import OtodomAggregator
-from etl.common import NOW
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from etl.services import MongoBulkWriter
 
 class OtodomGeoAggregator(OtodomAggregator):
@@ -193,7 +193,7 @@ class OtodomGeoAggregator(OtodomAggregator):
                                 'location': fallback_poi.get('location', {}),
                             }
 
-                metrics['geo_aggregations_computed_at'] = NOW
+                metrics['geo_aggregations_computed_at'] = datetime.now(ZoneInfo('Europe/Warsaw'))
 
                 writer.queue(
                     UpdateOne(

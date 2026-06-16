@@ -1,8 +1,8 @@
 from etl.services import connect_to_database
 import logging, sys
 
-from common import NOW
-
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,7 +32,7 @@ class StateUpdater:
             {
                 '$set': {
                     'is_active': False,
-                    'deactivated_at': NOW
+                    'deactivated_at': datetime.now(ZoneInfo('Europe/Warsaw'))
                 }
             }
         )

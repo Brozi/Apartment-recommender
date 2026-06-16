@@ -2,7 +2,8 @@ import logging
 from pymongo import UpdateOne
 
 from etl.aggregators import OtodomAggregator
-from etl.common import NOW
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +102,7 @@ class OtodomFilterLimitsAggregator(OtodomAggregator):
                         },
                     },
                     "listing_count": doc["listing_count"],
-                    "computed_at": NOW
+                    "computed_at": datetime.now(ZoneInfo('Europe/Warsaw'))
                 }
             },
             upsert=True,
