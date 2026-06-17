@@ -119,9 +119,9 @@ class OtodomGeoAggregator(OtodomAggregator):
     def add_poi_metrics(
             self,
             category_groups:tuple,
-            max_distance:int=1500,
-            step:int=1000,
-            cursor_size: int=500,
+            max_distance: int=1500,
+            step: int=500,
+            cursor_size: int=1000,
             recompute: bool=False,
     ):
         self.absolute_max_distance = max_distance * 10
