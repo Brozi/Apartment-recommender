@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 from .otodom_aggregator import OtodomAggregator
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import pygeohash as pgh
 
 from etl.services import MongoBulkWriter
 
@@ -201,6 +202,7 @@ class OtodomGeoAggregator(OtodomAggregator):
                         {
                             '$set': {
                                 'geo_aggregations': metrics,
+                                'localization.geohash': pgh.encode(latitude=lat, longitude=lon),
                             }
                         },
                         upsert=False
