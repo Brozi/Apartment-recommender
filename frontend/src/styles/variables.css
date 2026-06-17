@@ -97,4 +97,9 @@
     0 145px 41px rgba(35, 31, 32, 0), 0 93px 37px rgba(35, 31, 32, 0.01),
     0 52px 31px rgba(35, 31, 32, 0.05), 0 23px 23px rgba(35, 31, 32, 0.09),
     0 6px 13px rgba(35, 31, 32, 0.1);
+
+  --shadow-light-icon:
+    0 1px 0 rgba(46, 36, 32, 0.08), 0 1px 1px rgba(46, 36, 32, 0.02);
+
+  --shadow-inset-light-icon: 0 1px 0 0 #fff inset;
 }

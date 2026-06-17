@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -67,25 +68,25 @@ type step1Filters struct {
 	BuildingType string   `json:"buildingType"`
 	Districts    []string `json:"districts"`
 	TotalPrice   struct {
-		TotalPriceFrom *float64 `json:"totalPriceFrom"`
-		TotalPriceTo   *float64 `json:"totalPriceTo"`
+		TotalPriceFrom string `json:"totalPriceFrom"`
+		TotalPriceTo   string `json:"totalPriceTo"`
 	} `json:"totalPrice"`
 	PricePerM2 struct {
-		PricePerM2From *float64 `json:"pricePerM2From"`
-		PricePerM2To   *float64 `json:"pricePerM2To"`
+		PricePerM2From string `json:"pricePerM2From"`
+		PricePerM2To   string `json:"pricePerM2To"`
 	} `json:"pricePerM2"`
 	Area struct {
-		AreaFrom *float64 `json:"areaFrom"`
-		AreaTo   *float64 `json:"areaTo"`
+		AreaFrom string `json:"areaFrom"`
+		AreaTo   string `json:"areaTo"`
 	} `json:"area"`
 	BuildYear struct {
-		BuildYearFrom *float64 `json:"buildYearFrom"`
-		BuildYearTo   *float64 `json:"buildYearTo"`
+		BuildYearFrom string `json:"buildYearFrom"`
+		BuildYearTo   string `json:"buildYearTo"`
 	} `json:"buildYear"`
 	Rooms      []string `json:"rooms"`
 	MarketType string   `json:"marketType"`
 	Condition  string   `json:"condition"`
-	Pois       []pois  `json:"pois"`
+	Pois       []pois   `json:"pois"`
 }
 
 // TODO: Dodać pola z ważnością wybranych filtrów
@@ -251,14 +252,17 @@ func (app *application) fetchMatchingIDsStrict(ctx context.Context, step1 step1F
 		}
 	}
 
-	// for _, p := range step1.Pois {
-	// 	countField, ok := poiRangeToCountField[p.Range]
-	// 	if !ok {
-	// 		continue
-	// 	}
-	// 	mongoField := fmt.Sprintf("geo_aggregations.%s.%s", p.Poi, countField)
-	// 	filter[mongoField] = bson.M{"$gt": 0}
-	// }
+	for _, p := range step1.Pois {
+		if p.Poi == "" {
+			continue
+		}
+		countField, ok := poiRangeToCountField[p.Range]
+		if !ok {
+			continue
+		}
+		mongoField := fmt.Sprintf("geo_aggregations.%s.%s", p.Poi, countField)
+		filter[mongoField] = bson.M{"$gt": 0}
+	}
 
 	projection := bson.M{"_id": 1}
 	cursor, err := app.mongoCollection.Find(ctx, filter, options.Find().SetProjection(projection))
@@ -281,13 +285,17 @@ func (app *application) fetchMatchingIDsStrict(ctx context.Context, step1 step1F
 	return ids, nil
 }
 
-func buildRangeFilter(from, to *float64) bson.M {
+func buildRangeFilter(from, to string) bson.M {
 	f := bson.M{}
-	if from != nil {
-		f["$gte"] = *from
+	if from != "" {
+		if v, err := strconv.ParseFloat(from, 64); err == nil {
+			f["$gte"] = v
+		}
 	}
-	if to != nil {
-		f["$lte"] = *to
+	if to != "" {
+		if v, err := strconv.ParseFloat(to, 64); err == nil {
+			f["$lte"] = v
+		}
 	}
 	if len(f) == 0 {
 		return nil

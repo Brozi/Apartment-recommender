@@ -17,6 +17,7 @@ import MapFormBox from "#/components/map-forms/map-form-box";
 import { Button } from "#/components/ui/button";
 import { useSearchSession } from "#/api/useSearchSession";
 import ChevronDownIcon from "#/components/icons/chevron-down-icon";
+import { usePois } from "#/api/usePois";
 
 export const Route = createFileRoute("/map")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -28,7 +29,6 @@ export const Route = createFileRoute("/map")({
 function MapPage() {
   const { f } = Route.useSearch();
   const decodedFilters = f ? decodeFiltersFromURL(f) : null;
-  // console.log(decodedFilters);
   const filtersExist = !!f;
 
   const { data: session } = useSearchSession(decodedFilters);
@@ -42,6 +42,8 @@ function MapPage() {
     sessionHash,
     filtersExist,
   );
+  const { data: poisData, error: poisError } = usePois(debouncedViewport);
+  console.log(poisData);
 
   useEffect(() => {
     if (!isFilterFormActive) {
@@ -64,7 +66,7 @@ function MapPage() {
     setIsFilterFormActive(false);
   };
 
-  if (error) {
+  if (error || poisError) {
     return <p className="text-paragraph">Failed to load map</p>;
   }
 
@@ -72,6 +74,10 @@ function MapPage() {
     offers: { items: [] },
     offersInPoint: { items: [] },
     clusters: { items: [] },
+  };
+
+  const safePoisData = poisData ?? {
+    pois: [],
   };
 
   return (
@@ -107,7 +113,7 @@ function MapPage() {
         </BtnGroup>
       </SubpageHeader>
 
-      <MapContextProvider mapData={safeMapData}>
+      <MapContextProvider mapData={safeMapData} poisData={safePoisData}>
         <section className={styles.mapSection}>
           <Map onViewportChange={setViewport} />
           <MapOfferContainer />
