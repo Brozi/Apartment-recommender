@@ -3,11 +3,18 @@ import random
 import json
 import re
 import logging
+import sys
 from crawler.exceptions import DataExtractionError
 from services.investment import InvestmentMapper
 from crawler.listing import Listing
-
 logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout
+
+)
 
 
 class InvestmentProcessor:
@@ -39,12 +46,12 @@ class InvestmentProcessor:
         if not investments_queue:
             return
 
-        print(f"\n[INVESTMENT] Processing {len(investments_queue)} queued investments...")
+        logger.info(f"\n[INVESTMENT] Processing {len(investments_queue)} queued investments...")
         processed_count = 0
 
         for investment_url in list(investments_queue):
             if processed_count > 0 and processed_count % 5 == 0:
-                print(f"\n[INVESTMENT] Processed 5 investments. Forcing session rotation...")
+                logger.info(f"\n[INVESTMENT] Processed 5 investments. Forcing session rotation...")
                 self.network.rotate_session()
 
             processed_count += 1
@@ -54,7 +61,7 @@ class InvestmentProcessor:
             except Exception as e:
                 logger.error(f"[INVESTMENT] Failed to process {investment_url}: {e}")
 
-        print(f"[INVESTMENT] Finished processing queue.\n")
+        logger.info(f"[INVESTMENT] Finished processing queue.")
 
     def _process_single_investment(self, investment_url: str, queue: set[str]):
         """
@@ -67,7 +74,7 @@ class InvestmentProcessor:
             investment_url (str): The URL of the developer project.
             queue (set[str]): The queue containing the URL, used to remove it upon completion.
         """
-        print(f"[INVESTMENT] Scraping: {investment_url}")
+        logger.info(f"[INVESTMENT] Scraping: {investment_url}")
         time.sleep(random.uniform(2.0, 4.0))
 
         response = self.network.get(investment_url, timeout=15)
@@ -81,44 +88,35 @@ class InvestmentProcessor:
             return
 
         data = json.loads(match.group(1))
-        ad_data = data.get("props", {}).get("pageProps", {}).get("ad", {})
+        investment_dict = data.get("props", {}).get("pageProps", {}).get("ad", {})
 
-        self.main_location = ad_data.get("location", {})
-        self.seller_type = ad_data.get("target", {}).get("user_type", {})
-        self.developer_id = ad_data.get("target", {}).get("seller_id") if self.seller_type == "developer" else None
-        self.description = ad_data.get("description", {})
-
-        if "paginatedUnits" not in ad_data:
+        if "paginatedUnits" not in investment_dict:
             queue.remove(investment_url)
             return
 
-        paginated_units = ad_data["paginatedUnits"]
+        paginated_units = investment_dict["paginatedUnits"]
         total_pages = paginated_units.get("pagination", {}).get("totalPages", 1)
+        total_results = paginated_units.get("pagination", {}).get("totalResults", 0)
         items_page_1 = paginated_units.get("items", [])
 
-        if items_page_1 and any(unit.get("target") is None for unit in items_page_1):
+        if items_page_1 and any(unit.get("characteristics") is None for unit in items_page_1):
             logger.warning(f"Stealth block detected on {investment_url}. Sleeping 5 minutes...")
             time.sleep(300)
             self.network.rotate_session()
             return
 
-        print(f"  -> Found {total_pages} pages of units.")
+        logger.info(f"-> Found {total_results} units on {total_pages} pages.")
         dynamic_page_size = len(items_page_1) if items_page_1 else 6
 
-        # Process Page 1
-        for unit_dict in items_page_1:
-            self._save_unit(unit_dict, investment_url, self.main_location, self.developer_id, self.description)
-
-        investment_id = ad_data.get("id")
-        if total_pages > 1 and investment_id:
-            self._fetch_api_pages(investment_url, investment_id, total_pages, dynamic_page_size, self.main_location,
-                                  self.developer_id)
+        investment_id = investment_dict.get("id")
+        if total_pages > 0 and investment_id:
+            self._fetch_api_pages(investment_url, investment_id, investment_dict, total_pages, dynamic_page_size)
 
         with open("scraped_investments.txt", "a", encoding="utf-8") as f:
             f.write(investment_url + "\n")
         queue.remove(investment_url)
 
-    def _fetch_api_pages(self, investment_url, investment_id, total_pages, page_size, main_location, developer_id):
+    def _fetch_api_pages(self, investment_url, investment_id, investment_dict, total_pages, page_size):
         """
         Paginates through remaining investment units using Otodom's internal GraphQL API.
 
@@ -133,8 +131,8 @@ class InvestmentProcessor:
             main_location (dict): The fallback location dictionary to pass to the mapper.
             developer_id (int): The Otodom seller ID.
         """
-        print(f"  -> Using APQ Data API for pages 2-{total_pages}...")
-        page = 2
+        logger.info(f"-> Using APQ Data API for pages 2-{total_pages}...")
+        page = 1
         while page <= total_pages:
             variables = {
                 "id": int(investment_id),
@@ -144,8 +142,8 @@ class InvestmentProcessor:
                 }
             }
             extensions = {
-                "persistedQuery": {"sha256Hash": "ddc9f328a32057395caf18ef667d3ee4242ea57e73481cc8a56ee9618d0c2b31",
-                                   "version": 1}}
+                "persistedQuery":{"sha256Hash":"a006d8acd119f63bbadfc20dc7d1075082aee7796943ed3da635ce6b7f860afb","version":1}
+            }
             params = {
                 "operationName": "PaginatedInvestmentUnits",
                 "variables": json.dumps(variables, separators=(',', ':')),
@@ -180,38 +178,27 @@ class InvestmentProcessor:
 
                 saved_count = 0
                 for unit_dict in next_items:
-                    if self._save_unit(unit_dict, investment_url, main_location, developer_id, self.description):
+                    if self._save_unit(unit_dict, investment_dict):
                         saved_count += 1
-                print(f" Page {page}: saved {saved_count}/{len(next_items)} units")
+                logger.info(f"Page {page}: saved {saved_count}/{len(next_items)} units")
                 page += 1
             except Exception as e:
                 logger.error(f"Error parsing API JSON on page {page}: {e}")
                 page += 1
 
-    def _save_unit(self, unit_dict, investment_url, main_location, developer_id, description):
+    def _save_unit(self, unit_dict, investment_dict) -> bool:
         """
         A helper function that passes raw unit data to the InvestmentMapper and
         appends valid results to the crawler's main listings state.
 
         Args:
             unit_dict (dict): Raw JSON unit dictionary.
-            main_location (dict): The parent project's location.
-            developer_id (int): The Otodom seller ID.
-            description (str): The description to add to the listing.
+            investment_dict (dict): Raw JSON dict containing man investments information.
 
         Returns:
             bool: True if the unit was successfully mapped and saved, False otherwise.
         """
-        property_ = InvestmentMapper.map_investment_unit(
-            unit_dict,
-            investment_url,
-            main_location,
-            developer_id,
-            self.settings.city,
-            self.settings.province,
-            self.settings.district,
-            description
-        )
+        property_ = InvestmentMapper.map_investment_unit(unit_dict, investment_dict)
         if property_:
             listing = Listing()
             listing.property_ = property_

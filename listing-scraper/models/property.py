@@ -293,7 +293,7 @@ class PropertyDocument(Document):
         :param properties: The properties containing the heating of the property
         :return: The heating of the property
         """
-        heating = properties.get("Heating")
+        heating = properties.get("Heating_types")
         if heating is None:
             return None
         return ",".join(heating)
