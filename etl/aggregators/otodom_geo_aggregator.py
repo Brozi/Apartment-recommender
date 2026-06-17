@@ -120,12 +120,12 @@ class OtodomGeoAggregator(OtodomAggregator):
             self,
             category_groups:tuple,
             max_distance:int=1500,
-            step:int=500,
+            step:int=1000,
             cursor_size: int=500,
             recompute: bool=False,
     ):
         self.absolute_max_distance = max_distance * 10
-        writer = MongoBulkWriter(self.listings_col, batch_size=1000, ordered=False)
+        writer = MongoBulkWriter(self.listings_col, batch_size=cursor_size, ordered=False)
 
         base_query = {
             'geo_location.coordinates.1': {'$exists': True},
