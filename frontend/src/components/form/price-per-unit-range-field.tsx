@@ -14,14 +14,24 @@ export const PricePerUnitRangeField = withForm({
             name="step1.pricePerM2.pricePerM2From"
             validators={{ onChangeListenTo: ["step1.pricePerM2.pricePerM2To"] }}
             children={(field) => (
-              <field.NumberField variant="bare" unit="zł" placeholder="From" />
+              <field.TextField
+                variant="bare"
+                unit="zł"
+                placeholder="From"
+                onlyNumbers={true}
+              />
             )}
           />
 
           <form.AppField
             name="step1.pricePerM2.pricePerM2To"
             children={(field) => (
-              <field.NumberField variant="bare" unit="zł" placeholder="To" />
+              <field.TextField
+                variant="bare"
+                unit="zł"
+                placeholder="To"
+                onlyNumbers={true}
+              />
             )}
           />
         </div>

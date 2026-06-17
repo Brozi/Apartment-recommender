@@ -2,10 +2,10 @@ import styles from "./form.module.css";
 import { withForm } from "#/components/form";
 import {
   buildStep2FromStep1,
-  createStep1Defaults,
   mapFormOptions,
   type FilterLimits,
 } from "./map-form-options";
+import { useNavigate } from "@tanstack/react-router";
 import { TotalPriceRangeField } from "#/components/form/total-price-range-field";
 import { PricePerUnitRangeField } from "#/components/form/price-per-unit-range-field";
 import { AreaRangeField } from "#/components/form/area-range-field";
@@ -27,13 +27,13 @@ export const Step1FilterForm = withForm({
     setStep: (_step: number) => {},
     limits: {} as FilterLimits,
   },
-  render: function Render({ form, step, setStep, limits }) {
+  render: function Render({ form, step, setStep }) {
+    const navigate = useNavigate();
     return (
       <form.FormGroup
         name="step1"
         onGroupSubmit={({ value }) => {
-          const step1Defaults = createStep1Defaults(limits);
-          const nextStep2Values = buildStep2FromStep1(value, step1Defaults);
+          const nextStep2Values = buildStep2FromStep1(value);
 
           form.setFieldValue(
             "step2.buildingPartImportance",
@@ -125,7 +125,14 @@ export const Step1FilterForm = withForm({
                 variant="secondary"
                 size="large"
                 type="button"
-                onClick={() => form.reset()}
+                onClick={() => {
+                  form.reset();
+                  void navigate({
+                    to: "/map",
+                    replace: true,
+                    search: { f: "" },
+                  });
+                }}
               >
                 Clear filters
               </Button>

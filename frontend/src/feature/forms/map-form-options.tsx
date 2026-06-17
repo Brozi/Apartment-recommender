@@ -1,25 +1,26 @@
 import * as z from "zod";
 import { formOptions } from "@tanstack/react-form";
 import type { FilterLimitsResponse } from "#/lib/types";
+import { createOptionalNumericStringSchema } from "#/lib/utils";
 
 export type Step1FormValues = {
   buildingType: string;
   districts: string[];
   totalPrice: {
-    totalPriceFrom: number;
-    totalPriceTo: number;
+    totalPriceFrom: string;
+    totalPriceTo: string;
   };
   pricePerM2: {
-    pricePerM2From: number;
-    pricePerM2To: number;
+    pricePerM2From: string;
+    pricePerM2To: string;
   };
   area: {
-    areaFrom: number;
-    areaTo: number;
+    areaFrom: string;
+    areaTo: string;
   };
   buildYear: {
-    buildYearFrom: number;
-    buildYearTo: number;
+    buildYearFrom: string;
+    buildYearTo: string;
   };
   rooms: string[];
   marketType: string;
@@ -39,25 +40,25 @@ export const STEP1_DEFAULT_VALUES: Step1FormValues = {
   buildingType: "any",
   districts: ["all"],
   totalPrice: {
-    totalPriceFrom: 0,
-    totalPriceTo: 20_000_000,
+    totalPriceFrom: "",
+    totalPriceTo: "",
   },
   pricePerM2: {
-    pricePerM2From: 0,
-    pricePerM2To: 100_000,
+    pricePerM2From: "",
+    pricePerM2To: "",
   },
   area: {
-    areaFrom: 0,
-    areaTo: 10_000,
+    areaFrom: "",
+    areaTo: "",
   },
   buildYear: {
-    buildYearFrom: 1500,
-    buildYearTo: 2028,
+    buildYearFrom: "",
+    buildYearTo: "",
   },
   rooms: ["any"],
   marketType: "any",
   condition: "any",
-  pois: [{ poi: "parcel_locker", range: "500_m" }],
+  pois: [{ poi: "parcel_service", range: "500_m" }],
 };
 
 const hasSelectedValue = (values: string[], sentinel: string): boolean =>
@@ -65,27 +66,12 @@ const hasSelectedValue = (values: string[], sentinel: string): boolean =>
 
 export function buildStep2FromStep1(
   step1: Step1FormValues,
-  defaults: Step1FormValues = STEP1_DEFAULT_VALUES,
 ): Pick<Step2FormValues, "buildingPartImportance" | "poisImportance"> {
   const buildingPartImportance: Step2FormValues["buildingPartImportance"] = [];
 
-  // if (step1.buildingType !== defaults.buildingType) {
-  //   buildingPartImportance.push({
-  //     part: "building_type",
-  //     importance: DEFAULT_IMPORTANCE,
-  //   });
-  // }
-
-  // if (hasSelectedValue(step1.districts, "all")) {
-  //   buildingPartImportance.push({
-  //     part: "districts",
-  //     importance: DEFAULT_IMPORTANCE,
-  //   });
-  // }
-
   if (
-    step1.totalPrice.totalPriceFrom !== defaults.totalPrice.totalPriceFrom ||
-    step1.totalPrice.totalPriceTo !== defaults.totalPrice.totalPriceTo
+    step1.totalPrice.totalPriceFrom !== "" ||
+    step1.totalPrice.totalPriceTo !== ""
   ) {
     buildingPartImportance.push({
       part: "total_price",
@@ -94,8 +80,8 @@ export function buildStep2FromStep1(
   }
 
   if (
-    step1.pricePerM2.pricePerM2From !== defaults.pricePerM2.pricePerM2From ||
-    step1.pricePerM2.pricePerM2To !== defaults.pricePerM2.pricePerM2To
+    step1.pricePerM2.pricePerM2From !== "" ||
+    step1.pricePerM2.pricePerM2To !== ""
   ) {
     buildingPartImportance.push({
       part: "price_per_m2",
@@ -103,10 +89,7 @@ export function buildStep2FromStep1(
     });
   }
 
-  if (
-    step1.area.areaFrom !== defaults.area.areaFrom ||
-    step1.area.areaTo !== defaults.area.areaTo
-  ) {
+  if (step1.area.areaFrom !== "" || step1.area.areaTo !== "") {
     buildingPartImportance.push({
       part: "area",
       importance: DEFAULT_IMPORTANCE,
@@ -114,8 +97,8 @@ export function buildStep2FromStep1(
   }
 
   if (
-    step1.buildYear.buildYearFrom !== defaults.buildYear.buildYearFrom ||
-    step1.buildYear.buildYearTo !== defaults.buildYear.buildYearTo
+    step1.buildYear.buildYearFrom !== "" ||
+    step1.buildYear.buildYearTo !== ""
   ) {
     buildingPartImportance.push({
       part: "build_year",
@@ -129,20 +112,6 @@ export function buildStep2FromStep1(
       importance: DEFAULT_IMPORTANCE,
     });
   }
-
-  // if (step1.marketType !== defaults.marketType) {
-  //   buildingPartImportance.push({
-  //     part: "market_type",
-  //     importance: DEFAULT_IMPORTANCE,
-  //   });
-  // }
-
-  // if (step1.condition !== defaults.condition) {
-  //   buildingPartImportance.push({
-  //     part: "condition",
-  //     importance: DEFAULT_IMPORTANCE,
-  //   });
-  // }
 
   const poisImportance: Step2FormValues["poisImportance"] = Array.from(
     new Set(step1.pois.map((item) => item.poi.trim()).filter(Boolean)),
@@ -193,74 +162,60 @@ export function createFilterFormSchema(
       buildingType: z.string().min(1, "You must select a building type"),
       districts: z.array(z.string()).min(1, "Select at least one district"),
       totalPrice: z.object({
-        totalPriceFrom: z
-          .number()
-          .min(limits.totalPrice.min)
-          .max(
-            limits.totalPrice.max,
-            `Price must be between ${limits.totalPrice.min} and ${limits.totalPrice.max}`,
-          ),
-        totalPriceTo: z
-          .number()
-          .min(limits.totalPrice.min)
-          .max(
-            limits.totalPrice.max,
-            `Price must be between ${limits.totalPrice.min} and ${limits.totalPrice.max}`,
-          ),
+        totalPriceFrom: createOptionalNumericStringSchema(
+          limits.totalPrice.min,
+          `Minimum price must be at least ${limits.totalPrice.min}`,
+          limits.totalPrice.max,
+          `Maximum price cannot exceed ${limits.totalPrice.max}`,
+        ),
+        totalPriceTo: createOptionalNumericStringSchema(
+          limits.totalPrice.min,
+          `Price must be at least ${limits.totalPrice.min}`,
+          limits.totalPrice.max,
+          `Price cannot exceed ${limits.totalPrice.max}`,
+        ),
       }),
       pricePerM2: z.object({
-        pricePerM2From: z
-          .number()
-          .min(limits.pricePerM2.min)
-          .max(
-            limits.pricePerM2.max,
-            `Price per m² must be between ${limits.pricePerM2.min} and ${limits.pricePerM2.max}`,
-          ),
-        pricePerM2To: z
-          .number()
-          .min(limits.pricePerM2.min)
-          .max(
-            limits.pricePerM2.max,
-            `Price per m² must be between ${limits.pricePerM2.min} and ${limits.pricePerM2.max}`,
-          ),
+        pricePerM2From: createOptionalNumericStringSchema(
+          limits.pricePerM2.min,
+          `Minimum price per m² must be at least ${limits.pricePerM2.min}`,
+          limits.pricePerM2.max,
+          `Price per m² cannot exceed ${limits.pricePerM2.max}`,
+        ),
+        pricePerM2To: createOptionalNumericStringSchema(
+          limits.pricePerM2.min,
+          `Price per m² must be at least ${limits.pricePerM2.min}`,
+          limits.pricePerM2.max,
+          `Price per m² cannot exceed ${limits.pricePerM2.max}`,
+        ),
       }),
       area: z.object({
-        areaFrom: z
-          .number()
-          .min(limits.area.min)
-          .max(
-            limits.area.max,
-            `Area must be between ${limits.area.min} and ${limits.area.max}`,
-          ),
-        areaTo: z
-          .number()
-          .min(limits.area.min)
-          .max(
-            limits.area.max,
-            `Area must be between ${limits.area.min} and ${limits.area.max}`,
-          ),
+        areaFrom: createOptionalNumericStringSchema(
+          limits.area.min,
+          `Minimum area must be at least ${limits.area.min}`,
+          limits.area.max,
+          `Area cannot exceed ${limits.area.max}`,
+        ),
+        areaTo: createOptionalNumericStringSchema(
+          limits.area.min,
+          `Area must be at least ${limits.area.min}`,
+          limits.area.max,
+          `Area cannot exceed ${limits.area.max}`,
+        ),
       }),
       buildYear: z.object({
-        buildYearFrom: z
-          .number()
-          .min(
-            limits.buildYear.min,
-            `Build year must be between ${limits.buildYear.min} and ${limits.buildYear.max}`,
-          )
-          .max(
-            limits.buildYear.max,
-            `Build year must be between ${limits.buildYear.min} and ${limits.buildYear.max}`,
-          ),
-        buildYearTo: z
-          .number()
-          .min(
-            limits.buildYear.min,
-            `Build year must be between ${limits.buildYear.min} and ${limits.buildYear.max}`,
-          )
-          .max(
-            limits.buildYear.max,
-            `Build year must be between ${limits.buildYear.min} and ${limits.buildYear.max}`,
-          ),
+        buildYearFrom: createOptionalNumericStringSchema(
+          limits.buildYear.min,
+          `Lower range of build year must be at least ${limits.buildYear.min}`,
+          limits.buildYear.max,
+          `Build year cannot exceed ${limits.buildYear.max}`,
+        ),
+        buildYearTo: createOptionalNumericStringSchema(
+          limits.buildYear.min,
+          `Upper range of build year must be at least ${limits.buildYear.min}`,
+          limits.buildYear.max,
+          `Build year cannot exceed ${limits.buildYear.max}`,
+        ),
       }),
       rooms: z.array(z.string()).min(1, "Select at least one option"),
       marketType: z.string().min(1, "You must select a market type"),
@@ -290,29 +245,51 @@ export function createFilterFormSchema(
       });
     })
     .refine(
-      (data) => data.totalPrice.totalPriceTo >= data.totalPrice.totalPriceFrom,
+      (data) => {
+        const from = data.totalPrice.totalPriceFrom;
+        const to = data.totalPrice.totalPriceTo;
+        if (from === "" || to === "") return true;
+        return Number(to) >= Number(from);
+      },
       {
-        message: "Maximum price must be greater than or equal to minimum price",
+        message: "Minimum price must be less than or equal to maximum price",
         path: ["totalPrice", "totalPriceTo"],
       },
     )
     .refine(
-      (data) => data.pricePerM2.pricePerM2To >= data.pricePerM2.pricePerM2From,
+      (data) => {
+        const from = data.pricePerM2.pricePerM2From;
+        const to = data.pricePerM2.pricePerM2To;
+        if (from === "" || to === "") return true;
+        return Number(to) >= Number(from);
+      },
       {
         message:
-          "Maximum price per m² must be greater than or equal to minimum price per m²",
+          "Minimum price per m² must be less than or equal to maximum price per m²",
         path: ["pricePerM2", "pricePerM2To"],
       },
     )
-    .refine((data) => data.area.areaTo >= data.area.areaFrom, {
-      message: "Maximum area must be greater than or equal to minimum area",
-      path: ["area", "areaTo"],
-    })
     .refine(
-      (data) => data.buildYear.buildYearTo >= data.buildYear.buildYearFrom,
+      (data) => {
+        const from = data.area.areaFrom;
+        const to = data.area.areaTo;
+        if (from === "" || to === "") return true;
+        return Number(to) >= Number(from);
+      },
       {
-        message:
-          "Build year to must be greater than or equal to build year from",
+        message: "Minimum area must be less than or equal to maximum area",
+        path: ["area", "areaTo"],
+      },
+    )
+    .refine(
+      (data) => {
+        const from = data.buildYear.buildYearFrom;
+        const to = data.buildYear.buildYearTo;
+        if (from === "" || to === "") return true;
+        return Number(to) >= Number(from);
+      },
+      {
+        message: "Build year from must be less than or equal to build year to",
         path: ["buildYear", "buildYearTo"],
       },
     );
@@ -330,43 +307,12 @@ export const recommendationFormSchema = z.object({
 
 export const filterFormSchema = createFilterFormSchema();
 
-export function createStep1Defaults(
-  limits: FilterLimits = FILTER_LIMITS_FALLBACK,
-): Step1FormValues {
-  return {
-    ...STEP1_DEFAULT_VALUES,
-    totalPrice: {
-      totalPriceFrom: limits.totalPrice.min,
-      totalPriceTo: limits.totalPrice.max,
+export const mapFormOptions = formOptions({
+  defaultValues: {
+    step1: STEP1_DEFAULT_VALUES,
+    step2: {
+      skipRecommendation: false,
+      ...buildStep2FromStep1(STEP1_DEFAULT_VALUES),
     },
-    pricePerM2: {
-      pricePerM2From: limits.pricePerM2.min,
-      pricePerM2To: limits.pricePerM2.max,
-    },
-    area: {
-      areaFrom: limits.area.min,
-      areaTo: limits.area.max,
-    },
-    buildYear: {
-      buildYearFrom: limits.buildYear.min,
-      buildYearTo: limits.buildYear.max,
-    },
-  };
-}
-
-export function createMapFormOptions(
-  limits: FilterLimits = FILTER_LIMITS_FALLBACK,
-) {
-  const step1Defaults = createStep1Defaults(limits);
-
-  return formOptions({
-    defaultValues: {
-      step1: step1Defaults,
-      step2: {
-        skipRecommendation: false,
-        ...buildStep2FromStep1(step1Defaults, step1Defaults),
-      },
-    },
-  });
-}
-export const mapFormOptions = createMapFormOptions();
+  },
+});

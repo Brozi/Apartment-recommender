@@ -54,6 +54,7 @@ export const pointsOfInterest = [
   { label: "Grocery retail", value: "grocery_retail" },
   { label: "Bus stop", value: "bus_stop" },
   { label: "Tram stop", value: "tram_stop" },
+  { label: "Driving school", value: "driving_school" },
   { label: "Kindergarten", value: "kindergarten" },
   { label: "School", value: "school" },
   { label: "Specialized school", value: "specialized_school" },

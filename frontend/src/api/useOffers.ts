@@ -17,6 +17,7 @@ const fetchOffers = async (
     params.append("sessionHash", sessionHash);
   }
 
+  console.log(`/v1/map?${params}`);
   const response = await fetch(`/v1/map?${params}`);
   if (!response.ok) {
     throw new Error("Failed to load offers");

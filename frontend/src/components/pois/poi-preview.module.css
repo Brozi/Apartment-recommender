@@ -1,0 +1,42 @@
+.container {
+  position: absolute;
+  z-index: 1000;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: var(--spacing-8);
+  background-color: var(--clr-primary-50);
+  backdrop-filter: blur(0.25rem);
+  max-width: 16rem;
+}
+
+.content {
+  width: 100%;
+  background-color: var(--clr-light-100);
+  padding: var(--spacing-12);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-16);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+}
+
+.icon {
+  drop-shadow: var(--shadow-inset-light-icon), var(--shadow-light-icon);
+  transform: rotate(-45deg);
+}
+
+.spacer {
+  width: 0.125rem;
+  height: 1.5rem;
+  background-color: var(--clr-divider);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: var(--spacing-12);
+}

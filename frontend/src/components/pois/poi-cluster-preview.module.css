@@ -1,0 +1,42 @@
+.container {
+  position: absolute;
+  z-index: 1000;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: var(--spacing-8);
+  background-color: var(--clr-primary-50);
+  backdrop-filter: blur(0.25rem);
+  max-width: 21rem;
+}
+
+.content {
+  width: 100%;
+  background-color: var(--clr-light-100);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.header {
+  padding: var(--spacing-12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.divider {
+  height: 1px;
+  width: 75%;
+  margin-left: auto;
+  background-color: var(--clr-divider);
+}
+
+.list {
+  padding: var(--spacing-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+  overflow-y: auto;
+  max-height: 12.75rem;
+}

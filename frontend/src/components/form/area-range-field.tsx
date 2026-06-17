@@ -14,14 +14,24 @@ export const AreaRangeField = withForm({
             name="step1.area.areaFrom"
             validators={{ onChangeListenTo: ["step1.area.areaTo"] }}
             children={(field) => (
-              <field.NumberField variant="bare" unit="m²" placeholder="From" />
+              <field.TextField
+                variant="bare"
+                unit="m²"
+                placeholder="From"
+                onlyNumbers={true}
+              />
             )}
           />
 
           <form.AppField
             name="step1.area.areaTo"
             children={(field) => (
-              <field.NumberField variant="bare" unit="m²" placeholder="To" />
+              <field.TextField
+                variant="bare"
+                unit="m²"
+                placeholder="To"
+                onlyNumbers={true}
+              />
             )}
           />
         </div>
