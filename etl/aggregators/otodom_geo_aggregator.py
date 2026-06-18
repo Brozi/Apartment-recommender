@@ -136,6 +136,7 @@ class OtodomGeoAggregator(OtodomAggregator):
             base_query['geo_aggregations'] = {'$exists': False}
             if compute_geohash:
                 base_query['geohash'] = {'$exists': False}
+                del base_query['geo_aggregations']
 
         projection = {
             '_id': 1,
