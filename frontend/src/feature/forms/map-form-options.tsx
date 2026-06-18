@@ -303,6 +303,7 @@ export const recommendationFormSchema = z.object({
   poisImportance: z.array(
     z.object({ poi: z.string(), importance: z.number().min(0).max(100) }),
   ),
+  results: z.string().min(1, "You must select a results option"),
 });
 
 export const filterFormSchema = createFilterFormSchema();
@@ -313,6 +314,7 @@ export const mapFormOptions = formOptions({
     step2: {
       skipRecommendation: false,
       ...buildStep2FromStep1(STEP1_DEFAULT_VALUES),
+      results: "10",
     },
   },
 });

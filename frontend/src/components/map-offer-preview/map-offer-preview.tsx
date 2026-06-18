@@ -16,11 +16,15 @@ import { Button } from "../ui/button";
 type MapOfferPreviewProps = {
   selectedOfferId: string;
   onClose?: () => void;
+  rank?: number;
+  resultsCount?: number;
 };
 
 export default function MapOfferPreview({
   selectedOfferId,
   onClose,
+  rank,
+  resultsCount,
 }: MapOfferPreviewProps) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -118,6 +122,18 @@ export default function MapOfferPreview({
             {offerDetails.pricePerM2.toLocaleString()} zł/m²
           </span>
         </section>
+
+        {rank !== undefined && rank > 0 && (
+          <section>
+            <span
+              style={{ color: "var(--clr-primary-100)" }}
+              className="font-paragraph"
+            >
+              Match #{rank}
+              {resultsCount && ` of ${resultsCount}`}
+            </span>
+          </section>
+        )}
 
         <div className={styles.offerInfo}>
           <div className={styles.offerInfoItem}>

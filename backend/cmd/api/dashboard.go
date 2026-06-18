@@ -321,6 +321,7 @@ func (app *application) aggregateNewOffersTimeline(ctx context.Context, city str
 
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.M{
+			"is_active":         true,
 			"localization.city": city,
 			"created_at": bson.M{
 				"$gte": startDate,

@@ -69,6 +69,7 @@ function MapFormReady({
       }),
     },
     onSubmit: ({ value }) => {
+      console.log(value);
       clearSelection();
       onCloseForm();
       setStep(0);

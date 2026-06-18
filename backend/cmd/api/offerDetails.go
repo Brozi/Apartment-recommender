@@ -55,7 +55,7 @@ func (app *application) createMapOfferDetails(ctx context.Context, id string) (m
 		return mongoMapOfferData{}, err
 	}
 
-	filter := bson.D{{Key: "_id", Value: objectID}}
+	filter := bson.D{{Key: "_id", Value: objectID}, {Key: "is_active", Value: true}}
 	projection := bson.M{
 		"area":                  1,
 		"link":                  1,
