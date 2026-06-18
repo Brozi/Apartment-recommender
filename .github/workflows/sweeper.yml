@@ -18,6 +18,9 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Install dependencies
+        run: pip install -r requirements_etl.txt
+
       - name: Create settings.json securely
         run: |
           cat << 'EOF' > settings.json 

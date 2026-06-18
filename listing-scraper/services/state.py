@@ -12,7 +12,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 class StateUpdater:
-    def __init__(self, db_name='otodom_data', listings_col='listings'):
+    def __init__(self, db_name='otodom_data', listings_col='listings_clean'):
         self.db = connect_to_database()[db_name]
         self.col = self.db[listings_col]
         self.listings = []
