@@ -133,6 +133,7 @@ class OtodomGeoAggregator(OtodomAggregator):
 
         if not recompute:
             base_query['geo_aggregations'] = {'$exists': False}
+            base_query['geohash'] = {'$exists': False}
 
         projection = {
             '_id': 1,
