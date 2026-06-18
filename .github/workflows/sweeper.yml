@@ -25,5 +25,4 @@ jobs:
           EOF
 
       - name: Run sweeper
-        working-directory: listing-scraper
         run: PYTHONPATH=. python -m listing-scraper.run_sweeper
