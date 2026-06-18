@@ -123,6 +123,7 @@ class OtodomGeoAggregator(OtodomAggregator):
             step: int=500,
             cursor_size: int=1000,
             recompute: bool=False,
+            compute_geohash: bool=False,
     ):
         self.absolute_max_distance = max_distance * 10
         writer = MongoBulkWriter(self.listings_col, batch_size=cursor_size, ordered=False)
@@ -133,7 +134,8 @@ class OtodomGeoAggregator(OtodomAggregator):
 
         if not recompute:
             base_query['geo_aggregations'] = {'$exists': False}
-            base_query['geohash'] = {'$exists': False}
+            if compute_geohash:
+                base_query['geohash'] = {'$exists': False}
 
         projection = {
             '_id': 1,
