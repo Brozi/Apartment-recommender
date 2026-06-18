@@ -38,10 +38,15 @@ class ETLPipeline:
         self.uploader = MongoBatchListingUploader(input_col=input_col,output_col=output_col,batch_size=1000)
         self.transformer = OtodomTransformer()
 
-    def run(self):
+    def run(self, recompute: bool = False):
         price_threshold = calculate_price_threshold(collection=self.uploader.input_collection, q=0.0015)
         logging.info(f'Calculated price threshold: {price_threshold}')
-        cursor = self.uploader.input_collection.find({'etl_processed': {'$ne': True}})
+        query = {}
+
+        if not recompute:
+            query['etl_processed'] = {'$ne': True}
+
+        cursor = self.uploader.input_collection.find(query)
 
         for raw_doc in cursor:
             transformed_doc = self.transformer.transform(raw_doc, price_threshold)

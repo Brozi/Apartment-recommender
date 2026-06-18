@@ -18,7 +18,7 @@ if __name__ == "__main__":
         input_col='listings',
         output_col='listings_clean',
     )
-    pipeline.run()
+    pipeline.run(recompute=True)
 
     dash = OtodomDashAggregator(
         listings_col = 'listings_clean',
