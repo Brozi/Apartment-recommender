@@ -202,7 +202,7 @@ class OtodomGeoAggregator(OtodomAggregator):
                         {
                             '$set': {
                                 'geo_aggregations': metrics,
-                                'localization.geohash': pgh.encode(latitude=lat, longitude=lon),
+                                'geohash': pgh.encode(latitude=lat, longitude=lon),
                             }
                         },
                         upsert=False
