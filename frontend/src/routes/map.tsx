@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useOffers } from "#/api/useOffers";
+import { useTiledOffers } from "#/api/useTiledOffers";
 import { useDebouncedValue } from "#/hooks/use-debounced-value";
 import { createFileRoute } from "@tanstack/react-router";
 import { decodeFiltersFromURL } from "#/lib/filter-url-utils";
@@ -37,13 +37,12 @@ function MapPage() {
   const [isFilterFormActive, setIsFilterFormActive] = useState(false);
   const [viewport, setViewport] = useState<MapViewport | null>(null);
   const debouncedViewport = useDebouncedValue(viewport, 300);
-  const { data: mapData, error } = useOffers(
+  const { data: mapData, error } = useTiledOffers(
     debouncedViewport,
     sessionHash,
     filtersExist,
   );
   const { data: poisData, error: poisError } = usePois(debouncedViewport);
-  console.log(poisData);
 
   useEffect(() => {
     if (!isFilterFormActive) {
@@ -113,7 +112,11 @@ function MapPage() {
         </BtnGroup>
       </SubpageHeader>
 
-      <MapContextProvider mapData={safeMapData} poisData={safePoisData}>
+      <MapContextProvider
+        mapData={safeMapData}
+        poisData={safePoisData}
+        sessionHash={sessionHash}
+      >
         <section className={styles.mapSection}>
           <Map onViewportChange={setViewport} />
           <MapOfferContainer />

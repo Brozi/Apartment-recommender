@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   Marker,
+  Tooltip,
   TileLayer,
   useMap,
   useMapEvent,
@@ -157,7 +158,9 @@ function OfferMarkerLayer({
           key={offer.id}
           position={[offer.lat, offer.lng]}
           icon={createLabelIcon(
-            `${Math.round(offer.totalPrice).toLocaleString("pl-PL")} zl`,
+            offer.rank
+              ? `#${offer.rank} · ${Math.round(offer.totalPrice).toLocaleString("pl-PL")} zł`
+              : `${Math.round(offer.totalPrice).toLocaleString("pl-PL")} zł`,
             "offer",
           )}
           eventHandlers={{
@@ -180,18 +183,38 @@ function OffersInPointMarkerLayer({
 }) {
   return (
     <>
-      {offersInPoints.map((offer) => (
-        <Marker
-          key={offer.firstOfferID}
-          position={[offer.lat, offer.lng]}
-          icon={createLabelIcon(offer.count.toLocaleString("pl-PL"), "cluster")}
-          eventHandlers={{
-            click: () => {
-              onSelect(offer);
-            },
-          }}
-        />
-      ))}
+      {offersInPoints.map((offer) => {
+        const hasScoreInfo =
+          offer.offers && offer.offers.some((o) => (o.rank ?? 0) > 0);
+        return (
+          <Marker
+            key={offer.firstOfferID}
+            position={[offer.lat, offer.lng]}
+            icon={createLabelIcon(
+              offer.count.toLocaleString("pl-PL"),
+              "cluster",
+            )}
+            eventHandlers={{
+              click: () => {
+                onSelect(offer);
+              },
+            }}
+          >
+            {hasScoreInfo && (
+              <Tooltip direction="top" offset={[0, -8]}>
+                <div style={{ lineHeight: 1.6, minWidth: "120px" }}>
+                  <strong>Score order</strong>
+                  {offer.offers!.map((o, i) => (
+                    <div key={o.id}>
+                      #{o.rank} offer {i + 1}
+                    </div>
+                  ))}
+                </div>
+              </Tooltip>
+            )}
+          </Marker>
+        );
+      })}
     </>
   );
 }

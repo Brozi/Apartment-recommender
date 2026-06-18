@@ -5,6 +5,7 @@ import { Button } from "#/components/ui/button";
 import { Slider } from "#/components/ui/slider";
 import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
 import { Checkbox } from "#/components/ui/checkbox";
+import { resultOptions } from "#/lib/formConstants";
 
 function formatValueToLabel(input: string): string {
   return input
@@ -168,6 +169,19 @@ export const Step2RecommendationForm = withForm({
                             />
                           ))}
                         </div>
+                      </section>
+
+                      <section className={styles.resultsPart}>
+                        <form.AppField
+                          name="step2.results"
+                          children={(field) => (
+                            <field.ChoiceChipsField
+                              options={resultOptions}
+                              label="Results"
+                              type="single"
+                            />
+                          )}
+                        />
                       </section>
                     </>
                   ) : null
