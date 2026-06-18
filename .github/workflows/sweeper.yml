@@ -26,4 +26,4 @@ jobs:
 
       - name: Run sweeper
         working-directory: listing-scraper
-        run: PYTHONPATH=. python -m listing-scraper.run_sweeper.py
+        run: PYTHONPATH=. python -m listing-scraper.run_sweeper
