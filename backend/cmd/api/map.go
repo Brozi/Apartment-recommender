@@ -58,7 +58,7 @@ func (app *application) getOffersByPointHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	const epsilon = 0.00003
+	const epsilon = 0.0001
 	filter := bson.M{
 		"is_active": true,
 		"localization.latitude": bson.M{
