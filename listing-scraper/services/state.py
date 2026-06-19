@@ -51,7 +51,10 @@ class StateUpdater:
                 ]
             },
             {
-                '$set': {'is_active': False}
+                '$set': {
+                    'is_active': False,
+                    'deactivated_at': datetime.now(ZoneInfo('Europe/Warsaw'))
+                }
             }
         )
         logger.info(f'Sweeper deactivated {results.modified_count} stale listings.')
