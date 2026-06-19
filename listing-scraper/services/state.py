@@ -62,9 +62,7 @@ class StateUpdater:
 
         results_delete = self.listings_scrape_col.delete_many(
             {
-                '$or': [
-                    {'last_seen_at': {'$lt': delete_threshold_date}},
-                ]
+                    'last_seen_at': {'$lt': delete_threshold_date},
             }
         )
 
