@@ -69,5 +69,5 @@ class StateUpdater:
         )
 
         logger.info(f'Sweeper deactivated {results_deactivate.modified_count} stale listings.')
-        logger.info(f'Sweeper deleted {results_delete.modified_count} stale listings from the scrape col.')
+        logger.info(f'Sweeper deleted {results_delete.deleted_count} stale listings from the scrape col.')
 
