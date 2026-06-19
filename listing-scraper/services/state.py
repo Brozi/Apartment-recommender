@@ -64,8 +64,6 @@ class StateUpdater:
             {
                 '$or': [
                     {'last_seen_at': {'$lt': delete_threshold_date}},
-                    {'last_seen_at': {'$exists': False}},
-                    {'last_seen_at': None}  # Failsafe for null insertions
                 ]
             }
         )
