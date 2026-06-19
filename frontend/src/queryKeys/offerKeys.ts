@@ -11,6 +11,21 @@ export const offerKeys = {
     } | null,
     sessionHash?: string,
   ) => [...offerKeys.all, "map", viewport, sessionHash] as const,
+  tile: (
+    bounds: { south: number; north: number; west: number; east: number },
+    zoom: number,
+    sessionHash?: string,
+  ) =>
+    [
+      ...offerKeys.all,
+      "tile",
+      bounds.south,
+      bounds.north,
+      bounds.west,
+      bounds.east,
+      zoom,
+      sessionHash,
+    ] as const,
   detail: (id: string) => [...offerKeys.details(), id] as const,
   IDsByPoint: (lat: number, lng: number) =>
     [...offerKeys.all, "idsByPoint", lat, lng] as const,

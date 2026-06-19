@@ -19,6 +19,7 @@ type MapContextType = {
   clearSelection: () => void;
   mapData: MapOffersResponse;
   poisData: MapPoisResponse;
+  sessionHash?: string;
 };
 
 export const MapContext = createContext<MapContextType | null>(null);

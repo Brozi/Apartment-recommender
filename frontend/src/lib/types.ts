@@ -54,6 +54,14 @@ export type MapOfferItem = {
   totalPrice: number;
   lat: number;
   lng: number;
+  score?: number;
+  rank?: number;
+};
+
+export type MapOfferInPointEntry = {
+  id: string;
+  score?: number;
+  rank?: number;
 };
 
 export type MapOffersInPoint = {
@@ -62,6 +70,7 @@ export type MapOffersInPoint = {
   lng: number;
   count: number;
   firstOfferID: string;
+  offers?: MapOfferInPointEntry[];
 };
 
 export type MapClusterItem = {
@@ -81,6 +90,7 @@ export type MapOffersResponse = {
   clusters: {
     items: MapClusterItem[];
   };
+  resultsCount?: number;
 };
 
 export type OfferDetailsResponse = {

@@ -12,12 +12,14 @@ type MapContextProviderProps = {
   children: ReactNode;
   mapData: MapOffersResponse;
   poisData: MapPoisResponse;
+  sessionHash?: string;
 };
 
 export default function MapContextProvider({
   children,
   mapData,
   poisData,
+  sessionHash,
 }: MapContextProviderProps) {
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [selectedOffersInPoint, setSelectedOffersInPoint] =
@@ -89,6 +91,7 @@ export default function MapContextProvider({
       clearSelection,
       mapData,
       poisData,
+      sessionHash,
     }),
     [
       selectedOfferId,

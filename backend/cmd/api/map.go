@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -27,14 +28,14 @@ func (app *application) getMapDataHandler(w http.ResponseWriter, r *http.Request
 	sessionHash := r.URL.Query().Get("sessionHash")
 	geohashPrefix := geohashPrefixLength(viewport.Zoom)
 
-	data, err := app.createMapOffers(ctx, viewport, geohashPrefix, sessionHash)
+	data, entryMap, total, err := app.createMapOffers(ctx, viewport, geohashPrefix, sessionHash)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 		return
 	}
 
-	response := buildMapResponse(data)
+	response := buildMapResponse(data, entryMap, total)
 
 	err = app.writeJSON(w, http.StatusOK, response, nil)
 	if err != nil {
@@ -59,6 +60,7 @@ func (app *application) getOffersByPointHandler(w http.ResponseWriter, r *http.R
 
 	const epsilon = 0.000001
 	filter := bson.M{
+		"is_active": true,
 		"localization.latitude": bson.M{
 			"$gte": lat - epsilon,
 			"$lte": lat + epsilon,
@@ -122,6 +124,8 @@ type mapOfferItem struct {
 	TotalPrice float64 `json:"totalPrice"`
 	Lat        float64 `json:"lat"`
 	Lng        float64 `json:"lng"`
+	Score      float64 `json:"score,omitempty"`
+	Rank       int     `json:"rank,omitempty"`
 }
 
 type mapResponseItems[T any] struct {
@@ -129,17 +133,25 @@ type mapResponseItems[T any] struct {
 }
 
 type mapResponse struct {
-	Offers        mapResponseItems[mapOfferItem]        `json:"offers"`
+	Offers        mapResponseItems[mapOfferItem]         `json:"offers"`
 	OffersInPoint mapResponseItems[mapOffersInPointItem] `json:"offersInPoint"`
-	Clusters      mapResponseItems[mapClusterItem]      `json:"clusters"`
+	Clusters      mapResponseItems[mapClusterItem]       `json:"clusters"`
+	ResultsCount  int                                    `json:"resultsCount,omitempty"`
+}
+
+type mapOfferInPointEntry struct {
+	ID    string  `json:"id"`
+	Score float64 `json:"score,omitempty"`
+	Rank  int     `json:"rank,omitempty"`
 }
 
 type mapOffersInPointItem struct {
-	Type     string   `json:"type"`
-	Lat      float64  `json:"lat"`
-	Lng      float64  `json:"lng"`
-	Count    int64    `json:"count"`
-	FirstOfferID string `json:"firstOfferID"`
+	Type         string               `json:"type"`
+	Lat          float64              `json:"lat"`
+	Lng          float64              `json:"lng"`
+	Count        int64                `json:"count"`
+	FirstOfferID string               `json:"firstOfferID"`
+	Offers       []mapOfferInPointEntry `json:"offers,omitempty"`
 }
 
 type mapAggregationResult struct {
@@ -154,10 +166,12 @@ type mapAggregationResult struct {
 	MaxLat   float64         `bson:"maxLat"`
 	MinLng   float64         `bson:"minLng"`
 	MaxLng   float64         `bson:"maxLng"`
+	AllIDs   []bson.ObjectID `bson:"allIds"`
 }
 
-func (app *application) createMapOffers(ctx context.Context, viewport mapViewportQuery, geohashPrefix int, sessionHash string) ([]mapAggregationResult, error) {
+func (app *application) createMapOffers(ctx context.Context, viewport mapViewportQuery, geohashPrefix int, sessionHash string) ([]mapAggregationResult, map[string]sessionEntry, int, error) {
 	match := bson.M{
+		"is_active": true,
 		"localization.latitude": bson.M{
 			"$gte": viewport.South,
 			"$lte": viewport.North,
@@ -169,21 +183,38 @@ func (app *application) createMapOffers(ctx context.Context, viewport mapViewpor
 		"localization.geohash": bson.M{"$type": "string"},
 	}
 
+	var entryMap map[string]sessionEntry
+	isScored := false
+	total := 0
+
 	if sessionHash != "" {
 		idsJSON, err := app.redisClient.Get(ctx, sessionHash).Result()
 		if err != nil && err != redis.Nil {
-			return nil, fmt.Errorf("redis get session: %w", err)
+			return nil, nil, 0, fmt.Errorf("redis get session: %w", err)
 		}
 		if err == nil {
-			var stringIDs []string
-			if jsonErr := json.Unmarshal([]byte(idsJSON), &stringIDs); jsonErr != nil {
-				return nil, fmt.Errorf("unmarshal session ids: %w", jsonErr)
+			var payload sessionPayload
+			if jsonErr := json.Unmarshal([]byte(idsJSON), &payload); jsonErr != nil {
+				return nil, nil, 0, fmt.Errorf("unmarshal session payload: %w", jsonErr)
 			}
-			validObjectIDs := make([]bson.ObjectID, 0, len(stringIDs))
-			for _, sid := range stringIDs {
-				oid, parseErr := bson.ObjectIDFromHex(sid)
-				if parseErr == nil {
-					validObjectIDs = append(validObjectIDs, oid)
+			validObjectIDs := make([]bson.ObjectID, 0)
+			if payload.Scored {
+				isScored = true
+				total = payload.Total
+				entryMap = make(map[string]sessionEntry, len(payload.Entries))
+				for _, e := range payload.Entries {
+					oid, parseErr := bson.ObjectIDFromHex(e.ID)
+					if parseErr == nil {
+						validObjectIDs = append(validObjectIDs, oid)
+						entryMap[e.ID] = e
+					}
+				}
+			} else {
+				for _, id := range payload.IDs {
+					oid, parseErr := bson.ObjectIDFromHex(id)
+					if parseErr == nil {
+						validObjectIDs = append(validObjectIDs, oid)
+					}
 				}
 			}
 			if len(validObjectIDs) > 0 {
@@ -196,79 +227,117 @@ func (app *application) createMapOffers(ctx context.Context, viewport mapViewpor
 		"$substrCP": bson.A{"$localization.geohash", 0, geohashPrefix},
 	}
 
+	groupStage := bson.M{
+		"_id":        groupID,
+		"count":      bson.M{"$sum": 1},
+		"avgLat":     bson.M{"$avg": "$localization.latitude"},
+		"avgLng":     bson.M{"$avg": "$localization.longitude"},
+		"firstId":    bson.M{"$first": "$_id"},
+		"firstLat":   bson.M{"$first": "$localization.latitude"},
+		"firstLng":   bson.M{"$first": "$localization.longitude"},
+		"firstPrice": bson.M{"$first": "$price"},
+		"minLat":     bson.M{"$min": "$localization.latitude"},
+		"maxLat":     bson.M{"$max": "$localization.latitude"},
+		"minLng":     bson.M{"$min": "$localization.longitude"},
+		"maxLng":     bson.M{"$max": "$localization.longitude"},
+	}
+	projectStage := bson.M{
+		"_id":        0,
+		"count":      1,
+		"avgLat":     1,
+		"avgLng":     1,
+		"firstId":    1,
+		"firstLat":   1,
+		"firstLng":   1,
+		"firstPrice": 1,
+		"minLat":     1,
+		"maxLat":     1,
+		"minLng":     1,
+		"maxLng":     1,
+	}
+	if isScored {
+		groupStage["allIds"] = bson.M{"$push": "$_id"}
+		projectStage["allIds"] = 1
+	}
+
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: match}},
-		bson.D{{Key: "$group", Value: bson.M{
-			"_id":        groupID,
-			"count":      bson.M{"$sum": 1},
-			"avgLat":     bson.M{"$avg": "$localization.latitude"},
-			"avgLng":     bson.M{"$avg": "$localization.longitude"},
-			"firstId":    bson.M{"$first": "$_id"},
-			"firstLat":   bson.M{"$first": "$localization.latitude"},
-			"firstLng":   bson.M{"$first": "$localization.longitude"},
-			"firstPrice": bson.M{"$first": "$price"},
-			"minLat":     bson.M{"$min": "$localization.latitude"},
-			"maxLat":     bson.M{"$max": "$localization.latitude"},
-			"minLng":     bson.M{"$min": "$localization.longitude"},
-			"maxLng":     bson.M{"$max": "$localization.longitude"},
-		}}},
-		bson.D{{Key: "$project", Value: bson.M{
-			"_id":        0,
-			"count":      1,
-			"avgLat":     1,
-			"avgLng":     1,
-			"firstId":    1,
-			"firstLat":   1,
-			"firstLng":   1,
-			"firstPrice": 1,
-			"minLat":     1,
-			"maxLat":     1,
-			"minLng":     1,
-			"maxLng":     1,
-		}}},
+		bson.D{{Key: "$group", Value: groupStage}},
+		bson.D{{Key: "$project", Value: projectStage}},
 	}
 
 	cursor, err := app.mongoCollection.Aggregate(ctx, pipeline, options.Aggregate())
 	if err != nil {
-		return nil, err
+		return nil, nil, 0, err
 	}
 	defer cursor.Close(ctx)
 
 	var results []mapAggregationResult
 	if err := cursor.All(ctx, &results); err != nil {
-		return nil, err
+		return nil, nil, 0, err
 	}
 
-	return results, nil
+	return results, entryMap, total, nil
 }
 
-func buildMapResponse(data []mapAggregationResult) mapResponse {
+func buildMapResponse(data []mapAggregationResult, entryMap map[string]sessionEntry, total int) mapResponse {
 	response := mapResponse{
 		Offers:        mapResponseItems[mapOfferItem]{Items: []mapOfferItem{}},
 		OffersInPoint: mapResponseItems[mapOffersInPointItem]{Items: []mapOffersInPointItem{}},
 		Clusters:      mapResponseItems[mapClusterItem]{Items: []mapClusterItem{}},
+		ResultsCount:  total,
 	}
 
 	for _, item := range data {
 		if item.Count > 1 && item.MinLat == item.MaxLat && item.MinLng == item.MaxLng {
-			response.OffersInPoint.Items = append(response.OffersInPoint.Items, mapOffersInPointItem{
+			oip := mapOffersInPointItem{
 				Type:         "offersInPoint",
 				Lat:          item.MinLat,
 				Lng:          item.MinLng,
 				Count:        item.Count,
 				FirstOfferID: item.FirstID.Hex(),
-			})
+			}
+			if entryMap != nil && len(item.AllIDs) > 0 {
+				offers := make([]mapOfferInPointEntry, 0, len(item.AllIDs))
+				for _, oid := range item.AllIDs {
+					id := oid.Hex()
+					if e, ok := entryMap[id]; ok {
+						offers = append(offers, mapOfferInPointEntry{ID: id, Score: e.Score, Rank: e.Rank})
+					} else {
+						offers = append(offers, mapOfferInPointEntry{ID: id})
+					}
+				}
+				sort.Slice(offers, func(i, j int) bool {
+					if offers[i].Rank == 0 {
+						return false
+					}
+					if offers[j].Rank == 0 {
+						return true
+					}
+					return offers[i].Rank < offers[j].Rank
+				})
+				oip.Offers = offers
+			}
+			response.OffersInPoint.Items = append(response.OffersInPoint.Items, oip)
 			continue
 		}
 
 		if item.Count <= 1 {
-			response.Offers.Items = append(response.Offers.Items, mapOfferItem{
+			offerID := item.FirstID.Hex()
+			offerItem := mapOfferItem{
 				Type:       "offer",
-				ID:         item.FirstID.Hex(),
+				ID:         offerID,
 				TotalPrice: item.Price,
 				Lat:        item.FirstLat,
 				Lng:        item.FirstLng,
-			})
+			}
+			if entryMap != nil {
+				if e, ok := entryMap[offerID]; ok {
+					offerItem.Score = e.Score
+					offerItem.Rank = e.Rank
+				}
+			}
+			response.Offers.Items = append(response.Offers.Items, offerItem)
 			continue
 		}
 

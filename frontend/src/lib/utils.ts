@@ -36,6 +36,11 @@ export const roundToTwo = (value: number): number => {
   return Math.round(value * 100) / 100;
 };
 
+export const stringToNumberOrNull = (value: string): number | null => {
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+};
+
 export const createNumericStringSchema = (
   requiredMsg: string,
   minVal: number,

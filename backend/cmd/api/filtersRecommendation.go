@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -64,6 +65,16 @@ type pois struct {
 	Range string `json:"range"`
 }
 
+type BuildingPartImportance struct {
+	Part       string `json:"part"`
+	Importance int    `json:"importance"`
+}
+
+type PoisImportance struct {
+	Poi		string `json:"poi"`
+	Importance	int    `json:"importance"`
+}
+
 type step1Filters struct {
 	BuildingType string   `json:"buildingType"`
 	Districts    []string `json:"districts"`
@@ -89,9 +100,11 @@ type step1Filters struct {
 	Pois       []pois   `json:"pois"`
 }
 
-// TODO: Dodać pola z ważnością wybranych filtrów
 type step2Filters struct {
 	SkipRecommendation bool `json:"skipRecommendation"`
+	Results string `json:"results"`
+	BuildingPartImportance []BuildingPartImportance `json:"buildingPartImportance"`
+	PoisImportance []PoisImportance `json:"poisImportance"`
 }
 
 type filtersPayload struct {
@@ -101,6 +114,33 @@ type filtersPayload struct {
 
 type filterSessionResponse struct {
 	SessionHash string `json:"sessionHash"`
+}
+
+type sessionEntry struct {
+	ID    string  `json:"id"`
+	Score float64 `json:"score,omitempty"`
+	Rank  int     `json:"rank,omitempty"`
+}
+
+type sessionPayload struct {
+	Scored  bool           `json:"scored"`
+	Total   int            `json:"total,omitempty"`
+	IDs     []string       `json:"ids,omitempty"`
+	Entries []sessionEntry `json:"entries,omitempty"`
+}
+
+type scoredListingMetrics struct {
+	Price         float64            `bson:"price"`
+	PricePerMeter float64            `bson:"price_per_meter"`
+	Area          float64            `bson:"area"`
+	Rooms         float64            `bson:"rooms"`
+	BuildYear     float64            `bson:"build_year"`
+	PoisMetrics   map[string]float64 `bson:"poi_metrics"`
+}
+
+type scoredListing struct {
+	ID           bson.ObjectID        `bson:"_id"`
+	ScoreMetrics scoredListingMetrics `bson:"score_metrics"`
 }
 
 func (app *application) createFiltersAndRecommendationHandler(w http.ResponseWriter, r *http.Request) {
@@ -145,28 +185,39 @@ func (app *application) createFiltersAndRecommendationHandler(w http.ResponseWri
 	fetchCtx, fetchCancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer fetchCancel()
 
-	var matchingIDs []string
-
-	if payload.Step2.SkipRecommendation {
-		matchingIDs, err = app.fetchMatchingIDsStrict(fetchCtx, payload.Step1)
-	} else {
-		// TODO: Implementacja rekomendacji
-		matchingIDs, err = app.fetchMatchingIDsStrict(fetchCtx, payload.Step1)
-	}
-
+	matchingIDs, err := app.fetchMatchingIDsStrict(fetchCtx, payload.Step1)
 	if err != nil {
 		app.logger.Println("fetchMatchingIDsStrict:", err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 		return
 	}
 
-	idsJSON, err := json.Marshal(matchingIDs)
+	var redisPayload sessionPayload
+
+	if !payload.Step2.SkipRecommendation {
+		resultsCount := 20
+		if n, parseErr := strconv.Atoi(payload.Step2.Results); parseErr == nil && n > 0 {
+			resultsCount = n
+		}
+
+		entries, scoreErr := app.fetchAndScore(fetchCtx, matchingIDs, payload.Step2.BuildingPartImportance, payload.Step2.PoisImportance, resultsCount)
+		if scoreErr != nil {
+			app.logger.Println("fetchAndScore:", scoreErr)
+			http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+			return
+		}
+		redisPayload = sessionPayload{Scored: true, Total: resultsCount, Entries: entries}
+	} else {
+		redisPayload = sessionPayload{Scored: false, IDs: matchingIDs}
+	}
+
+	dataJSON, err := json.Marshal(redisPayload)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 		return
 	}
-	if err := app.redisClient.Set(fetchCtx, sessionKey, idsJSON, time.Hour).Err(); err != nil {
+	if err := app.redisClient.Set(fetchCtx, sessionKey, dataJSON, time.Hour).Err(); err != nil {
 		app.logger.Println("redis set:", err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 		return
@@ -177,8 +228,149 @@ func (app *application) createFiltersAndRecommendationHandler(w http.ResponseWri
 	}
 }
 
+func normalizeWeights(buildingParts []BuildingPartImportance, poisImportance []PoisImportance) (map[string]float64, map[string]float64) {
+	buildingWeights := make(map[string]float64)
+	poiWeights := make(map[string]float64)
+	total := 0.0
+
+	for _, bp := range buildingParts {
+		buildingWeights[bp.Part] = float64(bp.Importance)
+		total += float64(bp.Importance)
+	}
+	for _, pi := range poisImportance {
+		poiWeights[pi.Poi] = float64(pi.Importance)
+		total += float64(pi.Importance)
+	}
+
+	if total == 0 {
+		return buildingWeights, poiWeights
+	}
+
+	for k := range buildingWeights {
+		buildingWeights[k] /= total
+	}
+	for k := range poiWeights {
+		poiWeights[k] /= total
+	}
+	return buildingWeights, poiWeights
+}
+
+func calculateScore(metrics scoredListingMetrics, buildingWeights, poiWeights map[string]float64) float64 {
+	score := 0.0
+
+	for part, weight := range buildingWeights {
+		var val float64
+		switch part {
+		case "total_price":
+			val = metrics.Price
+		case "price_per_m2":
+			val = metrics.PricePerMeter
+		case "area":
+			val = metrics.Area
+		case "rooms":
+			val = metrics.Rooms
+		case "build_year":
+			val = metrics.BuildYear
+		}
+		score += weight * val
+	}
+
+	for poi, weight := range poiWeights {
+		if v, ok := metrics.PoisMetrics[poi]; ok {
+			score += weight * v
+		}
+	}
+
+	return score
+}
+
+func (app *application) fetchAndScore(ctx context.Context, ids []string, buildingParts []BuildingPartImportance, poisImportance []PoisImportance, results int) ([]sessionEntry, error) {
+	if len(ids) == 0 {
+		return []sessionEntry{}, nil
+	}
+
+	buildingWeights, poiWeights := normalizeWeights(buildingParts, poisImportance)
+
+	hasWeights := false
+	for _, w := range buildingWeights {
+		if w > 0 {
+			hasWeights = true
+			break
+		}
+	}
+	if !hasWeights {
+		for _, w := range poiWeights {
+			if w > 0 {
+				hasWeights = true
+				break
+			}
+		}
+	}
+
+	if !hasWeights {
+		limit := results
+		if limit > len(ids) {
+			limit = len(ids)
+		}
+		entries := make([]sessionEntry, limit)
+		for i := range entries {
+			entries[i] = sessionEntry{ID: ids[i], Rank: i + 1}
+		}
+		return entries, nil
+	}
+
+	objectIDs := make([]bson.ObjectID, 0, len(ids))
+	for _, id := range ids {
+		oid, err := bson.ObjectIDFromHex(id)
+		if err == nil {
+			objectIDs = append(objectIDs, oid)
+		}
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": objectIDs}}
+	projection := bson.M{"_id": 1, "score_metrics": 1}
+	cursor, err := app.mongoCollection.Find(ctx, filter, options.Find().SetProjection(projection))
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var listings []scoredListing
+	if err := cursor.All(ctx, &listings); err != nil {
+		return nil, err
+	}
+
+	type entryWithScore struct {
+		id    string
+		score float64
+	}
+
+	scored := make([]entryWithScore, 0, len(listings))
+	for _, l := range listings {
+		s := calculateScore(l.ScoreMetrics, buildingWeights, poiWeights)
+		scored = append(scored, entryWithScore{id: l.ID.Hex(), score: s})
+	}
+
+	sort.Slice(scored, func(i, j int) bool {
+		return scored[i].score > scored[j].score
+	})
+
+	limit := results
+	if limit > len(scored) {
+		limit = len(scored)
+	}
+
+	entries := make([]sessionEntry, limit)
+	for i, s := range scored[:limit] {
+		entries[i] = sessionEntry{ID: s.id, Score: s.score, Rank: i + 1}
+	}
+	return entries, nil
+}
+
 func (app *application) fetchMatchingIDsStrict(ctx context.Context, step1 step1Filters) ([]string, error) {
-	filter := bson.M{}
+	filter := bson.M{
+		"is_active": true,
+	}
 
 	if step1.BuildingType != "" && step1.BuildingType != "any" {
 		if mapped, ok := buildingTypeMapping[strings.ToLower(step1.BuildingType)]; ok {
@@ -215,28 +407,16 @@ func (app *application) fetchMatchingIDsStrict(ctx context.Context, step1 step1F
 	}
 
 	if len(step1.Rooms) > 0 && !containsSentinel(step1.Rooms, "any") {
-		var explicit []string
-		hasFivePlus := false
+		roomValues := make([]string, 0)
 		for _, r := range step1.Rooms {
 			if r == "5+" {
-				hasFivePlus = true
+				roomValues = append(roomValues, "5", "6", "7", "8", "9", "10", "10+")
 			} else {
-				explicit = append(explicit, r)
+				roomValues = append(roomValues, r)
 			}
 		}
-
-		fivePlusExpr := bson.M{"$expr": bson.M{"$gte": bson.A{bson.M{"$toInt": "$rooms"}, 5}}}
-
-		switch {
-		case hasFivePlus && len(explicit) > 0:
-			filter["$or"] = bson.A{
-				bson.M{"rooms": bson.M{"$in": explicit}},
-				fivePlusExpr,
-			}
-		case hasFivePlus:
-			filter["$expr"] = fivePlusExpr["$expr"]
-		default:
-			filter["rooms"] = bson.M{"$in": explicit}
+		if len(roomValues) > 0 {
+			filter["rooms"] = bson.M{"$in": roomValues}
 		}
 	}
 
