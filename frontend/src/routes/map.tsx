@@ -42,6 +42,7 @@ function MapPage() {
     sessionHash,
     filtersExist,
   );
+  console.log(mapData);
   const { data: poisData, error: poisError } = usePois(debouncedViewport);
 
   useEffect(() => {
