@@ -11,6 +11,7 @@ type MapContextType = {
   selectedOffersInPoint: MapOffersInPoint | null;
   selectedPoiCluster: MapPoi[] | null;
   selectedSinglePoi: MapPoi | null;
+  mapBasePosition: [number, number];
   isSelected: boolean;
   selectOffer: (offerId: string) => void;
   selectOffersInPoint: (selection: MapOffersInPoint) => void;

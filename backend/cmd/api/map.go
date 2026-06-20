@@ -180,7 +180,7 @@ func (app *application) createMapOffers(ctx context.Context, viewport mapViewpor
 			"$gte": viewport.West,
 			"$lte": viewport.East,
 		},
-		"localization.geohash": bson.M{"$type": "string"},
+		"geohash": bson.M{"$type": "string"},
 	}
 
 	var entryMap map[string]sessionEntry
@@ -224,7 +224,7 @@ func (app *application) createMapOffers(ctx context.Context, viewport mapViewpor
 	}
 
 	groupID := bson.M{
-		"$substrCP": bson.A{"$localization.geohash", 0, geohashPrefix},
+		"$substrCP": bson.A{"$geohash", 0, geohashPrefix},
 	}
 
 	groupStage := bson.M{

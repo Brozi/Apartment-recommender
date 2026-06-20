@@ -1,3 +1,4 @@
+import L from "leaflet";
 import { useMemo, useState, type ReactNode } from "react";
 import { MapContext } from "#/contexts/map-context";
 import type {
@@ -30,6 +31,8 @@ export default function MapContextProvider({
   const [selectedSinglePoi, setSelectedSinglePoi] = useState<MapPoi | null>(
     null,
   );
+  const mapBasePosition = [50.06143, 19.93658] as [number, number];
+
   const resetOfferPagination = useOfferPagination((state) => state.reset);
 
   const selectOffer = (offerId: string) => {
@@ -92,6 +95,7 @@ export default function MapContextProvider({
       mapData,
       poisData,
       sessionHash,
+      mapBasePosition,
     }),
     [
       selectedOfferId,

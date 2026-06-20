@@ -93,6 +93,14 @@ export type MapOffersResponse = {
   resultsCount?: number;
 };
 
+type MapOfferRecommendation = {
+  id: string;
+  score: number;
+  rank: number;
+};
+
+export type MapOfferRecommendationResponse = MapOfferRecommendation[];
+
 export type OfferDetailsResponse = {
   id: string;
   lat: number;
