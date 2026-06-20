@@ -29,4 +29,5 @@ export const offerKeys = {
   detail: (id: string) => [...offerKeys.details(), id] as const,
   IDsByPoint: (lat: number, lng: number) =>
     [...offerKeys.all, "idsByPoint", lat, lng] as const,
+  redis: (sessionHash: string) => [...offerKeys.all, sessionHash],
 };

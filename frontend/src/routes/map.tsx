@@ -18,6 +18,7 @@ import { Button } from "#/components/ui/button";
 import { useSearchSession } from "#/api/useSearchSession";
 import ChevronDownIcon from "#/components/icons/chevron-down-icon";
 import { usePois } from "#/api/usePois";
+import MapOfferBox from "#/components/map-offer-preview/map-offer-box";
 
 export const Route = createFileRoute("/map")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -33,8 +34,10 @@ function MapPage() {
 
   const { data: session } = useSearchSession(decodedFilters);
   const sessionHash = session?.sessionHash;
+  const sessionType = session?.sessionType;
 
   const [isFilterFormActive, setIsFilterFormActive] = useState(false);
+  const [isOfferBoxActive, setIsOfferBoxActive] = useState(false);
   const [viewport, setViewport] = useState<MapViewport | null>(null);
   const debouncedViewport = useDebouncedValue(viewport, 300);
   const { data: mapData, error } = useTiledOffers(
@@ -64,6 +67,14 @@ function MapPage() {
 
   const handleFilterFormClose = () => {
     setIsFilterFormActive(false);
+  };
+
+  const handleOfferBoxOpen = () => {
+    setIsOfferBoxActive(true);
+  };
+
+  const handleOfferBoxClose = () => {
+    setIsOfferBoxActive(false);
   };
 
   if (error || poisError) {
@@ -110,6 +121,17 @@ function MapPage() {
             <FilterIcon />
             Filter map
           </Button>
+          {sessionHash && sessionType === "recommendation" && (
+            <Button
+              className={styles.secondaryButton}
+              variant="secondary"
+              // cornerColor="red"
+              size="large"
+              onClick={handleOfferBoxOpen}
+            >
+              See offers
+            </Button>
+          )}
         </BtnGroup>
       </SubpageHeader>
 
@@ -127,6 +149,13 @@ function MapPage() {
           isActive={isFilterFormActive}
           onCloseForm={handleFilterFormClose}
         />
+        {sessionHash && sessionType === "recommendation" && (
+          <MapOfferBox
+            isActive={isOfferBoxActive}
+            onCloseOfferBox={handleOfferBoxClose}
+            sessionHash={sessionHash}
+          />
+        )}
       </MapContextProvider>
     </>
   );

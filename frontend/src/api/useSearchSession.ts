@@ -3,6 +3,7 @@ import type { CleanedFilterFormValues } from "#/lib/filter-url-utils";
 
 type SearchSessionResponse = {
   sessionHash: string;
+  sessionType: "recommendation" | "filter";
 };
 
 const postFiltersSession = async (

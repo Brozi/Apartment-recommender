@@ -369,16 +369,19 @@ export default function LeafletMap({
     clearSelection,
     mapData,
     poisData,
+    mapBasePosition,
   } = useMapContext();
   const offerItems = mapData.offers.items;
   const offersInPointsItems = mapData.offersInPoint.items;
   const clusterItems = mapData.clusters.items;
 
+  const [map, setMap] = useState<L.Map | null>(null);
+
   return (
     <div className={styles.mapWrapper}>
       <MapContainer
         className={styles.leafletRoot}
-        center={[50.06143, 19.93658]}
+        center={mapBasePosition}
         zoom={13}
         scrollWheelZoom={false}
       >

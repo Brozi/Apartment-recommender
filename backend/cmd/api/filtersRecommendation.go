@@ -114,6 +114,7 @@ type filtersPayload struct {
 
 type filterSessionResponse struct {
 	SessionHash string `json:"sessionHash"`
+	SessionType string `json:"sessionType"` // "recommendation" or "filter"
 }
 
 type sessionEntry struct {
@@ -170,7 +171,14 @@ func (app *application) createFiltersAndRecommendationHandler(w http.ResponseWri
 		return
 	}
 	if exists > 0 {
-		if err := app.writeJSON(w, http.StatusOK, filterSessionResponse{SessionHash: sessionKey}, nil); err != nil {
+		sessionType := "filter"
+		if dataStr, redisErr := app.redisClient.Get(reqCtx, sessionKey).Result(); redisErr == nil {
+			var sp sessionPayload
+			if json.Unmarshal([]byte(dataStr), &sp) == nil && sp.Scored {
+				sessionType = "recommendation"
+			}
+		}
+		if err := app.writeJSON(w, http.StatusOK, filterSessionResponse{SessionHash: sessionKey, SessionType: sessionType}, nil); err != nil {
 			app.logger.Println(err)
 		}
 		return
@@ -223,7 +231,11 @@ func (app *application) createFiltersAndRecommendationHandler(w http.ResponseWri
 		return
 	}
 
-	if err := app.writeJSON(w, http.StatusOK, filterSessionResponse{SessionHash: sessionKey}, nil); err != nil {
+	sessionType := "filter"
+	if !payload.Step2.SkipRecommendation {
+		sessionType = "recommendation"
+	}
+	if err := app.writeJSON(w, http.StatusOK, filterSessionResponse{SessionHash: sessionKey, SessionType: sessionType}, nil); err != nil {
 		app.logger.Println(err)
 	}
 }
