@@ -1,0 +1,33 @@
+.wideBox {
+  max-width: 52rem;
+}
+
+.scrollContainer {
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--spacing-4);
+}
+
+.offersGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-16);
+}
+
+.sentinel {
+  height: 1px;
+  margin-top: var(--spacing-16);
+}
+
+@media (min-width: 46.25rem) {
+  .offersGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 72rem) {
+  .wideBox {
+    max-width: 54em;
+  }
+}
