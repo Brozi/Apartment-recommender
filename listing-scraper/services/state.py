@@ -42,12 +42,13 @@ class StateUpdater:
     def run_global_sweeper(self, delta_factor: int = 6, base_delete_threshold: int = 31, base_deactivate_threshold: int = 72 ):
         """
         This function deactivates and deletes stale listings
-        :param delta_factor: The number by which the program should multiply
-        the base delete threshold to get the listings_clean col delete threshold. Default: 6
-        :param base_delete_threshold: The number that means how many days the listings should be in the
-        staled state before they're deleted from the listings col. Default: 31 days
-        :param base_deactivate_threshold: the number of hours since the listing being last
-        seen in order to deactivate it. Default: 72 hours
+        Args:
+            delta_factor: The number by which the program should multiply
+            the base delete threshold to get the listings_clean col delete threshold. Default: 6
+            base_delete_threshold: The number that means how many days the listings should be in the
+            staled state before they're deleted from the listings col. Default: 31 days
+            base_deactivate_threshold: the number of hours since the listing being last
+            seen in order to deactivate it. Default: 72 hours
         """
         threshold_date = datetime.now(timezone.utc) - timedelta(hours=72)
         delete_threshold_date = datetime.now(timezone.utc) - timedelta(days=31)
