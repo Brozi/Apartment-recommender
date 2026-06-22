@@ -1,4 +1,5 @@
 library(plumber)
 
+port <- as.integer(Sys.getenv("PORT", "8000"))
 pr <- plumb("api.R")
-pr$run(host = "0.0.0.0", port = 8000, docs = FALSE)
+pr$run(host = "0.0.0.0", port = port, docs = FALSE)
