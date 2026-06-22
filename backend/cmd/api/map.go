@@ -436,7 +436,7 @@ func parseIntQuery(raw string, name string) (int, error) {
 func geohashPrefixLength(zoom int) int {
 	switch {
 	case zoom == 18:
-		return 10
+		return 11
 	case zoom == 17:
 		return 9
 	case zoom == 16:
