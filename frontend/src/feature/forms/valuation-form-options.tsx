@@ -52,10 +52,25 @@ const baseValuationSchema = z.object({
   hasParking: z.boolean(),
 });
 
-export const flatValuationFormOptionsSchema = baseValuationSchema.merge(
-  z
-    .object({
+export const flatValuationFormOptionsSchema = baseValuationSchema
+  .merge(
+    z.object({
       buildingType: z.enum(["flat"]),
+      rooms: z.string().min(1, "You must select rooms"),
+      area: createNumericStringSchema(
+        "Type area",
+        15,
+        "Min 15 m²",
+        100,
+        "Max 100 m²",
+      ),
+      buildYear: createNumericStringSchema(
+        "Type year",
+        1900,
+        "Min 1900",
+        2028,
+        "Max 2028",
+      ),
       floor: createNumericStringSchema("Type floor", 0, "Min 0", 20, "Max 20"),
       floorsInBuilding: createNumericStringSchema(
         "Type floors",
@@ -66,16 +81,18 @@ export const flatValuationFormOptionsSchema = baseValuationSchema.merge(
       ),
       hasElevator: z.boolean(),
       hasBalcony: z.boolean(),
-      hasStorage: z.boolean(),
-    })
-    .refine(
-      (data) => !data.floorsInBuilding || data.floor <= data.floorsInBuilding,
-      {
-        message: "Floor must be less than or equal to floors in building",
-        path: ["floor"],
-      },
-    ),
-);
+      market_type: z.string().min(1, "You must select market type"),
+      offered_by: z.string().min(1, "You must select offered by"),
+      heating: z.string().min(1, "You must select heating type"),
+    }),
+  )
+  .refine(
+    (data) => !data.floorsInBuilding || data.floor <= data.floorsInBuilding,
+    {
+      message: "Floor must be less than or equal to floors in building",
+      path: ["floor"],
+    },
+  );
 
 export const houseValuationFormOptionsSchema = baseValuationSchema.merge(
   z.object({
@@ -107,7 +124,9 @@ export const flatValuationFormOptions = formOptions({
     floorsInBuilding: "",
     hasElevator: false,
     hasBalcony: false,
-    hasStorage: false,
+    market_type: "",
+    offered_by: "",
+    heating: "",
   },
   validators: {
     onChange: flatValuationFormOptionsSchema,

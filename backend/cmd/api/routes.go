@@ -23,6 +23,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/filters-and-recommendation", app.createFiltersAndRecommendationHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/recommendation-info/:sessionHash", app.getRecommendationInfoHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/listings/geohash", app.requireGeohashToken(app.updateListingsGeohashHandler))
+	router.HandlerFunc(http.MethodPost, "/v1/valuation", app.flatValuationHandler)
 	router.NotFound = app.frontendHandler()
 
 	return app.enableCORS(router)

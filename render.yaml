@@ -1,0 +1,39 @@
+services:
+  # ── R valuation microservice ──────────────────────────────────────────────────
+  - type: web
+    name: aprts-r-valuation
+    runtime: docker
+    rootDir: valuation
+    dockerfilePath: ./Dockerfile
+    port: 8000
+
+  # ── Backend + frontend (single image, public) ────────────────────────────────
+  - type: web
+    name: aprts-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: VALUATION_URL
+        value: http://aprts-r-valuation:8000
+
+      # ── secrets — set these manually in the Render dashboard ────────────────
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        sync: false
+      - key: MONGODB_COLLECTION
+        sync: false
+      - key: MONGODB_DASHBOARD_COLLECTION
+        sync: false
+      - key: MONGODB_OFFER_LIMITS_COLLECTION
+        sync: false
+      - key: MONGODB_POIS_COLLECTION
+        sync: false
+      - key: GEOHASH_TOKEN
+        sync: false
+      - key: REDIS_ADDR
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false

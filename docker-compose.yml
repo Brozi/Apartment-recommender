@@ -1,12 +1,24 @@
 services:
+  r-valuation:
+    build:
+      context: ./valuation
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     env_file:
       - ./backend/.env
+    environment:
+      - VALUATION_URL=http://r-valuation:8000
     ports:
       - "4000:4000"
+    depends_on:
+      - r-valuation
     restart: unless-stopped
 
   frontend:

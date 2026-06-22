@@ -1,3 +1,12 @@
+.errorBox {
+  width: 100%;
+  padding: var(--spacing-12);
+  background-color: var(--clr-error-bg);
+  box-shadow: inset 0 0 0 1px var(--clr-error-container-stroke);
+  display: flex;
+  align-items: flex-start;
+}
+
 .valuationFormBox {
   position: relative;
   background-color: var(--clr-bg-component);
@@ -49,7 +58,7 @@
 .detailsFields {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(4, auto);
+  grid-template-rows: repeat(7, auto);
   align-items: start;
   row-gap: var(--spacing-12);
   column-gap: var(--spacing-16);
@@ -63,6 +72,21 @@
 .conditionField {
   grid-column: 1 / -1;
   grid-row: 4 / 5;
+}
+
+.marketTypeField {
+  grid-column: 1 / -1;
+  grid-row: 5 / 6;
+}
+
+.offeredByField {
+  grid-column: 1 / -1;
+  grid-row: 6 / 7;
+}
+
+.heatingField {
+  grid-column: 1 / -1;
+  grid-row: 7 / 8;
 }
 
 .checkboxSection {
@@ -109,17 +133,32 @@
 
   .detailsFields {
     column-gap: var(--spacing-24);
-    grid-template-rows: repeat(3, auto);
+    grid-template-rows: repeat(5, auto);
   }
 
   .buildYearField {
     grid-column: 1 / 2;
-    grid-row: 3 / -1;
+    grid-row: 3 / 4;
   }
 
   .conditionField {
     grid-column: 2 / -1;
-    grid-row: 3 / -1;
+    grid-row: 3 / 4;
+  }
+
+  .marketTypeField {
+    grid-column: 1 / 2;
+    grid-row: 4 / 5;
+  }
+
+  .offeredByField {
+    grid-column: 2 / -1;
+    grid-row: 4 / 5;
+  }
+
+  .heatingField {
+    grid-column: 1 / -1;
+    grid-row: 5 / 6;
   }
 
   .checkboxSection {

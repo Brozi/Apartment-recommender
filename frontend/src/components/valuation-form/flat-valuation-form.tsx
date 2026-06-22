@@ -1,15 +1,70 @@
 import { flatValuationFormOptions } from "#/feature/forms/valuation-form-options";
-import { condition, districtsCracow } from "#/lib/formConstants";
+import {
+  valuationCondition,
+  valuationDistrictsCracow,
+  valuationHeating,
+  valuationMarketTypes,
+  valuationOfferedBy,
+  valuationRooms,
+} from "#/lib/formConstants";
+import { useNavigate } from "@tanstack/react-router";
 import { useAppForm } from "../form";
 import { Button } from "../ui/button";
 
 import styles from "./valuation-form.module.css";
+import { useState } from "react";
+import { fetchCoordinates } from "#/api/useCoordinates";
+import {
+  encodeValuationToURL,
+  type ValuationInput,
+} from "#/lib/valuation-url-utils";
 
 export default function FlatValuationForm() {
+  const navigate = useNavigate({ from: "/valuation" });
+  const [geocodingError, setGeocodingError] = useState<string | null>(null);
+
   const form = useAppForm({
     ...flatValuationFormOptions,
-    onSubmit: ({ value }) => {
-      console.log(value);
+    onSubmit: async ({ value }) => {
+      setGeocodingError(null);
+      try {
+        const coords = await fetchCoordinates(
+          value.street,
+          value.streetNumber,
+          value.district,
+        );
+        if (!coords) {
+          setGeocodingError(
+            "Could not find the address. Please check street name and number.",
+          );
+          return;
+        }
+        const input: ValuationInput = {
+          district: value.district,
+          rooms: value.rooms,
+          area: Number(value.area),
+          buildYear: Number(value.buildYear),
+          condition: value.condition,
+          hasParking: value.hasParking,
+          floor: Number(value.floor),
+          floorsInBuilding: Number(value.floorsInBuilding),
+          hasElevator: value.hasElevator,
+          hasBalcony: value.hasBalcony,
+          market_type: value.market_type,
+          offered_by: value.offered_by,
+          heating: value.heating,
+          lat: parseFloat(coords.lat),
+          lon: parseFloat(coords.lon),
+        };
+        void navigate({
+          to: "/valuation",
+          search: { v: encodeValuationToURL(input) },
+        });
+      } catch {
+        setGeocodingError(
+          "Failed to look up the address. Please check your connection and try again.",
+        );
+      }
     },
   });
 
@@ -39,7 +94,7 @@ export default function FlatValuationForm() {
             name="district"
             children={(field) => (
               <field.SelectField
-                options={districtsCracow}
+                options={valuationDistrictsCracow}
                 label="District"
                 placeholder="Select district"
               />
@@ -80,13 +135,11 @@ export default function FlatValuationForm() {
           <form.AppField
             name="rooms"
             children={(field) => (
-              <field.TextField
+              <field.SelectField
+                className={styles.roomsField}
+                options={valuationRooms}
                 label="Rooms"
-                id="rooms"
-                variant="full"
-                onlyNumbers={true}
-                placeholder="E.g. 3"
-                style={{ width: "100%" }}
+                placeholder="Select rooms"
               />
             )}
           />
@@ -98,7 +151,8 @@ export default function FlatValuationForm() {
                 id="area"
                 variant="full"
                 onlyNumbers={true}
-                placeholder="E.g. 75"
+                decimals={2}
+                placeholder="E.g. 75.50"
                 style={{ width: "100%" }}
               />
             )}
@@ -144,11 +198,44 @@ export default function FlatValuationForm() {
             )}
           />
           <form.AppField
+            name="market_type"
+            children={(field) => (
+              <field.SelectField
+                className={styles.marketTypeField}
+                options={valuationMarketTypes}
+                label="Market type"
+                placeholder="Select market type"
+              />
+            )}
+          />
+          <form.AppField
+            name="offered_by"
+            children={(field) => (
+              <field.SelectField
+                className={styles.offeredByField}
+                options={valuationOfferedBy}
+                label="Offered by"
+                placeholder="Select seller type"
+              />
+            )}
+          />
+          <form.AppField
+            name="heating"
+            children={(field) => (
+              <field.SelectField
+                className={styles.heatingField}
+                options={valuationHeating}
+                label="Heating type"
+                placeholder="Select heating type"
+              />
+            )}
+          />
+          <form.AppField
             name="condition"
             children={(field) => (
               <field.SelectField
                 className={styles.conditionField}
-                options={condition}
+                options={valuationCondition}
                 label="Condition"
                 placeholder="Select condition"
               />
@@ -177,26 +264,28 @@ export default function FlatValuationForm() {
                 <field.CheckboxField label="Balcony/Loggia" id="balcony" />
               )}
             />
-            <form.AppField
-              name="hasStorage"
-              children={(field) => (
-                <field.CheckboxField
-                  label="Basement/storage room"
-                  id="storage"
-                />
-              )}
-            />
           </section>
         </section>
       </section>
       <div className={styles.divider} />
+      {geocodingError && (
+        <div className={styles.errorBox}>
+          <p
+            className="font-text"
+            style={{ color: "var(--clr-error-text)", lineHeight: 1.6 }}
+          >
+            {geocodingError}
+          </p>
+        </div>
+      )}
       <Button
         className={styles.button}
         variant="primary"
         size="large"
         type="submit"
+        disabled={form.state.isSubmitting}
       >
-        Valuate the flat
+        {form.state.isSubmitting ? "Looking up address..." : "Valuate the flat"}
       </Button>
     </form>
   );

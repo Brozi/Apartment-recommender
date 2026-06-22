@@ -164,3 +164,58 @@ par(mfrow = c(2, 2))
 plot(model_flat_final)
 
 bptest(model_flat_final)
+
+
+# --- 6. EXPORT MODEL PARAMETERS FOR GO IMPLEMENTATION ---
+
+library(jsonlite)
+
+# Build the augmented knot vector exactly as ns() does internally
+ns_ba        <- ns(train_data$building_age, df = 4)
+Aknots_ba    <- sort(c(rep(attr(ns_ba, "Boundary.knots"), 4L), attr(ns_ba, "knots")))
+
+# Compute the 2nd-derivative constraint matrix at both boundary knots,
+# then derive the QR-based transform that enforces natural boundary conditions.
+# (This replicates what predict.ns() does when evaluating on new data.)
+const_ba     <- splineDesign(Aknots_ba, attr(ns_ba, "Boundary.knots"), 4L, 2L)
+const_ba     <- const_ba[, -1L, drop = FALSE]   # drop first col (intercept = FALSE)
+qr_ba        <- qr(t(const_ba))
+Q_ba         <- qr.Q(qr_ba, complete = TRUE)
+ns_transform <- Q_ba[, -(1:2), drop = FALSE]     # (K+3) x (K+1) matrix
+
+# Orthogonal polynomial coefs for lat / lon
+poly_lat <- poly(train_data$latitude,  2)
+poly_lon <- poly(train_data$longitude, 2)
+
+model_export <- list(
+  coefficients   = as.list(coef(model_flat_final)),
+  ns_building_age = list(
+    Aknots    = as.numeric(Aknots_ba),
+    transform = unname(as.matrix(ns_transform))
+  ),
+  poly_latitude = list(
+    alpha = as.numeric(attr(poly_lat, "coefs")$alpha),
+    norm2 = as.numeric(attr(poly_lat, "coefs")$norm2)
+  ),
+  poly_longitude = list(
+    alpha = as.numeric(attr(poly_lon, "coefs")$alpha),
+    norm2 = as.numeric(attr(poly_lon, "coefs")$norm2)
+  )
+)
+
+write(
+  toJSON(model_export, pretty = TRUE, auto_unbox = TRUE),
+  file.path(dirname(rstudioapi::getActiveDocumentContext()$path), "model_params.json")
+)
+cat("model_params.json exported.\n")
+
+# --- Verification test case ---
+# Run this after export to verify the Go implementation gives the same result.
+test_obs <- test_data[1, ]
+r_pred   <- as.numeric(exp(predict(model_flat_final, newdata = test_obs)))
+cat(sprintf("\nVerification – test_data[1,]:\n  R predicted price: %.0f PLN\n\n", r_pred))
+cat("Input values for Go verification:\n")
+print(test_obs[, c("district", "rooms", "area", "building_age", "floor_ratio",
+                    "is_ground_floor", "is_top_floor", "condition", "market_type",
+                    "offered_by", "heating_simple", "hasParking", "hasBalcony",
+                    "hasElevator", "latitude", "longitude")])

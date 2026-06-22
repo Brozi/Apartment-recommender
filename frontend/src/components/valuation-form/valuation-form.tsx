@@ -2,7 +2,7 @@ import ApartmentIcon from "../icons/apartment-icon";
 import HouseIcon from "../icons/house-icon";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import FlatValuationForm from "./flat-valuation-form";
-import HouseValuationForm from "./house.valuation-form";
+import HouseValuationForm from "./house-valuation-form";
 import ValuationFormBox from "./valuation-form-box";
 import styles from "./valuation-form.module.css";
 
