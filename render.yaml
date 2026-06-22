@@ -11,7 +11,7 @@ services:
 
   # ── Backend + frontend (single image, public) ────────────────────────────────
   - type: web
-    name: aprts-backend
+    name: aprts
     runtime: docker
     dockerfilePath: ./Dockerfile
     envVars:
