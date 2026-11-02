@@ -9,12 +9,25 @@ import InfoBoxLineWrapper from "#/components/info-box/info-box-line-wrapper";
 import TopCornerImage from "#/assets/valuation-results-top-corner.svg";
 import BottomCornerImage from "#/assets/valuation-results-bottom-corner.svg";
 import styles from "#/routes/valuation-page.module.css";
+import { decodeValuationFromURL } from "#/lib/valuation-url-utils";
+import { useValuation } from "#/api/useValuation";
+import LoadingSpinner from "#/components/ui/loading-spinner";
 
 export const Route = createFileRoute("/valuation")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    v: (search.v as string | undefined) ?? undefined,
+  }),
   component: ValuationPage,
 });
 
 function ValuationPage() {
+  const { v } = Route.useSearch();
+  const valuationInput = v ? decodeValuationFromURL(v) : null;
+  const {
+    data: valuationResult,
+    isPending,
+    error: valuationError,
+  } = useValuation(valuationInput);
   return (
     <>
       <SubpageHeader className={styles.subpageHeader}>
@@ -68,7 +81,32 @@ function ValuationPage() {
         <section className={styles.resultsSection}>
           <h2 className="font-h2">Your valuation results</h2>
           <div className={styles.resultsContainer}>
-            <p className="font-paragraph">Submit the form to see results</p>
+            {!valuationInput && (
+              <p className="font-paragraph">Submit the form to see results</p>
+            )}
+            {valuationInput && isPending && (
+              <LoadingSpinner
+                label="Calculating valuation..."
+                style={{ margin: "auto" }}
+              />
+            )}
+            {valuationInput && valuationError && (
+              <p className="font-paragraph">
+                Failed to calculate valuation. Please try again.
+              </p>
+            )}
+            {valuationInput && valuationResult && (
+              <p className="font-paragraph">
+                Estimated price:{" "}
+                <strong>
+                  {valuationResult.estimatedPrice.toLocaleString("pl-PL", {
+                    style: "currency",
+                    currency: "PLN",
+                    maximumFractionDigits: 0,
+                  })}
+                </strong>
+              </p>
+            )}
             <img
               src={TopCornerImage}
               alt="top corner"

@@ -38,6 +38,7 @@ type config struct {
 		addr     string
 		password string
 	}
+	valuationURL string
 }
 
 type application struct {
@@ -50,6 +51,7 @@ type application struct {
 	mongoDashboardCollection *mongo.Collection
 	mongoLimitsCollection    *mongo.Collection
 	mongoPoisCollection      *mongo.Collection
+	valuationClient          *http.Client
 }
 
 func main() {
@@ -82,6 +84,7 @@ func main() {
 	cfg.redis.addr = getEnv("REDIS_ADDR", "localhost:6379")
 	cfg.redis.password = getEnv("REDIS_PASSWORD", "")
 	cfg.staticDir = getEnv("STATIC_DIR", "./static")
+	cfg.valuationURL = getEnv("VALUATION_URL", "http://r-valuation:8000")
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
@@ -128,6 +131,7 @@ func main() {
 		mongoDashboardCollection: dashboardCollection,
 		mongoLimitsCollection:    limitsCollection,
 		mongoPoisCollection:      poisCollection,
+		valuationClient:          &http.Client{Timeout: 30 * time.Second},
 	}
 
 	app.startSelfHealthcheckLoop()

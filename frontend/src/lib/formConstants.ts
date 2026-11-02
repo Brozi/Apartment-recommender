@@ -27,6 +27,28 @@ export const districtsCracow = [
   { label: "Podgórze Duchackie", value: "podgorze_duchackie" },
 ];
 
+export const valuationDistrictsCracow = [
+  { label: "Stare Miasto", value: "Stare Miasto" },
+  { label: "Grzegórzki", value: "Grzegórzki" },
+  { label: "Prądnik Czerwony", value: "Prądnik Czerwony" },
+  { label: "Prądnik Biały", value: "Prądnik Biały" },
+  { label: "Krowodrza", value: "Krowodrza" },
+  { label: "Zwierzyniec", value: "Zwierzyniec" },
+  { label: "Bronowice", value: "Bronowice" },
+  { label: "Łobzów", value: "Łobzów" },
+  { label: "Dębniki", value: "Dębniki" },
+  { label: "Podgórze", value: "Podgórze" },
+  { label: "Bieżanów-Prokocim", value: "Bieżanów-Prokocim" },
+  { label: "Swoszowice", value: "Swoszowice" },
+  { label: "Wzgórza Krzesławickie", value: "Wzgórza Krzesławickie" },
+  { label: "Nowa Huta", value: "Nowa Huta" },
+  { label: "Czyżyny", value: "Czyżyny" },
+  { label: "Mistrzejowice", value: "Mistrzejowice" },
+  { label: "Bieńczyce", value: "Bieńczyce" },
+  { label: "Łagiewniki-Borek Fałęcki", value: "Łagiewniki-Borek Fałęcki" },
+  { label: "Podgórze Duchackie", value: "Podgórze Duchackie" },
+];
+
 export const rooms = [
   { label: "Any", value: "any" },
   { label: "1", value: "1" },
@@ -34,6 +56,13 @@ export const rooms = [
   { label: "3", value: "3" },
   { label: "4", value: "4" },
   { label: "5+", value: "5+" },
+];
+
+export const valuationRooms = [
+  { label: "1", value: "1" },
+  { label: "2", value: "2" },
+  { label: "3", value: "3" },
+  { label: "4+", value: "4+" },
 ];
 
 export const resultOptions = [
@@ -50,11 +79,34 @@ export const marketTypes = [
   { label: "Secondary", value: "secondary" },
 ];
 
+export const valuationMarketTypes = [
+  { label: "Primary", value: "Primary" },
+  { label: "Secondary", value: "Secondary" },
+];
+
 export const condition = [
   { label: "Any", value: "any" },
   { label: "Ready to Use", value: "ready_to_use" },
   { label: "To Renovation", value: "to_renovation" },
   { label: "To Completion", value: "to_completion" },
+];
+
+export const valuationCondition = [
+  { label: "Ready to Use", value: "Ready to Use" },
+  { label: "To Completion", value: "To Completion" },
+  { label: "To Renovation", value: "To Renovation" },
+];
+
+export const valuationHeating = [
+  { label: "Urban", value: "Urban" },
+  { label: "Gas", value: "Gas" },
+  { label: "Other / Unknown", value: "Other_Unknown" },
+];
+
+export const valuationOfferedBy = [
+  { label: "Private", value: "Private" },
+  { label: "Developer", value: "Developer" },
+  { label: "Agency", value: "Agency" },
 ];
 
 export const pointsOfInterest = [

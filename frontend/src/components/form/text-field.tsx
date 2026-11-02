@@ -8,6 +8,7 @@ type TextFieldProps = {
   unit?: string;
   id?: string;
   onlyNumbers?: boolean;
+  decimals?: number;
   variant: "bare" | "full"; // bare: only input, full: input with label and errors
   label?: string;
   style?: React.CSSProperties;
@@ -20,6 +21,7 @@ export const TextField = ({
   unit,
   id,
   onlyNumbers,
+  decimals,
   variant = "bare",
   label,
   style,
@@ -35,7 +37,18 @@ export const TextField = ({
     let value = e.target.value;
 
     if (onlyNumbers) {
-      value = value.replace(/\D/g, "");
+      if (decimals !== undefined) {
+        value = value.replace(/[^\d.]/g, "");
+        const parts = value.split(".");
+        if (parts.length > 2) {
+          value = parts[0] + "." + parts.slice(1).join("");
+        }
+        if (parts.length === 2 && parts[1].length > decimals) {
+          value = parts[0] + "." + parts[1].slice(0, decimals);
+        }
+      } else {
+        value = value.replace(/\D/g, "");
+      }
     }
 
     field.handleChange(value);
